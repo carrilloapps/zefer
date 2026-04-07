@@ -685,9 +685,24 @@ const translations = {
     pt: "+ Meu IP",
   },
   "advanced.ip.disclaimer": {
-    es: "La IP detectada es tu IP pública. Si usas VPN, proxy, Cloudflare o Vercel, la IP puede variar entre el cifrado y el descifrado.",
-    en: "The detected IP is your public IP. If you use a VPN, proxy, Cloudflare, or Vercel, the IP may differ between encryption and decryption.",
-    pt: "O IP detectado é o seu IP público. Se você usa VPN, proxy, Cloudflare ou Vercel, o IP pode variar entre a criptografia e a descriptografia.",
+    es: "Haz clic en «+ Mi IP» para detectar tu IP pública actual mediante múltiples servicios de verificación cruzada.",
+    en: "Click '+ My IP' to detect your current public IP via multiple cross-validation services.",
+    pt: "Clique em «+ Meu IP» para detectar seu IP público atual por meio de múltiplos serviços de verificação cruzada.",
+  },
+  "advanced.ip.vpn": {
+    es: "Se detectó que tu IP pertenece a un centro de datos o proveedor VPN. La IP que el destinatario vea al descifrar podría ser diferente si no usa la misma VPN o servicio.",
+    en: "Your IP was detected as belonging to a datacenter or VPN provider. The IP the recipient sees when decrypting may be different if they don't use the same VPN or service.",
+    pt: "Seu IP foi detectado como pertencente a um datacenter ou provedor VPN. O IP que o destinatário verá ao descriptografar pode ser diferente se não usar a mesma VPN ou serviço.",
+  },
+  "advanced.ip.inconsistent": {
+    es: "Se detectaron múltiples IPs diferentes para tu conexión, lo que puede indicar el uso de un proxy o balanceador de carga. IPs detectadas:",
+    en: "Multiple different IPs were detected for your connection, which may indicate a proxy or load balancer. Detected IPs:",
+    pt: "Múltiplos IPs diferentes foram detectados para sua conexão, o que pode indicar o uso de um proxy ou balanceador de carga. IPs detectados:",
+  },
+  "advanced.ip.clean": {
+    es: "IP verificada con múltiples servicios. Sin indicios de VPN o proxy.",
+    en: "IP verified with multiple services. No VPN or proxy indicators detected.",
+    pt: "IP verificado com múltiplos serviços. Sem indícios de VPN ou proxy.",
   },
   "decrypt.error.ipblocked": {
     es: "Tu dirección IP no está autorizada para descifrar este archivo.",
@@ -700,31 +715,14 @@ const translations = {
     pt: "Acesso negado",
   },
   "decrypt.ipblocked.desc": {
-    es: "Este archivo .zefer está restringido a direcciones IP específicas. Tu IP actual no está en la lista de IPs autorizadas.",
-    en: "This .zefer file is restricted to specific IP addresses. Your current IP is not in the authorized IP list.",
-    pt: "Este arquivo .zefer está restrito a endereços IP específicos. Seu IP atual não está na lista de IPs autorizados.",
+    es: "Este archivo .zefer fue cifrado con una restricción de IP. Tu dirección IP actual no coincide con ninguna de las direcciones autorizadas por el creador del archivo. Contacta a la persona que te envió el archivo para que agregue tu IP a la lista de autorizados.",
+    en: "This .zefer file was encrypted with an IP restriction. Your current IP address does not match any of the addresses authorized by the file creator. Contact the person who sent you the file to add your IP to the authorized list.",
+    pt: "Este arquivo .zefer foi criptografado com uma restrição de IP. Seu endereço IP atual não corresponde a nenhum dos endereços autorizados pelo criador do arquivo. Entre em contato com a pessoa que lhe enviou o arquivo para adicionar seu IP à lista de autorizados.",
   },
-
-  // ─── Strict mode ───
-  "advanced.strict": {
-    es: "Cifrado estricto (vinculado a esta instancia)",
-    en: "Strict encryption (bound to this instance)",
-    pt: "Criptografia estrita (vinculada a esta instância)",
-  },
-  "advanced.strict.help": {
-    es: "El archivo .zefer solo podrá descifrarse en esta instancia de Zefer. Otras instancias no podrán descifrarlo, aunque tengan la frase clave.",
-    en: "The .zefer file can only be decrypted on this Zefer instance. Other instances won't be able to decrypt it, even with the passphrase.",
-    pt: "O arquivo .zefer só poderá ser descriptografado nesta instância do Zefer. Outras instâncias não poderão descriptografá-lo, mesmo com a frase-chave.",
-  },
-  "advanced.strict.active": {
-    es: "El cifrado estricto está activado para esta instancia.",
-    en: "Strict encryption is active for this instance.",
-    pt: "A criptografia estrita está ativada para esta instância.",
-  },
-  "decrypt.info.strict": {
-    es: "Este archivo usa cifrado estricto y solo puede descifrarse en la instancia donde fue creado.",
-    en: "This file uses strict encryption and can only be decrypted on the instance where it was created.",
-    pt: "Este arquivo usa criptografia estrita e só pode ser descriptografado na instância onde foi criado.",
+  "decrypt.ipblocked.yourip": {
+    es: "Tu IP detectada:",
+    en: "Your detected IP:",
+    pt: "Seu IP detectado:",
   },
 
   // ─── Decrypt extra errors ───
@@ -970,9 +968,9 @@ const translations = {
     pt: "Visão geral",
   },
   "how.overview.desc": {
-    es: "Zefer es una herramienta 100% del lado del cliente. Todo el procesamiento criptográfico ocurre en tu navegador. No existe servidor que almacene, procese o transmita tus datos. Puedes cifrar texto plano o cualquier tipo de archivo (imágenes, ZIPs, PDFs, etc.) en un archivo .zefer protegido con contraseña, con opciones avanzadas de seguridad como doble frase clave, pregunta secreta, restricción por IP, expiración y cifrado estricto por instancia.",
-    en: "Zefer is a 100% client-side tool. All cryptographic processing happens in your browser. There is no server that stores, processes, or transmits your data. You can encrypt plain text or any file type (images, ZIPs, PDFs, etc.) into a password-protected .zefer file, with advanced security options like dual passphrase, secret question, IP restriction, expiration, and instance-bound strict encryption.",
-    pt: "O Zefer é uma ferramenta 100% do lado do cliente. Todo o processamento criptográfico acontece no seu navegador. Não existe servidor que armazene, processe ou transmita seus dados. Você pode criptografar texto simples ou qualquer tipo de arquivo (imagens, ZIPs, PDFs, etc.) em um arquivo .zefer protegido por senha, com opções avançadas de segurança como dupla frase-chave, pergunta secreta, restrição por IP, expiração e criptografia estrita por instância.",
+    es: "Zefer es una herramienta 100% del lado del cliente. Todo el procesamiento criptográfico ocurre en tu navegador. No existe servidor que almacene, procese o transmita tus datos. Puedes cifrar texto plano o cualquier tipo de archivo (imágenes, ZIPs, PDFs, etc.) en un archivo .zefer protegido con contraseña, con opciones avanzadas de seguridad como doble frase clave, clave de revelado, pregunta secreta, restricción por IP, expiración y compresión.",
+    en: "Zefer is a 100% client-side tool. All cryptographic processing happens in your browser. There is no server that stores, processes, or transmits your data. You can encrypt plain text or any file type (images, ZIPs, PDFs, etc.) into a password-protected .zefer file, with advanced security options like dual passphrase, reveal key, secret question, IP restriction, expiration, and compression.",
+    pt: "O Zefer é uma ferramenta 100% do lado do cliente. Todo o processamento criptográfico acontece no seu navegador. Não existe servidor que armazene, processe ou transmita seus dados. Você pode criptografar texto simples ou qualquer tipo de arquivo (imagens, ZIPs, PDFs, etc.) em um arquivo .zefer protegido por senha, com opções avançadas de segurança como dupla frase-chave, chave de revelação, pergunta secreta, restrição por IP, expiração e compressão.",
   },
   "how.step1.title": {
     es: "Paso 1: Ingreso del contenido",
@@ -1117,16 +1115,6 @@ const translations = {
     en: "Zefer analyzes your device's RAM, CPU, GPU, and platform to dynamically calculate the maximum file limit at 80% of available capacity.",
     pt: "O Zefer analisa RAM, CPU, GPU e plataforma do seu dispositivo para calcular dinamicamente o limite máximo de arquivo a 80% da capacidade disponível.",
   },
-  "how.feat.strict.title": {
-    es: "Cifrado estricto por instancia",
-    en: "Instance-bound strict encryption",
-    pt: "Criptografia estrita por instância",
-  },
-  "how.feat.strict.desc": {
-    es: "Vincula el archivo .zefer a una instancia específica de Zefer. Otras instancias no podrán descifrarlo, aunque tengan la frase clave correcta.",
-    en: "Binds the .zefer file to a specific Zefer instance. Other instances cannot decrypt it, even with the correct passphrase.",
-    pt: "Vincula o arquivo .zefer a uma instância específica do Zefer. Outras instâncias não poderão descriptografá-lo, mesmo com a frase-chave correta.",
-  },
   "how.feat.keygen.title": {
     es: "Generador de claves seguras",
     en: "Secure key generator",
@@ -1200,8 +1188,8 @@ const translations = {
     pt: "Formato de arquivo .zefer",
   },
   "privacy.fileformat.desc": {
-    es: "Los archivos .zefer contienen un header público mínimo (iteraciones, compresión, pista y nota opcionales) y un bloque cifrado que incluye el contenido, los metadatos de seguridad, la expiración, la pregunta secreta, la lista de IPs y el modo estricto. Toda la información sensible está dentro del bloque cifrado con AES-256-GCM y es completamente invisible sin la clave.",
-    en: "The .zefer files contain a minimal public header (iterations, compression, optional hint and note) and an encrypted block that includes the content, security metadata, expiration, secret question, IP list, and strict mode. All sensitive information is inside the AES-256-GCM encrypted block and is completely invisible without the key.",
+    es: "Los archivos .zefer contienen un header público mínimo (iteraciones, compresión, pista y nota opcionales) y un bloque cifrado que incluye el contenido, los metadatos de seguridad, la expiración, la pregunta secreta y la lista de IPs. Toda la información sensible está dentro del bloque cifrado con AES-256-GCM y es completamente invisible sin la clave.",
+    en: "The .zefer files contain a minimal public header (iterations, compression, optional hint and note) and an encrypted block that includes the content, security metadata, expiration, secret question, and IP list. All sensitive information is inside the AES-256-GCM encrypted block and is completely invisible without the key.",
     pt: "Os arquivos .zefer contêm um header público mínimo (iterações, compressão, dica e nota opcionais) e um bloco criptografado que inclui o conteúdo, os metadados de segurança, a expiração, a pergunta secreta, a lista de IPs e o modo estrito. Toda a informação sensível está dentro do bloco criptografado com AES-256-GCM e é completamente invisível sem a chave.",
   },
   "privacy.ip.title": {
@@ -1488,9 +1476,9 @@ const translations = {
     pt: "Formato ZEFER3 com suporte para texto e qualquer tipo de arquivo (imagens, ZIPs, PDFs, etc.).",
   },
   "project.feat.security": {
-    es: "Doble frase clave, clave de revelado, pregunta secreta, restricción por IP, cifrado estricto por instancia y límite de intentos.",
-    en: "Dual passphrase, reveal key, secret question, IP restriction, instance-bound strict encryption, and attempt limit.",
-    pt: "Dupla frase-chave, chave de revelação, pergunta secreta, restrição por IP, criptografia estrita por instância e limite de tentativas.",
+    es: "Doble frase clave, clave de revelado, pregunta secreta, restricción por IP, expiración y límite de intentos.",
+    en: "Dual passphrase, reveal key, secret question, IP restriction, expiration, and attempt limit.",
+    pt: "Dupla frase-chave, chave de revelação, pergunta secreta, restrição por IP, expiração e limite de tentativas.",
   },
   "project.feat.i18n": {
     es: "Disponible en español, inglés y portugués. Modo claro y oscuro con detección automática del sistema operativo.",

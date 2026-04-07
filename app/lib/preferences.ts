@@ -1,13 +1,22 @@
 import { useState, useEffect, useCallback } from "react";
+import type { CompressionMethod } from "./compression";
 
 const STORAGE_KEY = "zefer-prefs";
 
+type InputMode = "text" | "file";
+
 interface Preferences {
   ttl: number;
+  iterations: number;
+  compression: CompressionMethod;
+  inputMode: InputMode;
 }
 
 const DEFAULTS: Preferences = {
-  ttl: 1440, // 24 hours
+  ttl: 1440,
+  iterations: 600_000,
+  compression: "none",
+  inputMode: "text",
 };
 
 function load(): Preferences {
@@ -24,10 +33,6 @@ function save(prefs: Preferences) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
 }
 
-/**
- * Hook for persisted user preferences.
- * Starts with defaults on server, hydrates from localStorage after mount.
- */
 export function usePreferences() {
   const [prefs, setPrefs] = useState<Preferences>(DEFAULTS);
 
@@ -35,13 +40,22 @@ export function usePreferences() {
     setPrefs(load());
   }, []);
 
-  const setTtl = useCallback((ttl: number) => {
+  const update = useCallback((partial: Partial<Preferences>) => {
     setPrefs((prev) => {
-      const next = { ...prev, ttl };
+      const next = { ...prev, ...partial };
       save(next);
       return next;
     });
   }, []);
 
-  return { ttl: prefs.ttl, setTtl };
+  return {
+    ttl: prefs.ttl,
+    iterations: prefs.iterations,
+    compression: prefs.compression,
+    inputMode: prefs.inputMode,
+    setTtl: (v: number) => update({ ttl: v }),
+    setIterations: (v: number) => update({ iterations: v }),
+    setCompression: (v: CompressionMethod) => update({ compression: v }),
+    setInputMode: (v: InputMode) => update({ inputMode: v }),
+  };
 }

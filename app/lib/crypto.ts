@@ -139,10 +139,33 @@ export async function decryptBytes(
   );
 }
 
+/**
+ * Hash the secret question answer using PBKDF2 with a deterministic salt.
+ * Uses 100k iterations (not plain SHA-256) to resist dictionary attacks.
+ * The salt is derived from the answer itself via SHA-256, making it
+ * deterministic (same answer → same hash) but resistant to rainbow tables.
+ */
 export async function hashAnswer(answer: string): Promise<string> {
   const normalized = answer.trim().toLowerCase();
-  const hash = await crypto.subtle.digest("SHA-256", encode(normalized));
-  return toBase64(hash);
+  // Deterministic salt from the answer (so the hash is reproducible)
+  const saltSource = await crypto.subtle.digest("SHA-256", encode(`ZEFER_ANSWER_SALT:${normalized}`));
+  const salt = new Uint8Array(saltSource).slice(0, 16);
+
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    encode(normalized),
+    "PBKDF2",
+    false,
+    ["deriveBits"]
+  );
+
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt: salt.buffer as ArrayBuffer, iterations: 100_000, hash: "SHA-256" },
+    keyMaterial,
+    256
+  );
+
+  return toBase64(bits);
 }
 
 // ─── Benchmark ───

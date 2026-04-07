@@ -51,7 +51,6 @@ export default function HowContent() {
     { icon: KeyRound, titleKey: "how.feat.reveal.title" as const, descKey: "how.feat.reveal.desc" as const },
     { icon: Globe, titleKey: "how.feat.ip.title" as const, descKey: "how.feat.ip.desc" as const },
     { icon: Cpu, titleKey: "how.feat.device.title" as const, descKey: "how.feat.device.desc" as const },
-    { icon: Lock, titleKey: "how.feat.strict.title" as const, descKey: "how.feat.strict.desc" as const },
     { icon: Shield, titleKey: "how.feat.keygen.title" as const, descKey: "how.feat.keygen.desc" as const },
   ];
 

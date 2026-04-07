@@ -1,6 +1,12 @@
 export type CompressionMethod = "none" | "gzip" | "deflate" | "deflate-raw";
 
-async function streamToUint8Array(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
+// Maximum decompressed output: 512 MB (prevents decompression bombs)
+const MAX_DECOMPRESS_SIZE = 512 * 1024 * 1024;
+
+async function streamToUint8Array(
+  stream: ReadableStream<Uint8Array>,
+  maxSize: number = Infinity
+): Promise<Uint8Array> {
   const reader = stream.getReader();
   const chunks: Uint8Array[] = [];
   let totalLength = 0;
@@ -8,8 +14,12 @@ async function streamToUint8Array(stream: ReadableStream<Uint8Array>): Promise<U
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
-    chunks.push(value);
     totalLength += value.length;
+    if (totalLength > maxSize) {
+      reader.cancel();
+      throw new Error(`Decompressed output exceeds maximum allowed size (${Math.floor(maxSize / 1024 / 1024)} MB)`);
+    }
+    chunks.push(value);
   }
 
   const result = new Uint8Array(totalLength);
@@ -59,6 +69,6 @@ export async function decompress(
   writer.write(bytes);
   writer.close();
 
-  const decompressed = await streamToUint8Array(ds.readable);
+  const decompressed = await streamToUint8Array(ds.readable, MAX_DECOMPRESS_SIZE);
   return new TextDecoder().decode(decompressed);
 }

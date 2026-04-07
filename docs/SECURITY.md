@@ -114,13 +114,71 @@ With 600,000 iterations on a modern GPU (~1M hashes/sec for PBKDF2-SHA256):
 - Uses UTC milliseconds (`Date.now()`) — timezone-independent
 - Checked after decryption, before content display
 
+## Security Mitigations Applied
+
+### XSS Prevention
+- Hint and note fields are sanitized on encryption (HTML special characters stripped)
+- React JSX auto-escapes all rendered text content
+- No `dangerouslySetInnerHTML` used anywhere in the project
+
+### Answer Hash Strengthening
+- Secret question answers are hashed using PBKDF2 with 100,000 iterations (not plain SHA-256)
+- Deterministic salt derived from the answer via SHA-256 (reproducible but resistant to rainbow tables)
+
+### Timing Attack Mitigation
+- Decryption responses include a minimum delay floor to normalize response times
+- PBKDF2 derivation dominates timing (~600ms), making side-channel detection impractical
+
+### Decompression Bomb Protection
+- Maximum decompressed output capped at 512 MB
+- Stream reader aborts and throws if limit exceeded
+
+### Passphrase Memory Handling
+- Passphrases, reveal keys, and question answers are cleared from React state immediately after successful encryption/decryption
+- JavaScript does not guarantee immediate memory freeing (GC-dependent), but references are removed
+
+### Key Generation
+- Uses rejection sampling to eliminate modulo bias in charset selection
+- Produces cryptographically uniform distribution across all character pools
+
+## What an Attacker Can Learn from the File
+
+**With only the .zefer file (no passphrase):**
+
+| Visible | Not Visible |
+|---|---|
+| PBKDF2 iteration count | Passphrase |
+| Compression method | Content |
+| Hint text (if set) | File name, type, size |
+| Note text (if set) | Expiration date |
+| Text vs file mode | Whether IP restriction exists |
+| Number of encrypted lines (1 or 2) | Whether a secret question exists |
+| Salt and IV per encrypted line | Whether dual key is required |
+| | Allowed IP addresses |
+| | Max attempt count |
+
+**Salt and IV exposure is by design** — AES-GCM requires unique nonces, and PBKDF2 requires salt. These are not secret. The security relies entirely on the passphrase entropy + PBKDF2 stretching.
+
 ## Known Limitations
 
-1. **Client-side only**: If the user's browser is compromised (malicious extension, XSS), the passphrase could be intercepted before encryption
-2. **Max attempts**: Enforced via `localStorage` — not cryptographically binding. A determined attacker can bypass by clearing storage or using a different browser
-3. **IP restriction**: Relies on a public IP lookup service (`ipify.org`). If the service is unavailable, IP check fails closed (access denied)
-4. **No forward secrecy**: If the passphrase is compromised, all files encrypted with it can be decrypted
-5. **Memory-bound**: Large files must fit in browser memory (~3x file size needed for crypto pipeline)
+These are inherent to 100% client-side architecture and cannot be fixed without introducing a server:
+
+1. **Max attempts**: Enforced via `localStorage`. A determined attacker can clear storage, use incognito mode, or use a different browser. This is friction, not a guarantee.
+2. **Expiration**: Checked against `Date.now()` which trusts the client system clock. An attacker can set their clock backward. Once decrypted, the content can be saved regardless of expiration.
+3. **IP restriction**: Checked client-side after successful decryption. An attacker can modify the JavaScript to skip the check, or use a VPN to match the allowed IP. The allowed IP list is inside the encrypted payload (not visible without the key), but the enforcement is client-side.
+4. **No forward secrecy**: If the passphrase is compromised, all files encrypted with it can be decrypted. Use unique passphrases per file for maximum security.
+5. **Browser memory**: Passphrases exist in browser memory during encryption/decryption. JavaScript does not provide explicit memory clearing. Close the browser tab after use.
+6. **Compression oracle**: If compression is enabled, the compressed ciphertext size can reveal whether plaintext is repetitive/structured. For maximum security, use no compression.
+
+## What IS Guaranteed
+
+Even with all the above limitations, the following guarantees hold:
+
+1. **Without the passphrase, the content is unrecoverable.** AES-256-GCM with a 256-bit key derived from PBKDF2 is computationally infeasible to brute-force.
+2. **The ciphertext cannot be modified.** GCM's authentication tag detects any tampering.
+3. **Each file has unique encryption.** Random salt + random IV per encryption means identical plaintext produces different ciphertext.
+4. **The reveal key is independently encrypted.** Separate salt, IV, and derived key. Compromising one does not compromise the other.
+5. **Security metadata is invisible.** Expiration, IP list, question, max attempts are all inside the encrypted payload.
 
 ## Responsible Disclosure
 

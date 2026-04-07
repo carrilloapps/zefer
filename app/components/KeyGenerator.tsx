@@ -75,10 +75,20 @@ function generateValue(mode: Mode, length: number): string {
     return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
   }
 
+  // Rejection sampling: eliminates modulo bias for perfectly uniform distribution
   const charset = [...CHARSETS[mode]];
   const pool = charset.length;
-  const values = crypto.getRandomValues(new Uint32Array(length));
-  return Array.from(values, (v) => charset[v % pool]).join("");
+  const limit = Math.floor(0x100000000 / pool) * pool; // largest multiple of pool that fits in uint32
+  const result: string[] = [];
+  while (result.length < length) {
+    const batch = crypto.getRandomValues(new Uint32Array(Math.min(length - result.length + 16, 256)));
+    for (let i = 0; i < batch.length && result.length < length; i++) {
+      if (batch[i] < limit) {
+        result.push(charset[batch[i] % pool]);
+      }
+    }
+  }
+  return result.join("");
 }
 
 const MODES: { key: Mode; labelKey: string }[] = [

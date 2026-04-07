@@ -24,8 +24,7 @@ import {
   Globe,
 } from "lucide-react";
 import { encodeZefer } from "@/app/lib/zefer";
-import { parseIpList, getClientIp } from "@/app/lib/ip";
-import { getInstanceInfo } from "@/app/lib/instance";
+import { parseIpList, detectIp, type IpDetectionResult } from "@/app/lib/ip";
 import { benchmarkDevice } from "@/app/lib/crypto";
 import { analyzeDevice, formatBytes, type DeviceLimits } from "@/app/lib/device";
 import { createEncryptTracker, type ProgressState } from "@/app/lib/progress";
@@ -65,8 +64,13 @@ const TEXT_MAX = 256 * 1024;
 export default function EncryptForm() {
   const { t } = useLanguage();
 
-  // Input mode
-  const [inputMode, setInputMode] = useState<InputMode>("text");
+  // Persisted preferences
+  const {
+    ttl, setTtl,
+    iterations, setIterations,
+    compression, setCompression,
+    inputMode, setInputMode,
+  } = usePreferences();
 
   // Text mode
   const [content, setContent] = useState("");
@@ -83,7 +87,6 @@ export default function EncryptForm() {
   // Shared
   const [passphrase, setPassphrase] = useState("");
   const [showPass, setShowPass] = useState(false);
-  const { ttl, setTtl } = usePreferences();
 
   // Device limits
   const [limits, setLimits] = useState<DeviceLimits>({
@@ -94,8 +97,6 @@ export default function EncryptForm() {
 
   // Advanced
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [compression, setCompression] = useState<CompressionMethod>("none");
-  const [iterations, setIterations] = useState(600_000);
   const [dualKey, setDualKey] = useState(false);
   const [secondPassphrase, setSecondPassphrase] = useState("");
   const [showSecondPass, setShowSecondPass] = useState(false);
@@ -108,16 +109,7 @@ export default function EncryptForm() {
   const [maxAttempts, setMaxAttempts] = useState(0);
   const [allowedIpsInput, setAllowedIpsInput] = useState("");
   const [ipLoading, setIpLoading] = useState(false);
-  const [strict, setStrict] = useState(false);
-  const [instanceEnabled, setInstanceEnabled] = useState(false);
-  const [instanceHash, setInstanceHash] = useState("");
-
-  useEffect(() => {
-    getInstanceInfo().then((info) => {
-      setInstanceEnabled(info.enabled);
-      setInstanceHash(info.hash);
-    });
-  }, []);
+  const [ipResult, setIpResult] = useState<IpDetectionResult | null>(null);
 
   // State
   const [loading, setLoading] = useState(false);
@@ -154,10 +146,30 @@ export default function EncryptForm() {
     if (textFileRef.current) textFileRef.current.value = "";
   }
 
-  // File mode: any file
+  // Detect binary content in text
+  function hasBinaryContent(text: string): boolean {
+    // Check for null bytes or high concentration of control characters
+    let controlCount = 0;
+    const sample = text.substring(0, 4096);
+    for (let i = 0; i < sample.length; i++) {
+      const code = sample.charCodeAt(i);
+      if (code === 0) return true; // null byte = definitely binary
+      if (code < 32 && code !== 9 && code !== 10 && code !== 13) controlCount++;
+    }
+    return controlCount > sample.length * 0.1; // >10% control chars = binary
+  }
+
+  // File mode: any file EXCEPT .txt and .env (those must use text mode)
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
+    if (TEXT_EXTENSIONS.includes(ext)) {
+      setError(t("form.error.file.usetext"));
+      return;
+    }
+
     if (file.size > limits.maxFileSize) {
       setError(`${t("form.error.file.max")} ${limits.maxFileSizeLabel}`);
       return;
@@ -225,8 +237,6 @@ export default function EncryptForm() {
         compression,
         allowedIps: parseIpList(allowedIpsInput),
         revealKey: revealKey.trim() || undefined,
-        strict,
-        instanceHash: strict ? instanceHash : undefined,
       });
 
       tracker.packaging();
@@ -244,7 +254,12 @@ export default function EncryptForm() {
       URL.revokeObjectURL(url);
 
       tracker.done();
-      await new Promise((r) => setTimeout(r, 500)); // show 100% briefly
+      await new Promise((r) => setTimeout(r, 500));
+
+      // Clear secrets from memory immediately after successful encryption
+      setPassphrase(""); setSecondPassphrase(""); setRevealKey("");
+      setQuestionAnswer("");
+
       setDone(true);
     } catch {
       tracker.cancel();
@@ -262,8 +277,8 @@ export default function EncryptForm() {
     setError(null); setDone(false);
     setHint(""); setNote(""); setQuestion("");
     setQuestionAnswer(""); setMaxAttempts(0);
-    setCompression("none"); setIterations(600_000); setDualKey(false);
-    setAllowedIpsInput(""); setRevealKey(""); setStrict(false);
+    setDualKey(false);
+    setAllowedIpsInput(""); setRevealKey("");
     if (textFileRef.current) textFileRef.current.value = "";
     if (fileRef.current) fileRef.current.value = "";
   }
@@ -550,10 +565,11 @@ export default function EncryptForm() {
                   disabled={ipLoading}
                   onClick={async () => {
                     setIpLoading(true);
-                    const ip = await getClientIp();
+                    const result = await detectIp();
                     setIpLoading(false);
-                    if (ip) {
-                      setAllowedIpsInput((prev) => prev ? `${prev}, ${ip}` : ip);
+                    setIpResult(result);
+                    if (result.ip) {
+                      setAllowedIpsInput((prev) => prev ? `${prev}, ${result.ip}` : result.ip);
                     }
                   }}
                   className="px-3 py-2 rounded-lg text-[11px] font-medium theme-primary-faint theme-primary-border border text-primary hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap"
@@ -562,31 +578,27 @@ export default function EncryptForm() {
                 </button>
               </div>
               <p className="text-[10px] theme-faint mt-1">{t("advanced.ip.help")}</p>
-              <p className="text-[10px] theme-warning mt-1">{t("advanced.ip.disclaimer")}</p>
-            </div>
 
-            {/* Strict instance binding — only if the instance has a secret configured */}
-            {instanceEnabled && (
-              <div>
-                <label className="flex items-center gap-3 cursor-pointer group w-fit mb-2">
-                  <div className="relative">
-                    <input type="checkbox" checked={strict} onChange={(e) => setStrict(e.target.checked)} className="sr-only peer" />
-                    <div className="w-9 h-5 toggle-track rounded-full peer-checked:toggle-track-checked transition-colors duration-200" />
-                    <div className="absolute top-0.5 left-0.5 w-4 h-4 toggle-knob rounded-full peer-checked:translate-x-4 peer-checked:toggle-knob-checked transition-all duration-200" />
-                  </div>
-                  <span className="flex items-center gap-1.5 text-xs theme-muted group-hover:theme-text transition-colors">
-                    <Lock className="w-3.5 h-3.5" />{t("advanced.strict")}
-                  </span>
-                </label>
-                <p className="text-[10px] theme-faint">{t("advanced.strict.help")}</p>
-                {strict && (
-                  <div className="glass !rounded-lg px-3 py-2 mt-2 flex items-center gap-2">
-                    <Shield className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <p className="text-[11px] theme-muted">{t("advanced.strict.active")}</p>
-                  </div>
-                )}
-              </div>
-            )}
+              {/* VPN / Proxy / Inconsistency warnings */}
+              {ipResult && ipResult.vpnDetected && (
+                <div className="flex items-start gap-1.5 mt-2 glass !rounded-lg px-3 py-2">
+                  <Shield className="w-3 h-3 theme-warning shrink-0 mt-0.5" />
+                  <p className="text-[10px] theme-warning">{t("advanced.ip.vpn")}</p>
+                </div>
+              )}
+              {ipResult && ipResult.inconsistent && !ipResult.vpnDetected && (
+                <div className="flex items-start gap-1.5 mt-2 glass !rounded-lg px-3 py-2">
+                  <AlertTriangle className="w-3 h-3 theme-warning shrink-0 mt-0.5" />
+                  <p className="text-[10px] theme-warning">{t("advanced.ip.inconsistent")} ({ipResult.allIps.join(", ")})</p>
+                </div>
+              )}
+              {ipResult && !ipResult.vpnDetected && !ipResult.inconsistent && (
+                <p className="text-[10px] text-primary mt-1">{t("advanced.ip.clean")}</p>
+              )}
+              {!ipResult && (
+                <p className="text-[10px] theme-faint mt-1">{t("advanced.ip.disclaimer")}</p>
+              )}
+            </div>
           </div>
         )}
 

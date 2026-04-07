@@ -22,8 +22,7 @@ import {
 } from "lucide-react";
 import { decodeZefer, parseFile, type ZeferPayload, type ZeferHeader } from "@/app/lib/zefer";
 import { formatBytes } from "@/app/lib/device";
-import { getClientIp, isIpAllowed } from "@/app/lib/ip";
-import { getInstanceInfo } from "@/app/lib/instance";
+import { detectIp, isIpAllowed } from "@/app/lib/ip";
 import { benchmarkDevice } from "@/app/lib/crypto";
 import { createDecryptTracker, type ProgressState } from "@/app/lib/progress";
 import CryptoProgress from "@/app/components/CryptoProgress";
@@ -48,8 +47,7 @@ export default function DecryptForm() {
   // Post-decryption question
   const [questionAnswer, setQuestionAnswer] = useState("");
 
-  // Instance + performance
-  const [instanceHash, setInstanceHash] = useState("");
+  // Performance
   const [progress, setProgress] = useState<ProgressState | null>(null);
   const [deviceSpeed, setDeviceSpeed] = useState(200);
 
@@ -57,11 +55,11 @@ export default function DecryptForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorType, setErrorType] = useState<string | null>(null);
+  const [blockedIp, setBlockedIp] = useState<string | null>(null);
   const [payload, setPayload] = useState<ZeferPayload | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    getInstanceInfo().then((info) => setInstanceHash(info.hash));
     benchmarkDevice().then(setDeviceSpeed).catch(() => {});
   }, []);
 
@@ -98,7 +96,7 @@ export default function DecryptForm() {
     setLoading(true);
 
     const parsed = parseFile(fileLoaded);
-    const candidateCount = parsed ? parsed.encryptedLines.length * (instanceHash ? 2 : 1) * (useDualKey ? 2 : 1) : 4;
+    const candidateCount = parsed ? parsed.encryptedLines.length * (useDualKey ? 2 : 1) : 4;
     const iters = parsed?.header.iterations || 600_000;
     const tracker = createDecryptTracker(setProgress, deviceSpeed, iters, candidateCount);
 
@@ -109,7 +107,6 @@ export default function DecryptForm() {
       const result = await decodeZefer(fileLoaded, passphrase, {
         secondPassphrase: useDualKey ? secondPassphrase : undefined,
         questionAnswer: questionAnswer || undefined,
-        instanceHash: instanceHash || undefined,
       });
 
       if (!result.ok) {
@@ -143,9 +140,10 @@ export default function DecryptForm() {
 
       // IP restriction check (allowedIps is inside the decrypted payload)
       if (result.payload.meta.allowedIps.length > 0) {
-        const clientIp = await getClientIp();
-        if (!clientIp || !isIpAllowed(clientIp, result.payload.meta.allowedIps)) {
+        const ipResult = await detectIp();
+        if (!ipResult.ip || !isIpAllowed(ipResult.ip, result.payload.meta.allowedIps)) {
           setErrorType("ip_blocked");
+          setBlockedIp(ipResult.ip || null);
           setError(t("decrypt.error.ipblocked"));
           setLoading(false);
           setProgress(null);
@@ -155,6 +153,10 @@ export default function DecryptForm() {
 
       tracker.done();
       await new Promise((r) => setTimeout(r, 400));
+
+      // Clear secrets from memory immediately after successful decryption
+      setPassphrase(""); setSecondPassphrase(""); setQuestionAnswer("");
+
       setPayload(result.payload);
     } catch {
       tracker.cancel();
@@ -217,9 +219,16 @@ export default function DecryptForm() {
         <h2 className="text-base font-semibold theme-heading mb-2">
           {errorType === "expired" ? t("decrypt.expired.title") : errorType === "ip_blocked" ? t("decrypt.ipblocked.title") : t("decrypt.blocked.title")}
         </h2>
-        <p className="text-sm theme-muted mb-5 max-w-sm mx-auto">
+        <p className="text-sm theme-muted mb-3 max-w-sm mx-auto">
           {errorType === "expired" ? t("decrypt.expired.desc") : errorType === "ip_blocked" ? t("decrypt.ipblocked.desc") : t("decrypt.blocked.desc")}
         </p>
+        {errorType === "ip_blocked" && blockedIp && (
+          <div className="glass !rounded-lg px-4 py-2.5 mb-5 inline-block">
+            <p className="text-[10px] theme-faint mb-1">{t("decrypt.ipblocked.yourip")}</p>
+            <p className="text-xs font-mono theme-danger font-medium">{blockedIp}</p>
+          </div>
+        )}
+        {errorType !== "ip_blocked" && <div className="mb-5" />}
         <button onClick={reset} className="btn-primary !w-auto inline-flex px-8">{t("decrypt.tryother")}</button>
       </div>
     );
