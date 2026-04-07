@@ -107,8 +107,8 @@ export async function chunkedEncrypt(
 }
 
 /**
- * Decrypt chunked data. Reads chunk lengths and decrypts each.
- * Memory usage: ~2x CHUNK_SIZE regardless of total file size.
+ * Decrypt chunked data. Returns a Blob to avoid holding the full result in RAM.
+ * Memory usage: ~2x CHUNK_SIZE constant, regardless of total file size.
  */
 export async function chunkedDecrypt(
   encryptedData: Uint8Array,
@@ -117,7 +117,7 @@ export async function chunkedDecrypt(
   passphrase: string,
   iterations: number,
   onProgress?: (chunkIndex: number, totalChunks: number) => void
-): Promise<ArrayBuffer> {
+): Promise<Blob> {
   const key = await deriveKey(passphrase, salt.buffer as ArrayBuffer, iterations);
 
   // First pass: count chunks
@@ -130,9 +130,8 @@ export async function chunkedDecrypt(
     chunkCount++;
   }
 
-  // Second pass: decrypt
-  const decryptedChunks: Uint8Array[] = [];
-  let totalDecrypted = 0;
+  // Second pass: decrypt chunk by chunk, accumulate as Blob parts
+  const blobParts: BlobPart[] = [];
   offset = 0;
   let chunkIndex = 0;
 
@@ -151,9 +150,8 @@ export async function chunkedDecrypt(
       chunkCiphertext.buffer as ArrayBuffer
     );
 
-    const decBytes = new Uint8Array(decrypted);
-    decryptedChunks.push(decBytes);
-    totalDecrypted += decBytes.length;
+    // Push directly as BlobPart — no accumulation in a single array
+    blobParts.push(decrypted);
     chunkIndex++;
 
     onProgress?.(chunkIndex, chunkCount);
@@ -163,15 +161,23 @@ export async function chunkedDecrypt(
     }
   }
 
-  // Reassemble
-  const result = new Uint8Array(totalDecrypted);
-  let writeOffset = 0;
-  for (const chunk of decryptedChunks) {
-    result.set(chunk, writeOffset);
-    writeOffset += chunk.length;
-  }
+  return new Blob(blobParts);
+}
 
-  return result.buffer as ArrayBuffer;
+/**
+ * Convenience: decrypt and return as ArrayBuffer (for small payloads / metadata extraction).
+ * Only use this when you know the result fits in memory.
+ */
+export async function chunkedDecryptToBuffer(
+  encryptedData: Uint8Array,
+  salt: Uint8Array,
+  baseIv: Uint8Array,
+  passphrase: string,
+  iterations: number,
+  onProgress?: (chunkIndex: number, totalChunks: number) => void
+): Promise<ArrayBuffer> {
+  const blob = await chunkedDecrypt(encryptedData, salt, baseIv, passphrase, iterations, onProgress);
+  return blob.arrayBuffer();
 }
 
 export { CHUNK_SIZE };

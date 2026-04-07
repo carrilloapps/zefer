@@ -230,6 +230,11 @@ const translations = {
     en: "This .zefer file has passed its expiration date and can no longer be decrypted.",
     pt: "Este arquivo .zefer ultrapassou sua data de expiração e não pode mais ser descriptografado.",
   },
+  "decrypt.error.toolarge": {
+    es: "Este archivo .zefer excede el límite de tu dispositivo:",
+    en: "This .zefer file exceeds your device's limit:",
+    pt: "Este arquivo .zefer excede o limite do seu dispositivo:",
+  },
   "decrypt.error.format": {
     es: "Formato de archivo no válido. Solo se aceptan archivos .zefer.",
     en: "Invalid file format. Only .zefer files are accepted.",
@@ -842,6 +847,80 @@ const translations = {
     es: "Usar esta clave",
     en: "Use this key",
     pt: "Usar esta chave",
+  },
+
+  // ─── .zefer double encryption ───
+  "form.zefer.warning.title": {
+    es: "Estás cifrando un archivo ya cifrado",
+    en: "You are encrypting an already encrypted file",
+    pt: "Você está criptografando um arquivo já criptografado",
+  },
+  "form.zefer.warning.desc": {
+    es: "Este archivo .zefer ya está cifrado con AES-256-GCM. Cifrarlo de nuevo creará una capa adicional de cifrado. El destinatario deberá descifrar ambas capas en orden inverso. La compresión se ha desactivado porque no es efectiva sobre datos ya cifrados.",
+    en: "This .zefer file is already encrypted with AES-256-GCM. Encrypting it again will create an additional layer of encryption. The recipient will need to decrypt both layers in reverse order. Compression has been disabled because it is not effective on already encrypted data.",
+    pt: "Este arquivo .zefer já está criptografado com AES-256-GCM. Criptografá-lo novamente criará uma camada adicional de criptografia. O destinatário precisará descriptografar ambas as camadas na ordem inversa. A compressão foi desativada porque não é eficaz em dados já criptografados.",
+  },
+  "form.zefer.compression.disabled": {
+    es: "desactivada para .zefer",
+    en: "disabled for .zefer",
+    pt: "desativada para .zefer",
+  },
+  "toast.zefer.detected": {
+    es: "Archivo .zefer detectado",
+    en: ".zefer file detected",
+    pt: "Arquivo .zefer detectado",
+  },
+  "toast.zefer.detected.desc": {
+    es: "La compresión se ha desactivado automáticamente. Los datos cifrados no se pueden comprimir eficientemente.",
+    en: "Compression has been automatically disabled. Encrypted data cannot be efficiently compressed.",
+    pt: "A compressão foi desativada automaticamente. Dados criptografados não podem ser comprimidos eficientemente.",
+  },
+
+  // ─── Notifications ───
+  "toast.encrypt.success": {
+    es: "Archivo .zefer creado correctamente",
+    en: ".zefer file created successfully",
+    pt: "Arquivo .zefer criado com sucesso",
+  },
+  "toast.encrypt.success.desc": {
+    es: "Tu archivo cifrado se ha descargado.",
+    en: "Your encrypted file has been downloaded.",
+    pt: "Seu arquivo criptografado foi baixado.",
+  },
+  "toast.decrypt.success": {
+    es: "Archivo descifrado correctamente",
+    en: "File decrypted successfully",
+    pt: "Arquivo descriptografado com sucesso",
+  },
+  "toast.decrypt.success.desc": {
+    es: "El contenido está listo para visualizar o descargar.",
+    en: "The content is ready to view or download.",
+    pt: "O conteúdo está pronto para visualizar ou baixar.",
+  },
+  "toast.copy.success": {
+    es: "Copiado al portapapeles",
+    en: "Copied to clipboard",
+    pt: "Copiado para a área de transferência",
+  },
+  "toast.download.success": {
+    es: "Descarga iniciada",
+    en: "Download started",
+    pt: "Download iniciado",
+  },
+  "toast.error.generic": {
+    es: "Ha ocurrido un error. Inténtalo de nuevo.",
+    en: "An error occurred. Please try again.",
+    pt: "Ocorreu um erro. Tente novamente.",
+  },
+  "toast.keygen.copied": {
+    es: "Clave copiada al portapapeles",
+    en: "Key copied to clipboard",
+    pt: "Chave copiada para a área de transferência",
+  },
+  "toast.keygen.applied": {
+    es: "Clave aplicada al campo",
+    en: "Key applied to field",
+    pt: "Chave aplicada ao campo",
   },
 
   // ─── Progress ───

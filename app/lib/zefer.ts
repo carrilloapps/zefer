@@ -1,5 +1,5 @@
 import { decryptFromBase64, combineDualKeys, hashAnswer } from "./crypto";
-import { chunkedEncrypt, chunkedDecrypt } from "./chunked-crypto";
+import { chunkedEncrypt, chunkedDecryptToBuffer } from "./chunked-crypto";
 import { compressBytes, decompressBytes, decompress, type CompressionMethod } from "./compression";
 
 const MAGIC_TEXT = "ZEFER3";
@@ -262,16 +262,16 @@ async function tryDecryptText(
 async function tryDecryptBinary(
   data: Uint8Array,
   passphrase: string,
-  header: ZeferHeader
+  header: ZeferHeader,
+  onChunkProgress?: (chunkIndex: number, totalChunks: number) => void
 ): Promise<{ meta: ZeferMeta; rawData: ArrayBuffer } | null> {
-  // Binary format: salt(32) + baseIv(12) + chunked encrypted data
   if (data.length < 44) return null;
   const salt = data.slice(0, 32);
   const baseIv = data.slice(32, 44);
   const encryptedChunks = data.slice(44);
 
   try {
-    const decryptedBuf = await chunkedDecrypt(encryptedChunks, salt, baseIv, passphrase, header.iterations);
+    const decryptedBuf = await chunkedDecryptToBuffer(encryptedChunks, salt, baseIv, passphrase, header.iterations, onChunkProgress);
     return await extractPayload(new Uint8Array(decryptedBuf), header);
   } catch {
     return null;
@@ -361,11 +361,17 @@ export async function decodeZefer(
 
   let result: { meta: ZeferMeta; rawData: ArrayBuffer } | null = null;
 
+  options?.onProgress?.deriving();
+
   for (const candidate of candidates) {
     if (parsed.binary && parsed.binaryData) {
-      result = await tryDecryptBinary(parsed.binaryData, candidate, header);
+      result = await tryDecryptBinary(parsed.binaryData, candidate, header, (ci, tc) => {
+        if (ci === 1) options?.onProgress?.derivingDone();
+        options?.onProgress?.decrypting(ci, tc);
+      });
     } else if (parsed.encryptedLines) {
       result = await tryDecryptText(parsed.encryptedLines, candidate, header);
+      if (result) options?.onProgress?.derivingDone();
     }
     if (result) break;
   }
@@ -404,6 +410,7 @@ export async function decodeZefer(
   if (attemptKey) localStorage.removeItem(attemptKey);
 
   // Decompress if compression was applied
+  options?.onProgress?.decompressing();
   let finalData: ArrayBuffer;
   if (header.compression !== "none") {
     const decompressed = await decompressBytes(new Uint8Array(rawData), header.compression);

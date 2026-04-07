@@ -135,12 +135,22 @@ export function analyzeDevice(): DeviceLimits {
     estimatedRamBytes = estimatedGb * 1024 * 1024 * 1024 * 0.3;
   }
 
-  // Browser needs ~3x file size for crypto pipeline
-  // Apply 80% safety margin on top
-  const maxFileSize = Math.floor((estimatedRamBytes / 3) * 0.8);
+  // With chunked encryption and Blob-based decryption:
+  //
+  // ENCRYPT: 1x original file (FileReader) + ~32MB active chunk + Blob output
+  // DECRYPT: 1x .zefer file (FileReader) + ~32MB active chunk + Blob output
+  //
+  // Both paths use the same memory model: the input file in an ArrayBuffer
+  // plus one active chunk. The output accumulates as Blob parts which the
+  // browser manages outside the JS heap.
+  //
+  // The bottleneck is FileReader loading the full input file into heap.
+  // Formula: (available heap - 64MB overhead) × 80% safety
+  const overhead = 64 * 1024 * 1024;
+  const maxFileSize = Math.floor(Math.max(estimatedRamBytes - overhead, 0) * 0.8);
 
-  // Clamp: minimum 5 MB, no upper cap
-  const finalMax = Math.max(maxFileSize, 5 * 1024 * 1024);
+  // Clamp: minimum 10 MB, no upper cap
+  const finalMax = Math.max(maxFileSize, 10 * 1024 * 1024);
 
   return {
     maxFileSize: finalMax,

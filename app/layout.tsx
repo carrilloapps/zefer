@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { LanguageProvider } from "@/app/components/LanguageProvider";
 import { ThemeProvider } from "@/app/components/ThemeProvider";
 import LegalBanner from "@/app/components/LegalBanner";
+import ToastProvider from "@/app/components/ToastProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -103,6 +104,7 @@ export default function RootLayout({
           <LanguageProvider>
             <div className="relative z-10 flex flex-col flex-1">{children}</div>
             <LegalBanner />
+            <ToastProvider />
           </LanguageProvider>
         </ThemeProvider>
       </body>

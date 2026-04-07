@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Sparkles, Copy, Check, RefreshCw, Hash } from "lucide-react";
 import { useLanguage } from "@/app/components/LanguageProvider";
+import { notifySuccess } from "@/app/lib/notify";
 
 type Mode = "unicode" | "secure" | "alpha" | "hex" | "uuid";
 
@@ -136,11 +137,13 @@ export default function KeyGenerator({ onSelect }: Props) {
   function handleUse() {
     onSelect(value);
     setOpen(false);
+    notifySuccess(t("toast.keygen.applied"));
   }
 
   async function handleCopy() {
     await navigator.clipboard.writeText(value);
     setCopied(true);
+    notifySuccess(t("toast.keygen.copied"));
     setTimeout(() => setCopied(false), 1500);
   }
 

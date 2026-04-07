@@ -33,6 +33,7 @@ import DeviceInfo from "@/app/components/DeviceInfo";
 import type { CompressionMethod } from "@/app/lib/compression";
 import { useLanguage } from "@/app/components/LanguageProvider";
 import { usePreferences } from "@/app/lib/preferences";
+import { notifySuccess, notifyError, notifyWarning } from "@/app/lib/notify";
 
 const TTL_OPTIONS = [
   { labelKey: "ttl.30min" as const, value: 30 },
@@ -109,6 +110,7 @@ export default function EncryptForm() {
   const [allowedIpsInput, setAllowedIpsInput] = useState("");
   const [ipLoading, setIpLoading] = useState(false);
   const [ipResult, setIpResult] = useState<IpDetectionResult | null>(null);
+  const [isZefer, setIsZefer] = useState(false);
 
   // State
   const [loading, setLoading] = useState(false);
@@ -189,13 +191,25 @@ export default function EncryptForm() {
     const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
     if (TEXT_EXTENSIONS.includes(ext)) {
       setError(t("form.error.file.usetext"));
+      if (fileRef.current) fileRef.current.value = "";
       return;
     }
 
     if (file.size > limits.maxFileSize) {
       setError(`${t("form.error.file.max")} ${limits.maxFileSizeLabel}`);
+      if (fileRef.current) fileRef.current.value = "";
       return;
     }
+
+    // Detect .zefer files — disable compression, warn user
+    if (ext === ".zefer") {
+      setIsZefer(true);
+      setCompression("none");
+      notifyWarning(t("toast.zefer.detected"), t("toast.zefer.detected.desc"));
+    } else {
+      setIsZefer(false);
+    }
+
     setError(null);
     const reader = new FileReader();
     reader.onload = (ev) => {
@@ -211,6 +225,7 @@ export default function EncryptForm() {
 
   function clearFile() {
     setFileData(null); setFileName(null); setFileType(null); setFileSize(0);
+    setIsZefer(false);
     if (fileRef.current) fileRef.current.value = "";
   }
 
@@ -277,9 +292,10 @@ export default function EncryptForm() {
       setQuestionAnswer("");
 
       setDone(true);
+      notifySuccess(t("toast.encrypt.success"), t("toast.encrypt.success.desc"));
     } catch {
-      tracker.cancel();
       setError(t("form.error.generic"));
+      notifyError(t("toast.error.generic"));
     } finally {
       setLoading(false);
       setProgress(null);
@@ -400,6 +416,18 @@ export default function EncryptForm() {
               )}
             </div>
             <input ref={fileRef} type="file" onChange={handleFileUpload} className="hidden" />
+
+            {/* .zefer double-encryption warning */}
+            {isZefer && (
+              <div role="alert" className="glass !rounded-xl p-4 mt-3 flex items-start gap-3 theme-warning-faint animate-in">
+                <AlertTriangle className="w-4 h-4 theme-warning shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-medium theme-warning mb-1">{t("form.zefer.warning.title")}</p>
+                  <p className="text-[11px] theme-muted leading-relaxed">{t("form.zefer.warning.desc")}</p>
+                </div>
+              </div>
+            )}
+
             <div className="mt-3">
               <DeviceInfo limits={limits} />
             </div>
@@ -471,17 +499,21 @@ export default function EncryptForm() {
             <div>
               <label className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
                 <Hash className="w-3 h-3" />{t("advanced.compression")}
+                {isZefer && <span className="text-[9px] theme-warning ml-1">({t("form.zefer.compression.disabled")})</span>}
               </label>
               <div className="grid grid-cols-1 min-[400px]:grid-cols-3 gap-2">
                 {COMPRESSION_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
                     type="button"
-                    onClick={() => setCompression(opt.value)}
-                    className={`py-2 px-3 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer border ${
-                      compression === opt.value
-                        ? "bg-[var(--primary)] text-[var(--btn-text)] border-transparent"
-                        : "glass theme-muted hover:theme-text"
+                    disabled={isZefer && opt.value !== "none"}
+                    onClick={() => !isZefer && setCompression(opt.value)}
+                    className={`py-2 px-3 rounded-lg text-xs font-medium transition-all duration-200 border ${
+                      isZefer && opt.value !== "none"
+                        ? "glass theme-faint cursor-not-allowed opacity-50"
+                        : compression === opt.value
+                          ? "bg-[var(--primary)] text-[var(--btn-text)] border-transparent cursor-pointer"
+                          : "glass theme-muted hover:theme-text cursor-pointer"
                     }`}
                   >
                     {t(opt.labelKey as Parameters<typeof t>[0])}

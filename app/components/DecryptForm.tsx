@@ -21,11 +21,13 @@ import {
   Info,
 } from "lucide-react";
 import { decodeZefer, parseFile, type ZeferPayload, type ZeferHeader } from "@/app/lib/zefer";
-import { formatBytes } from "@/app/lib/device";
+import { analyzeDevice, formatBytes, type DeviceLimits } from "@/app/lib/device";
+import DeviceInfo from "@/app/components/DeviceInfo";
 import { detectIp, isIpAllowed } from "@/app/lib/ip";
 import { createDecryptTracker, type ProgressState } from "@/app/lib/progress";
 import CryptoProgress from "@/app/components/CryptoProgress";
 import { useLanguage } from "@/app/components/LanguageProvider";
+import { notifySuccess, notifyError } from "@/app/lib/notify";
 
 export default function DecryptForm() {
   const { t } = useLanguage();
@@ -36,6 +38,10 @@ export default function DecryptForm() {
   const [zeferFileName, setZeferFileName] = useState<string | null>(null);
   const [header, setHeader] = useState<ZeferHeader | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Device limits
+  const [limits, setLimits] = useState<DeviceLimits | null>(null);
+  useEffect(() => { setLimits(analyzeDevice()); }, []);
 
   // Auth
   const [passphrase, setPassphrase] = useState("");
@@ -66,6 +72,13 @@ export default function DecryptForm() {
       setError(t("decrypt.error.format"));
       return;
     }
+    // Check file size against device limits
+    if (limits && file.size > limits.maxFileSize) {
+      setError(`${t("decrypt.error.toolarge")} ${limits.maxFileSizeLabel}`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     setError(null);
     setErrorType(null);
     setZeferFileName(file.name);
@@ -119,10 +132,10 @@ export default function DecryptForm() {
         secondPassphrase: useDualKey ? secondPassphrase : undefined,
         questionAnswer: questionAnswer || undefined,
         rawBytes: fileBytes || undefined,
+        onProgress: tracker,
       });
 
       if (!result.ok) {
-        tracker.cancel();
         if (result.error === "needs_answer") {
           setError(t("decrypt.error.noanswer"));
           setErrorType("needs_answer");
@@ -170,9 +183,10 @@ export default function DecryptForm() {
       setPassphrase(""); setSecondPassphrase(""); setQuestionAnswer("");
 
       setPayload(result.payload);
+      notifySuccess(t("toast.decrypt.success"), t("toast.decrypt.success.desc"));
     } catch {
-      tracker.cancel();
       setError(t("form.error.generic"));
+      notifyError(t("toast.error.generic"));
     } finally {
       setLoading(false);
       setProgress(null);
@@ -184,6 +198,7 @@ export default function DecryptForm() {
     if (!payload?.content) return;
     await navigator.clipboard.writeText(payload.content);
     setCopied(true);
+    notifySuccess(t("toast.copy.success"));
     setTimeout(() => setCopied(false), 2000);
   }
 
@@ -199,6 +214,7 @@ export default function DecryptForm() {
     a.download = payload.meta.fileName || (isFile ? "file" : "secret.txt");
     document.body.appendChild(a);
     a.click();
+    notifySuccess(t("toast.download.success"));
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
@@ -339,10 +355,19 @@ export default function DecryptForm() {
                 <span className="text-sm font-medium">{zeferFileName}</span>
               </div>
             ) : (
-              <><Upload className="w-5 h-5 theme-faint" /><span className="text-xs theme-muted">{t("decrypt.file.placeholder")}</span></>
+              <>
+                <Upload className="w-5 h-5 theme-faint" />
+                <span className="text-xs theme-muted">{t("decrypt.file.placeholder")}</span>
+                {limits && <span className="text-[10px] theme-faint">{t("mode.file.limit")} {limits.maxFileSizeLabel}</span>}
+              </>
             )}
           </button>
           <input ref={fileInputRef} type="file" accept=".zefer" onChange={handleFileUpload} className="hidden" />
+          {limits && (
+            <div className="mt-3">
+              <DeviceInfo limits={limits} />
+            </div>
+          )}
         </div>
 
         {/* Public header info: hint, note */}
