@@ -11,156 +11,83 @@ export type CryptoStage =
 
 export interface ProgressState {
   stage: CryptoStage;
-  percent: number;
+  percent: number;  // 0-100, always REAL progress
   label: string;
 }
-
-// Estimated weight of each stage (sums to 100)
-const ENCRYPT_WEIGHTS = {
-  compressing: 5,
-  deriving: 75,
-  encrypting: 10,
-  packaging: 10,
-};
-
-const DECRYPT_WEIGHTS = {
-  deriving: 75,
-  decrypting: 10,
-  decompressing: 5,
-  verifying: 10,
-};
 
 export type ProgressCallback = (state: ProgressState) => void;
 
 /**
- * Create a progress tracker for encryption.
- * Uses device benchmark to estimate PBKDF2 duration and animate smoothly.
+ * Real progress tracker for encryption.
+ * Stages and their weight in the overall progress:
+ *   compressing:  10%
+ *   deriving:      5% (PBKDF2 is a single atomic call — jumps from 0 to done)
+ *   encrypting:   80% (chunked — real per-chunk progress)
+ *   packaging:     5%
  */
-export function createEncryptTracker(
-  onProgress: ProgressCallback,
-  msPerDerivation: number,
-  iterations: number,
-  hasRevealKey: boolean
-) {
-  let animFrame = 0;
-  let derivationStart = 0;
-  const derivationMs = (msPerDerivation / 100_000) * iterations;
-  const totalDerivations = hasRevealKey ? 2 : 1;
-  let currentDerivation = 0;
-
-  function setStage(stage: CryptoStage, label: string, percent: number) {
-    onProgress({ stage, percent: Math.min(percent, 100), label });
-  }
-
-  function animateDerivation() {
-    const elapsed = performance.now() - derivationStart;
-    const singleProgress = Math.min(elapsed / derivationMs, 1);
-    const totalProgress = (currentDerivation + singleProgress) / totalDerivations;
-
-    const base = ENCRYPT_WEIGHTS.compressing;
-    const deriveRange = ENCRYPT_WEIGHTS.deriving;
-    const percent = base + totalProgress * deriveRange;
-
-    setStage("deriving", "progress.deriving", percent);
-
-    if (singleProgress < 1) {
-      animFrame = requestAnimationFrame(animateDerivation);
-    }
+export function createEncryptTracker(onProgress: ProgressCallback) {
+  function set(stage: CryptoStage, label: string, percent: number) {
+    onProgress({ stage, percent: Math.min(Math.round(percent), 100), label });
   }
 
   return {
-    compressing() {
-      setStage("compressing", "progress.compressing", 0);
+    compressing(percent: number) {
+      set("compressing", "progress.compressing", percent * 0.1);
     },
-    startDerivation() {
-      currentDerivation = 0;
-      derivationStart = performance.now();
-      animateDerivation();
+    compressingDone() {
+      set("compressing", "progress.compressing", 10);
     },
-    nextDerivation() {
-      currentDerivation++;
-      derivationStart = performance.now();
-      animateDerivation();
+    deriving() {
+      set("deriving", "progress.deriving", 10);
     },
-    encrypting() {
-      cancelAnimationFrame(animFrame);
-      const base = ENCRYPT_WEIGHTS.compressing + ENCRYPT_WEIGHTS.deriving;
-      setStage("encrypting", "progress.encrypting", base);
+    derivingDone() {
+      set("deriving", "progress.deriving", 15);
+    },
+    encrypting(chunkIndex: number, totalChunks: number) {
+      const chunkProgress = chunkIndex / totalChunks;
+      set("encrypting", "progress.encrypting", 15 + chunkProgress * 80);
     },
     packaging() {
-      const base = ENCRYPT_WEIGHTS.compressing + ENCRYPT_WEIGHTS.deriving + ENCRYPT_WEIGHTS.encrypting;
-      setStage("packaging", "progress.packaging", base);
+      set("packaging", "progress.packaging", 95);
     },
     done() {
-      cancelAnimationFrame(animFrame);
-      setStage("done", "progress.done", 100);
-    },
-    cancel() {
-      cancelAnimationFrame(animFrame);
+      set("done", "progress.done", 100);
     },
   };
 }
 
 /**
- * Create a progress tracker for decryption.
+ * Real progress tracker for decryption.
+ * Stages:
+ *   deriving:       5%
+ *   decrypting:    80% (chunked — real per-chunk progress)
+ *   decompressing: 10%
+ *   verifying:      5%
  */
-export function createDecryptTracker(
-  onProgress: ProgressCallback,
-  msPerDerivation: number,
-  iterations: number,
-  candidateCount: number
-) {
-  let animFrame = 0;
-  let derivationStart = 0;
-  const derivationMs = (msPerDerivation / 100_000) * iterations;
-  let currentCandidate = 0;
-
-  function setStage(stage: CryptoStage, label: string, percent: number) {
-    onProgress({ stage, percent: Math.min(percent, 100), label });
-  }
-
-  function animateDerivation() {
-    const elapsed = performance.now() - derivationStart;
-    const singleProgress = Math.min(elapsed / derivationMs, 1);
-    const totalProgress = (currentCandidate + singleProgress) / candidateCount;
-    const percent = totalProgress * DECRYPT_WEIGHTS.deriving;
-
-    setStage("deriving", "progress.deriving", percent);
-
-    if (singleProgress < 1) {
-      animFrame = requestAnimationFrame(animateDerivation);
-    }
+export function createDecryptTracker(onProgress: ProgressCallback) {
+  function set(stage: CryptoStage, label: string, percent: number) {
+    onProgress({ stage, percent: Math.min(Math.round(percent), 100), label });
   }
 
   return {
-    startDerivation() {
-      currentCandidate = 0;
-      derivationStart = performance.now();
-      animateDerivation();
+    deriving() {
+      set("deriving", "progress.deriving", 0);
     },
-    nextCandidate() {
-      currentCandidate++;
-      derivationStart = performance.now();
-      animateDerivation();
+    derivingDone() {
+      set("deriving", "progress.deriving", 5);
     },
-    decrypting() {
-      cancelAnimationFrame(animFrame);
-      setStage("decrypting", "progress.decrypting", DECRYPT_WEIGHTS.deriving);
+    decrypting(chunkIndex: number, totalChunks: number) {
+      const chunkProgress = chunkIndex / totalChunks;
+      set("decrypting", "progress.decrypting", 5 + chunkProgress * 80);
     },
     decompressing() {
-      const base = DECRYPT_WEIGHTS.deriving + DECRYPT_WEIGHTS.decrypting;
-      setStage("decompressing", "progress.decompressing", base);
+      set("decompressing", "progress.decompressing", 85);
     },
     verifying() {
-      const base = DECRYPT_WEIGHTS.deriving + DECRYPT_WEIGHTS.decrypting + DECRYPT_WEIGHTS.decompressing;
-      setStage("verifying", "progress.verifying", base);
+      set("verifying", "progress.verifying", 95);
     },
     done() {
-      cancelAnimationFrame(animFrame);
-      setStage("done", "progress.done", 100);
-    },
-    cancel() {
-      cancelAnimationFrame(animFrame);
+      set("done", "progress.done", 100);
     },
   };
 }

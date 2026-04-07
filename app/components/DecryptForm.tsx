@@ -23,7 +23,6 @@ import {
 import { decodeZefer, parseFile, type ZeferPayload, type ZeferHeader } from "@/app/lib/zefer";
 import { formatBytes } from "@/app/lib/device";
 import { detectIp, isIpAllowed } from "@/app/lib/ip";
-import { benchmarkDevice } from "@/app/lib/crypto";
 import { createDecryptTracker, type ProgressState } from "@/app/lib/progress";
 import CryptoProgress from "@/app/components/CryptoProgress";
 import { useLanguage } from "@/app/components/LanguageProvider";
@@ -33,6 +32,7 @@ export default function DecryptForm() {
 
   // File
   const [fileLoaded, setFileLoaded] = useState<string | null>(null);
+  const [fileBytes, setFileBytes] = useState<ArrayBuffer | null>(null);
   const [zeferFileName, setZeferFileName] = useState<string | null>(null);
   const [header, setHeader] = useState<ZeferHeader | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -49,7 +49,6 @@ export default function DecryptForm() {
 
   // Performance
   const [progress, setProgress] = useState<ProgressState | null>(null);
-  const [deviceSpeed, setDeviceSpeed] = useState(200);
 
   // State
   const [loading, setLoading] = useState(false);
@@ -59,9 +58,6 @@ export default function DecryptForm() {
   const [payload, setPayload] = useState<ZeferPayload | null>(null);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    benchmarkDevice().then(setDeviceSpeed).catch(() => {});
-  }, []);
 
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -72,17 +68,35 @@ export default function DecryptForm() {
     }
     setError(null);
     setErrorType(null);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result;
-      if (typeof text === "string") {
-        setFileLoaded(text);
-        setZeferFileName(file.name);
-        const parsed = parseFile(text);
-        if (parsed) setHeader(parsed.header);
+    setZeferFileName(file.name);
+
+    // Read as both ArrayBuffer (for binary .zefer) and text (for text .zefer)
+    const bufReader = new FileReader();
+    bufReader.onload = (ev) => {
+      const buf = ev.target?.result as ArrayBuffer;
+      if (!buf) return;
+      setFileBytes(buf);
+
+      // Try binary parse first
+      const parsed = parseFile("", buf);
+      if (parsed) {
+        setHeader(parsed.header);
+        setFileLoaded("__binary__");
+        return;
       }
+
+      // Fall back to text parse
+      const textReader = new FileReader();
+      textReader.onload = (ev2) => {
+        const text = ev2.target?.result as string;
+        if (!text) return;
+        setFileLoaded(text);
+        const textParsed = parseFile(text);
+        if (textParsed) setHeader(textParsed.header);
+      };
+      textReader.readAsText(file);
     };
-    reader.readAsText(file);
+    bufReader.readAsArrayBuffer(file);
   }
 
   async function handleDecrypt(e: React.FormEvent) {
@@ -95,18 +109,16 @@ export default function DecryptForm() {
 
     setLoading(true);
 
-    const parsed = parseFile(fileLoaded);
-    const candidateCount = parsed ? parsed.encryptedLines.length * (useDualKey ? 2 : 1) : 4;
-    const iters = parsed?.header.iterations || 600_000;
-    const tracker = createDecryptTracker(setProgress, deviceSpeed, iters, candidateCount);
+    const tracker = createDecryptTracker(setProgress);
 
     try {
-      tracker.startDerivation();
+      tracker.deriving();
       await new Promise((r) => requestAnimationFrame(r));
 
-      const result = await decodeZefer(fileLoaded, passphrase, {
+      const result = await decodeZefer(fileLoaded || "", passphrase, {
         secondPassphrase: useDualKey ? secondPassphrase : undefined,
         questionAnswer: questionAnswer || undefined,
+        rawBytes: fileBytes || undefined,
       });
 
       if (!result.ok) {
@@ -193,7 +205,7 @@ export default function DecryptForm() {
 
   function reset() {
     setPassphrase(""); setSecondPassphrase(""); setQuestionAnswer("");
-    setFileLoaded(null); setZeferFileName(null); setHeader(null);
+    setFileLoaded(null); setFileBytes(null); setZeferFileName(null); setHeader(null);
     setPayload(null); setError(null); setErrorType(null);
     setCopied(false); setUseDualKey(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -362,7 +374,7 @@ export default function DecryptForm() {
           <label htmlFor="decrypt-pass" className="block text-xs font-medium theme-text mb-2">{t("form.passphrase")}</label>
           <div className="relative">
             <input id="decrypt-pass" type={showPass ? "text" : "password"} value={passphrase} onChange={(e) => setPassphrase(e.target.value)} placeholder={t("form.passphrase.placeholder")} className="w-full pr-10 font-mono text-sm" />
-            <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-faint hover:theme-muted transition-colors cursor-pointer">
+            <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-faint hover:theme-muted transition-colors cursor-pointer" aria-label={showPass ? "Hide passphrase" : "Show passphrase"}>
               {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
@@ -382,8 +394,8 @@ export default function DecryptForm() {
           </label>
           {useDualKey && (
             <div className="relative mt-2">
-              <input type={showSecondPass ? "text" : "password"} value={secondPassphrase} onChange={(e) => setSecondPassphrase(e.target.value)} placeholder={t("advanced.dualkey.placeholder")} className="w-full pr-10 font-mono text-sm" />
-              <button type="button" onClick={() => setShowSecondPass(!showSecondPass)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-faint hover:theme-muted transition-colors cursor-pointer">
+              <input id="decrypt-pass2" type={showSecondPass ? "text" : "password"} value={secondPassphrase} onChange={(e) => setSecondPassphrase(e.target.value)} placeholder={t("advanced.dualkey.placeholder")} className="w-full pr-10 font-mono text-sm" aria-label="Second passphrase" />
+              <button type="button" onClick={() => setShowSecondPass(!showSecondPass)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-faint hover:theme-muted transition-colors cursor-pointer" aria-label={showSecondPass ? "Hide passphrase" : "Show passphrase"}>
                 {showSecondPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
@@ -402,7 +414,7 @@ export default function DecryptForm() {
 
         {/* Error */}
         {error && (
-          <div className="flex items-center gap-2 theme-danger text-sm mb-4 theme-danger-faint theme-danger-border border rounded-xl px-3.5 py-2.5 error-shake">
+          <div role="alert" aria-live="assertive" className="flex items-center gap-2 theme-danger text-sm mb-4 theme-danger-faint theme-danger-border border rounded-xl px-3.5 py-2.5 error-shake">
             <AlertTriangle className="w-4 h-4 shrink-0" /><span className="text-xs">{error}</span>
           </div>
         )}

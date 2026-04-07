@@ -23,7 +23,7 @@ export default function LegalBanner() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 animate-in">
+    <div className="fixed bottom-4 left-4 right-4 z-50 animate-in" role="dialog" aria-live="polite" aria-label="Legal notice">
       <div className="max-w-3xl mx-auto glass-banner px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <Shield className="w-5 h-5 text-primary shrink-0 mt-0.5 sm:mt-0" />
         <div className="flex-1">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, Heart, User, Code } from "lucide-react";
+import { Shield, Heart, User, Code, Download } from "lucide-react";
 import LanguageSelector from "@/app/components/LanguageSelector";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import { useLanguage } from "@/app/components/LanguageProvider";
@@ -32,6 +32,10 @@ export default function Navbar() {
           </a>
           <a href="https://github.com/carrilloapps" target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1">
             <User className="w-3 h-3" />{t("nav.author")}
+          </a>
+          <a href="/install" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1.5">
+            <Download className="w-3 h-3" />{t("nav.install")}
+            <span className="text-[8px] font-mono font-bold theme-warning px-1 py-0.5 rounded theme-warning-faint leading-none">{t("install.coming")}</span>
           </a>
         </div>
 

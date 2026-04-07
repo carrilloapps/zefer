@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import { encodeZefer } from "@/app/lib/zefer";
 import { parseIpList, detectIp, type IpDetectionResult } from "@/app/lib/ip";
-import { benchmarkDevice } from "@/app/lib/crypto";
 import { analyzeDevice, formatBytes, type DeviceLimits } from "@/app/lib/device";
 import { createEncryptTracker, type ProgressState } from "@/app/lib/progress";
 import CryptoProgress from "@/app/components/CryptoProgress";
@@ -116,15 +115,6 @@ export default function EncryptForm() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressState | null>(null);
-  const [deviceSpeed, setDeviceSpeed] = useState(200); // ms per 100k iterations
-
-  // Benchmark device on first interaction
-  const benchmarkedRef = useRef(false);
-  useEffect(() => {
-    if (benchmarkedRef.current) return;
-    benchmarkedRef.current = true;
-    benchmarkDevice().then(setDeviceSpeed).catch(() => {});
-  }, []);
 
   // Text mode: STRICTLY .txt / .env only
   function handleTextFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -237,20 +227,13 @@ export default function EncryptForm() {
     if (question && !questionAnswer) { setError(t("form.error.noanswer")); return; }
 
     setLoading(true);
-    const tracker = createEncryptTracker(
-      setProgress,
-      deviceSpeed,
-      iterations,
-      !!revealKey.trim()
-    );
+    const tracker = createEncryptTracker(setProgress);
 
     try {
-      tracker.compressing();
-      await new Promise((r) => requestAnimationFrame(r)); // let UI update
+      tracker.compressing(0);
+      await new Promise((r) => requestAnimationFrame(r));
 
       const expiresAt = ttl > 0 ? Date.now() + ttl * 60 * 1000 : 0;
-
-      tracker.startDerivation();
 
       const zefer = await encodeZefer({
         content: inputMode === "text" ? content : undefined,
@@ -270,13 +253,13 @@ export default function EncryptForm() {
         compression,
         allowedIps: parseIpList(allowedIpsInput),
         revealKey: revealKey.trim() || undefined,
+        onProgress: tracker,
       });
 
       tracker.packaging();
-      await new Promise((r) => requestAnimationFrame(r));
 
-      const blob = new Blob([zefer], { type: "application/octet-stream" });
-      const url = URL.createObjectURL(blob);
+      // zefer is already a Blob
+      const url = URL.createObjectURL(zefer);
       const a = document.createElement("a");
       a.href = url;
       const baseName = (inputMode === "file" ? fileName : textFileName)?.replace(/\.[^.]+$/, "") || "secret";
@@ -379,7 +362,7 @@ export default function EncryptForm() {
                 {textFileName && (
                   <span className="flex items-center gap-1 text-[11px] text-primary theme-primary-faint theme-primary-border border px-2 py-0.5 rounded-md">
                     <FileText className="w-3 h-3" />{textFileName}
-                    <button type="button" onClick={clearTextFile} className="hover:theme-heading cursor-pointer ml-0.5"><X className="w-3 h-3" /></button>
+                    <button type="button" onClick={clearTextFile} className="hover:theme-heading cursor-pointer ml-0.5" aria-label="Remove file"><X className="w-3 h-3" /></button>
                   </span>
                 )}
                 <button type="button" onClick={() => textFileRef.current?.click()} className="flex items-center gap-1 text-[11px] theme-faint hover:text-primary transition-colors duration-200 cursor-pointer px-2 py-1 rounded-md hover:bg-[var(--glass-bg)]">
@@ -404,7 +387,7 @@ export default function EncryptForm() {
                     <p className="text-sm font-medium text-primary">{fileName}</p>
                     <p className="text-[10px] theme-muted">{fileType} &middot; {formatBytes(fileSize)}</p>
                   </div>
-                  <button type="button" onClick={(e) => { e.stopPropagation(); clearFile(); }} className="theme-faint hover:theme-danger transition-colors cursor-pointer ml-2">
+                  <button type="button" onClick={(e) => { e.stopPropagation(); clearFile(); }} className="theme-faint hover:theme-danger transition-colors cursor-pointer ml-2" aria-label="Remove file">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -521,7 +504,7 @@ export default function EncryptForm() {
               </label>
               {dualKey && (
                 <div className="relative mt-2">
-                  <input type={showSecondPass ? "text" : "password"} value={secondPassphrase} onChange={(e) => setSecondPassphrase(e.target.value)} placeholder={t("advanced.dualkey.placeholder")} className="w-full pr-10 font-mono text-sm" />
+                  <input id="encrypt-pass2" type={showSecondPass ? "text" : "password"} value={secondPassphrase} onChange={(e) => setSecondPassphrase(e.target.value)} placeholder={t("advanced.dualkey.placeholder")} className="w-full pr-10 font-mono text-sm" aria-label="Second passphrase" />
                   <button type="button" onClick={() => setShowSecondPass(!showSecondPass)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-faint hover:theme-muted transition-colors cursor-pointer">
                     {showSecondPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -536,7 +519,7 @@ export default function EncryptForm() {
               </label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <input type={showRevealKey ? "text" : "password"} value={revealKey} onChange={(e) => setRevealKey(e.target.value)} placeholder={t("advanced.revealkey.placeholder")} className="w-full pr-10 font-mono text-sm" />
+                  <input id="encrypt-reveal" type={showRevealKey ? "text" : "password"} value={revealKey} onChange={(e) => setRevealKey(e.target.value)} placeholder={t("advanced.revealkey.placeholder")} className="w-full pr-10 font-mono text-sm" aria-label="Reveal key" />
                   <button type="button" onClick={() => setShowRevealKey(!showRevealKey)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-faint hover:theme-muted transition-colors cursor-pointer">
                     {showRevealKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -551,7 +534,7 @@ export default function EncryptForm() {
               <label className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
                 <Shield className="w-3 h-3" />{t("advanced.attempts")}
               </label>
-              <select value={maxAttempts} onChange={(e) => setMaxAttempts(Number(e.target.value))} className="w-full text-sm py-2.5 px-3 cursor-pointer">
+              <select id="max-attempts" value={maxAttempts} onChange={(e) => setMaxAttempts(Number(e.target.value))} className="w-full text-sm py-2.5 px-3 cursor-pointer" aria-label="Maximum decryption attempts">
                 <option value={0}>{t("advanced.attempts.unlimited")}</option>
                 <option value={3}>3</option>
                 <option value={5}>5</option>
@@ -592,7 +575,7 @@ export default function EncryptForm() {
                 <Globe className="w-3 h-3" />{t("advanced.ip")}
               </label>
               <div className="flex flex-col min-[400px]:flex-row gap-2 mb-1">
-                <input type="text" value={allowedIpsInput} onChange={(e) => setAllowedIpsInput(e.target.value)} placeholder={t("advanced.ip.placeholder")} className="flex-1 text-sm font-mono" />
+                <input id="allowed-ips" type="text" value={allowedIpsInput} onChange={(e) => setAllowedIpsInput(e.target.value)} placeholder={t("advanced.ip.placeholder")} className="flex-1 text-sm font-mono" aria-label="Allowed IP addresses" />
                 <button
                   type="button"
                   disabled={ipLoading}
@@ -637,7 +620,7 @@ export default function EncryptForm() {
 
         {/* Error */}
         {error && (
-          <div className="flex items-center gap-2 theme-danger text-sm mb-4 theme-danger-faint theme-danger-border border rounded-xl px-3.5 py-2.5 error-shake">
+          <div role="alert" aria-live="assertive" className="flex items-center gap-2 theme-danger text-sm mb-4 theme-danger-faint theme-danger-border border rounded-xl px-3.5 py-2.5 error-shake">
             <AlertTriangle className="w-4 h-4 shrink-0" /><span className="text-xs">{error}</span>
           </div>
         )}

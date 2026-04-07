@@ -20,7 +20,7 @@ export default function CryptoProgress({ state, mode }: Props) {
   })();
 
   return (
-    <div className={`glass p-6 sm:p-8 animate-in ${isDone ? "glow-green" : "glow-pulse"}`}>
+    <div role="status" aria-live="polite" aria-label={`${label} ${percent}%`} className={`glass p-6 sm:p-8 animate-in ${isDone ? "glow-green" : "glow-pulse"}`}>
       {/* Icon */}
       <div className="flex items-center justify-center mb-6">
         <div className={`w-14 h-14 rounded-2xl theme-primary-faint theme-primary-border border flex items-center justify-center ${isDone ? "success-icon" : "animate-pulse-slow"}`}>
@@ -36,7 +36,7 @@ export default function CryptoProgress({ state, mode }: Props) {
 
       {/* Progress bar */}
       <div className="mb-4">
-        <div className="h-2.5 rounded-full bg-[var(--glass-bg)] overflow-hidden relative">
+        <div className="h-2.5 rounded-full bg-[var(--glass-bg)] overflow-hidden relative" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100} aria-label={label}>
           <div
             className={`h-full rounded-full ${isDone ? "bg-[var(--primary)]" : "progress-bar-animated"}`}
             style={{

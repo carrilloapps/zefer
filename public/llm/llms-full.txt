@@ -1,0 +1,99 @@
+# Zefer — Complete AI/LLM Reference
+
+## Project Overview
+
+Zefer is an open-source, client-side encryption tool that converts text and files into password-protected .zefer files using AES-256-GCM. Created by José Carrillo (@carrilloapps). MIT License.
+
+Live: https://zefer.carrillo.app
+Source: https://github.com/carrilloapps/zefer
+
+## Architecture
+
+100% client-side. The only server-side component is a single API route (/api/author) that caches the creator's GitHub profile data.
+
+### Encryption Flow
+
+1. Content input (text or binary file)
+2. Optional compression (Gzip/Deflate via CompressionStream API)
+3. Metadata assembly (JSON: expiration, IPs, question hash, file info, max attempts)
+4. Payload packing (4-byte length prefix + metadata JSON + raw content bytes)
+5. Key derivation (PBKDF2-SHA256: passphrase + 32-byte random salt, 300k-1M iterations)
+6. AES-256-GCM encryption (256-bit key, 12-byte random IV)
+7. File assembly (ZEFER3 magic + JSON header + base64 encrypted lines)
+8. Download to user's device
+
+### .zefer File Format (ZEFER3)
+
+```
+ZEFER3
+{"iterations":600000,"compression":"none","hint":null,"note":null,"mode":"text"}
+base64(salt).base64(iv).base64(ciphertext)
+base64(salt).base64(iv).base64(ciphertext)  [optional reveal key line]
+```
+
+Public header fields: iterations, compression, hint, note, mode.
+Everything else is inside the AES-256-GCM encrypted payload.
+
+### Encrypted Metadata (inside cipher)
+
+```json
+{
+  "v": 3,
+  "fileName": "secrets.env",
+  "fileType": "text/plain",
+  "fileSize": 1234,
+  "expiresAt": 1712534400000,
+  "createdAt": 1712448000000,
+  "answerHash": "pbkdf2...",
+  "allowedIps": ["192.168.1.1"],
+  "question": "What is...?",
+  "maxAttempts": 5
+}
+```
+
+## Security Model
+
+### Cryptographic Primitives
+- Symmetric encryption: AES-256-GCM (256-bit key, 96-bit IV, 128-bit auth tag)
+- Key derivation: PBKDF2-SHA256 (300k/600k/1M iterations, 256-bit random salt)
+- Answer hashing: PBKDF2-SHA256 (100k iterations, deterministic salt)
+- Random generation: crypto.getRandomValues (OS-level CSPRNG)
+- Key generation: Rejection sampling for uniform charset distribution
+
+### What an Attacker Sees (file only, no passphrase)
+- PBKDF2 iteration count
+- Compression method
+- Optional hint and note text
+- Text vs file mode
+- Number of encrypted lines (1 or 2)
+- Salt and IV per encrypted line (non-secret by design)
+
+### What an Attacker Cannot See
+- Content, passphrase, file name/type/size
+- Expiration, IP list, question, max attempts
+- Whether dual key, reveal key, or question is used
+
+### Guarantees
+1. Without passphrase, content is unrecoverable (AES-256-GCM)
+2. Ciphertext cannot be modified (GCM authentication)
+3. Each file has unique encryption (random salt + IV)
+4. Reveal key is independently encrypted (separate salt/IV/key)
+5. Security metadata is invisible without the key
+
+### Known Limitations (client-side)
+- Max attempts: localStorage-based, bypassable
+- Expiration: trusts client system clock
+- IP restriction: checked after decryption, bypassable via DevTools
+- Memory: passphrases exist in browser memory during operation (cleared after use)
+
+## Tech Stack
+- Next.js 16.2.2 (React 19), TypeScript 5, Tailwind CSS v4
+- Web Crypto API, CompressionStream API, Lucide React
+- WCAG 2.1 AA compliant, responsive, i18n (es/en/pt)
+
+## Legal Compliance
+- GDPR (EU): No personal data collected
+- CCPA (California): No personal information sold/shared
+- LGPD (Brazil): Art. 5, 18 compliant
+- Law 1581 (Colombia): Art. 4, 9 compliant
+- ePrivacy: No cookies, trackers, or analytics

@@ -14,8 +14,7 @@ import {
   Cpu,
   Globe,
 } from "lucide-react";
-import Navbar from "@/app/components/Navbar";
-import Footer from "@/app/components/Footer";
+import { PageLayout, PageHeader, IconBox, SectionCard, GlassCard } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
 
 const SPECS = [
@@ -55,114 +54,77 @@ export default function HowContent() {
   ];
 
   return (
-    <main className="flex-1 flex flex-col">
-      <Navbar />
+    <PageLayout>
+      <PageHeader icon={Shield} badge={t("steps.title")} title={t("steps.title")} subtitle={t("how.subtitle")} />
 
-      <section className="pt-28 sm:pt-32 pb-16 px-4 sm:px-6">
-        <div className="max-w-3xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 glass px-4 py-1.5 mb-6 !rounded-full">
-              <Shield className="w-3 h-3 text-primary" />
-              <span className="text-[11px] font-medium text-primary font-mono tracking-wider">
-                {t("steps.title").toUpperCase()}
-              </span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-bold theme-heading mb-4 tracking-tight">
-              {t("steps.title")}
-            </h1>
-            <p className="text-base theme-muted max-w-2xl mx-auto leading-relaxed">
-              {t("how.subtitle")}
-            </p>
-          </div>
+      {/* Overview */}
+      <GlassCard className="mb-8">
+        <h2 className="text-sm font-semibold theme-heading mb-3 flex items-center gap-2">
+          <Shield className="w-4 h-4 text-primary" />{t("how.overview.title")}
+        </h2>
+        <p className="text-[13px] theme-muted leading-relaxed">{t("how.overview.desc")}</p>
+      </GlassCard>
 
-          {/* Overview */}
-          <div className="glass p-6 sm:p-8 mb-8">
-            <h2 className="text-sm font-semibold theme-heading mb-3 flex items-center gap-2">
-              <Shield className="w-4 h-4 text-primary" />
-              {t("how.overview.title")}
-            </h2>
-            <p className="text-[13px] theme-muted leading-relaxed">
-              {t("how.overview.desc")}
-            </p>
-          </div>
-
-          {/* Steps */}
-          <div className="space-y-3 mb-8">
-            {steps.map((step, i) => (
-              <div key={step.num} className="glass glass-hover p-5 sm:p-7 transition-all duration-300">
-                <div className="flex items-start gap-4">
-                  <div className="relative shrink-0">
-                    <div className="w-10 h-10 rounded-xl theme-primary-faint theme-primary-border border flex items-center justify-center">
-                      <step.icon className="w-4 h-4 text-primary" />
-                    </div>
-                    <span className="absolute -top-2 -right-2 text-[10px] font-mono font-bold text-primary/50 bg-[var(--background)] px-1 rounded">
-                      {step.num}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold theme-heading mb-2">{t(step.titleKey)}</h3>
-                    <p className="text-[13px] theme-muted leading-relaxed">{t(step.descKey)}</p>
-                  </div>
-                </div>
-                {i < steps.length - 1 && (
-                  <div className="ml-5 mt-4 h-4 border-l border-dashed border-[var(--glass-border)]" />
-                )}
+      {/* Steps */}
+      <div className="space-y-3 mb-8">
+        {steps.map((step, i) => (
+          <div key={step.num} className="glass glass-hover p-5 sm:p-7 transition-all duration-300">
+            <div className="flex items-start gap-4">
+              <div className="relative shrink-0">
+                <IconBox icon={step.icon} />
+                <span className="absolute -top-2 -right-2 text-[10px] font-mono font-bold text-primary/50 bg-[var(--background)] px-1 rounded">{step.num}</span>
               </div>
-            ))}
-          </div>
-
-          {/* Advanced features */}
-          <div className="glass p-6 sm:p-8 mb-8">
-            <h2 className="text-sm font-semibold theme-heading mb-5 flex items-center gap-2">
-              <Settings className="w-4 h-4 text-primary" />
-              {t("how.features.title")}
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {features.map((feat) => (
-                <div key={feat.titleKey} className="glass glass-hover !rounded-xl p-4 transition-all duration-300">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg theme-primary-faint theme-primary-border border flex items-center justify-center shrink-0">
-                      <feat.icon className="w-3.5 h-3.5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="text-xs font-semibold theme-heading mb-1">{t(feat.titleKey)}</h3>
-                      <p className="text-[11px] theme-muted leading-relaxed">{t(feat.descKey)}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold theme-heading mb-2">{t(step.titleKey)}</h3>
+                <p className="text-[13px] theme-muted leading-relaxed">{t(step.descKey)}</p>
+              </div>
             </div>
+            {i < steps.length - 1 && <div className="ml-5 mt-4 h-4 border-l border-dashed border-[var(--glass-border)]" />}
           </div>
+        ))}
+      </div>
 
-          {/* Technical specs */}
-          <div className="glass p-6 sm:p-8 mb-8">
-            <h2 className="text-sm font-semibold theme-heading mb-5 flex items-center gap-2">
-              <Lock className="w-4 h-4 text-primary" />
-              {t("how.technical.title")}
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-              {SPECS.map((spec) => (
-                <div key={spec.key} className="flex items-start justify-between gap-3 py-2 border-b border-[var(--border-subtle)]">
-                  <span className="text-xs theme-muted shrink-0">{t(spec.key)}</span>
-                  <span className="text-xs font-mono theme-heading text-right">{spec.value}</span>
+      {/* Features */}
+      <GlassCard className="mb-8">
+        <h2 className="text-sm font-semibold theme-heading mb-5 flex items-center gap-2">
+          <Settings className="w-4 h-4 text-primary" />{t("how.features.title")}
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {features.map((feat) => (
+            <div key={feat.titleKey} className="glass glass-hover !rounded-xl p-4 transition-all duration-300">
+              <div className="flex items-start gap-3">
+                <IconBox icon={feat.icon} size="sm" />
+                <div>
+                  <h3 className="text-xs font-semibold theme-heading mb-1">{t(feat.titleKey)}</h3>
+                  <p className="text-[11px] theme-muted leading-relaxed">{t(feat.descKey)}</p>
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
-
-          {/* CTA */}
-          <div className="glass glow-green p-6 sm:p-8 text-center">
-            <h2 className="text-lg font-semibold theme-heading mb-2">{t("how.cta")}</h2>
-            <p className="text-sm theme-muted mb-5">{t("how.cta.desc")}</p>
-            <a href="/" className="btn-primary !w-auto inline-flex px-8">
-              {t("how.cta")} <ArrowRight className="w-4 h-4" />
-            </a>
-          </div>
+          ))}
         </div>
-      </section>
+      </GlassCard>
 
-      <Footer />
-    </main>
+      {/* Specs */}
+      <GlassCard className="mb-8">
+        <h2 className="text-sm font-semibold theme-heading mb-5 flex items-center gap-2">
+          <Lock className="w-4 h-4 text-primary" />{t("how.technical.title")}
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+          {SPECS.map((spec) => (
+            <div key={spec.key} className="flex items-start justify-between gap-3 py-2 border-b border-[var(--border-subtle)]">
+              <span className="text-xs theme-muted shrink-0">{t(spec.key)}</span>
+              <span className="text-xs font-mono theme-heading text-right">{spec.value}</span>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+
+      {/* CTA */}
+      <GlassCard glow className="text-center">
+        <h2 className="text-lg font-semibold theme-heading mb-2">{t("how.cta")}</h2>
+        <p className="text-sm theme-muted mb-5">{t("how.cta.desc")}</p>
+        <a href="/" className="btn-primary !w-auto inline-flex px-8">{t("how.cta")} <ArrowRight className="w-4 h-4" /></a>
+      </GlassCard>
+    </PageLayout>
   );
 }

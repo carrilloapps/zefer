@@ -13,7 +13,7 @@ function decode(buffer: ArrayBuffer): string {
   return new TextDecoder().decode(buffer);
 }
 
-function toBase64(buffer: ArrayBuffer): string {
+export function toBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   const len = bytes.byteLength;
   const chunks: string[] = [];
@@ -26,12 +26,11 @@ function toBase64(buffer: ArrayBuffer): string {
   return btoa(chunks.join(""));
 }
 
-function fromBase64(base64: string): Uint8Array {
+export function fromBase64(base64: string): Uint8Array {
   const binary = atob(base64);
   const len = binary.length;
   const bytes = new Uint8Array(len);
 
-  // Process in 4-byte blocks for better CPU pipeline usage
   const aligned = len & ~3;
   for (let i = 0; i < aligned; i += 4) {
     bytes[i] = binary.charCodeAt(i);
@@ -86,14 +85,33 @@ export async function encrypt(
   passphrase: string,
   iterations: number = 600_000
 ): Promise<string> {
-  return encryptBytes(encode(plaintext), passphrase, iterations);
+  return encryptBytesToBase64(encode(plaintext), passphrase, iterations);
 }
 
-export async function encryptBytes(
+/**
+ * Encrypt and return base64 string (for small payloads / text mode).
+ */
+export async function encryptBytesToBase64(
   data: ArrayBuffer,
   passphrase: string,
   iterations: number = 600_000
 ): Promise<string> {
+  const { salt, iv, ciphertext } = await encryptRaw(data, passphrase, iterations);
+  return [
+    toBase64(salt.buffer as ArrayBuffer),
+    toBase64(iv.buffer as ArrayBuffer),
+    toBase64(ciphertext),
+  ].join(".");
+}
+
+/**
+ * Encrypt and return raw binary parts (for large files).
+ */
+export async function encryptRaw(
+  data: ArrayBuffer,
+  passphrase: string,
+  iterations: number = 600_000
+): Promise<{ salt: Uint8Array; iv: Uint8Array; ciphertext: ArrayBuffer }> {
   const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
   const key = await deriveKey(passphrase, salt.buffer as ArrayBuffer, iterations);
@@ -104,11 +122,7 @@ export async function encryptBytes(
     data
   );
 
-  return [
-    toBase64(salt.buffer as ArrayBuffer),
-    toBase64(iv.buffer as ArrayBuffer),
-    toBase64(ciphertext),
-  ].join(".");
+  return { salt, iv, ciphertext };
 }
 
 export async function decrypt(
@@ -116,11 +130,11 @@ export async function decrypt(
   passphrase: string,
   iterations: number = 600_000
 ): Promise<string> {
-  const buf = await decryptBytes(encrypted, passphrase, iterations);
+  const buf = await decryptFromBase64(encrypted, passphrase, iterations);
   return decode(buf);
 }
 
-export async function decryptBytes(
+export async function decryptFromBase64(
   encrypted: string,
   passphrase: string,
   iterations: number = 600_000
@@ -140,14 +154,30 @@ export async function decryptBytes(
 }
 
 /**
+ * Decrypt from raw binary (salt + iv + ciphertext concatenated).
+ */
+export async function decryptFromBinary(
+  binary: Uint8Array,
+  passphrase: string,
+  iterations: number = 600_000
+): Promise<ArrayBuffer> {
+  const salt = binary.slice(0, SALT_LENGTH);
+  const iv = binary.slice(SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
+  const ciphertext = binary.slice(SALT_LENGTH + IV_LENGTH);
+  const key = await deriveKey(passphrase, salt.buffer as ArrayBuffer, iterations);
+
+  return crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: iv.buffer as ArrayBuffer },
+    key,
+    ciphertext.buffer as ArrayBuffer
+  );
+}
+
+/**
  * Hash the secret question answer using PBKDF2 with a deterministic salt.
- * Uses 100k iterations (not plain SHA-256) to resist dictionary attacks.
- * The salt is derived from the answer itself via SHA-256, making it
- * deterministic (same answer → same hash) but resistant to rainbow tables.
  */
 export async function hashAnswer(answer: string): Promise<string> {
   const normalized = answer.trim().toLowerCase();
-  // Deterministic salt from the answer (so the hash is reproducible)
   const saltSource = await crypto.subtle.digest("SHA-256", encode(`ZEFER_ANSWER_SALT:${normalized}`));
   const salt = new Uint8Array(saltSource).slice(0, 16);
 
@@ -170,10 +200,6 @@ export async function hashAnswer(answer: string): Promise<string> {
 
 // ─── Benchmark ───
 
-/**
- * Run a quick calibration to estimate PBKDF2 speed on this device.
- * Returns approximate ms per 100k iterations.
- */
 export async function benchmarkDevice(): Promise<number> {
   const testSalt = crypto.getRandomValues(new Uint8Array(32));
   const testMaterial = await crypto.subtle.importKey(
@@ -192,6 +218,5 @@ export async function benchmarkDevice(): Promise<number> {
   );
   const elapsed = performance.now() - start;
 
-  // Extrapolate to 100k
   return (elapsed / 50_000) * 100_000;
 }

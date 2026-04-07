@@ -24,9 +24,14 @@ const translations = {
     pt: "Doar",
   },
   "nav.author": {
-    es: "Autor",
-    en: "Author",
-    pt: "Autor",
+    es: "Sobre el autor",
+    en: "About the author",
+    pt: "Sobre o autor",
+  },
+  "nav.install": {
+    es: "Instalar",
+    en: "Install",
+    pt: "Instalar",
   },
   "nav.privacy": {
     es: "Privacidad",
@@ -1534,6 +1539,55 @@ const translations = {
     es: "Zefer es gratuito y de código abierto. Si te resulta útil, considera hacer una donación para apoyar el desarrollo y mantenimiento del proyecto.",
     en: "Zefer is free and open source. If you find it useful, consider making a donation to support the development and maintenance of the project.",
     pt: "O Zefer é gratuito e de código aberto. Se você o considera útil, considere fazer uma doação para apoiar o desenvolvimento e a manutenção do projeto.",
+  },
+
+  // ─── 404 ───
+  "notfound.title": {
+    es: "Página no encontrada",
+    en: "Page not found",
+    pt: "Página não encontrada",
+  },
+  "notfound.desc": {
+    es: "La página que buscas no existe o fue movida.",
+    en: "The page you're looking for doesn't exist or has been moved.",
+    pt: "A página que você procura não existe ou foi movida.",
+  },
+
+  // ─── Install ───
+  "install.title": {
+    es: "Instalar Zefer",
+    en: "Install Zefer",
+    pt: "Instalar o Zefer",
+  },
+  "install.desc": {
+    es: "Aplicaciones nativas para todos los sistemas operativos. Próximamente.",
+    en: "Native applications for all operating systems. Coming soon.",
+    pt: "Aplicativos nativos para todos os sistemas operacionais. Em breve.",
+  },
+  "install.coming": {
+    es: "Pronto",
+    en: "Soon",
+    pt: "Em breve",
+  },
+  "install.web.title": {
+    es: "Disponible ahora en la web",
+    en: "Available now on the web",
+    pt: "Disponível agora na web",
+  },
+  "install.web.desc": {
+    es: "Mientras las aplicaciones nativas están en desarrollo, puedes usar Zefer directamente desde tu navegador. Funciona en cualquier dispositivo.",
+    en: "While native apps are in development, you can use Zefer directly from your browser. Works on any device.",
+    pt: "Enquanto os aplicativos nativos estão em desenvolvimento, você pode usar o Zefer diretamente do seu navegador. Funciona em qualquer dispositivo.",
+  },
+  "install.web.cta": {
+    es: "Abrir Zefer Web",
+    en: "Open Zefer Web",
+    pt: "Abrir Zefer Web",
+  },
+  "install.notify": {
+    es: "Síguenos en GitHub para recibir notificaciones cuando las aplicaciones nativas estén disponibles.",
+    en: "Follow us on GitHub to get notified when native apps are available.",
+    pt: "Siga-nos no GitHub para ser notificado quando os aplicativos nativos estiverem disponíveis.",
   },
 
   "terms.changes.desc": {

@@ -1,7 +1,9 @@
-import { encrypt, decrypt, encryptBytes, decryptBytes, combineDualKeys, hashAnswer } from "./crypto";
-import { compress, decompress, type CompressionMethod } from "./compression";
+import { decryptFromBase64, combineDualKeys, hashAnswer } from "./crypto";
+import { chunkedEncrypt, chunkedDecrypt } from "./chunked-crypto";
+import { compressBytes, decompressBytes, decompress, type CompressionMethod } from "./compression";
 
-const MAGIC = "ZEFER3";
+const MAGIC_TEXT = "ZEFER3";
+const MAGIC_BIN = new Uint8Array([0x5A, 0x45, 0x46, 0x42, 0x33]); // "ZEFB3" — binary format
 
 // ─── Public header ───
 
@@ -13,13 +15,13 @@ export interface ZeferHeader {
   mode: "text" | "file";
 }
 
-// ─── Encrypted metadata (inside cipher, invisible) ───
+// ─── Encrypted metadata ───
 
 export interface ZeferMeta {
   v: 3;
   fileName: string | null;
-  fileType: string | null;  // MIME type for file mode
-  fileSize: number;         // original size in bytes
+  fileType: string | null;
+  fileSize: number;
   expiresAt: number;
   createdAt: number;
   answerHash: string | null;
@@ -45,17 +47,15 @@ function isValidMeta(obj: unknown): obj is ZeferMeta {
 
 export interface ZeferPayload {
   meta: ZeferMeta;
-  content: string | null;       // text mode
-  fileData: ArrayBuffer | null; // file mode
+  content: string | null;
+  fileData: ArrayBuffer | null;
 }
 
 // ─── Encode options ───
 
 export interface EncodeOptions {
-  // Content — one of these must be provided
   content?: string;
   fileData?: ArrayBuffer;
-
   passphrase: string;
   secondPassphrase?: string;
   revealKey?: string;
@@ -71,18 +71,25 @@ export interface EncodeOptions {
   dualKey?: boolean;
   compression?: CompressionMethod;
   allowedIps?: string[];
+  onProgress?: {
+    compressing: (percent: number) => void;
+    compressingDone: () => void;
+    deriving: () => void;
+    derivingDone: () => void;
+    encrypting: (chunkIndex: number, totalChunks: number) => void;
+    packaging: () => void;
+  };
 }
 
 // ─── Encode ───
 
-export async function encodeZefer(opts: EncodeOptions): Promise<string> {
+export async function encodeZefer(opts: EncodeOptions): Promise<Blob> {
   const iterations = opts.iterations || 600_000;
   const compressionMethod = opts.compression || "none";
   const dualKey = opts.dualKey || false;
   const hasRevealKey = !!opts.revealKey?.trim();
   const isFile = !!opts.fileData;
 
-  // Sanitize public fields — strip any HTML/script to prevent stored XSS via .zefer file
   const sanitize = (s: string | undefined) => {
     const v = s?.trim();
     if (!v) return null;
@@ -117,37 +124,62 @@ export async function encodeZefer(opts: EncodeOptions): Promise<string> {
     maxAttempts: opts.maxAttempts || 0,
   };
 
-  // Compress text content (skip compression for binary files — already compressed formats like zip/jpg)
+  // Compress ALL content if compression is enabled — no exceptions
+  opts.onProgress?.compressing(0);
   let dataToEncrypt: ArrayBuffer;
-  if (!isFile && compressionMethod !== "none") {
-    const compressed = await compress(opts.content || "", compressionMethod);
-    dataToEncrypt = new TextEncoder().encode(compressed).buffer as ArrayBuffer;
+  if (compressionMethod !== "none") {
+    const compressed = await compressBytes(new Uint8Array(rawData), compressionMethod);
+    dataToEncrypt = compressed.buffer as ArrayBuffer;
   } else {
     dataToEncrypt = rawData;
   }
+  opts.onProgress?.compressingDone();
 
-  // Combine: 4-byte length prefix + meta JSON + data bytes
-  // Using length prefix instead of null-byte separator to avoid collision
+  // Pack: 4-byte length prefix + meta JSON + data bytes
   const metaBytes = new TextEncoder().encode(JSON.stringify(meta));
   const lengthPrefix = new Uint8Array(4);
-  new DataView(lengthPrefix.buffer).setUint32(0, metaBytes.length, false); // big-endian
+  new DataView(lengthPrefix.buffer).setUint32(0, metaBytes.length, false);
   const combined = new Uint8Array(4 + metaBytes.length + dataToEncrypt.byteLength);
   combined.set(lengthPrefix, 0);
   combined.set(metaBytes, 4);
   combined.set(new Uint8Array(dataToEncrypt), 4 + metaBytes.length);
 
-  // Build passphrase
   let mainPassphrase = dualKey && opts.secondPassphrase
     ? combineDualKeys(opts.passphrase, opts.secondPassphrase)
     : opts.passphrase;
-  const mainEncrypted = await encryptBytes(combined.buffer as ArrayBuffer, mainPassphrase, iterations);
-  const lines = [MAGIC, JSON.stringify(header), mainEncrypted];
 
-  if (hasRevealKey) {
-    lines.push(await encryptBytes(combined.buffer as ArrayBuffer, opts.revealKey!, iterations));
+  const headerJson = JSON.stringify(header);
+
+  // All modes use binary chunked format (ZEFB3)
+  opts.onProgress?.deriving();
+  const result = await chunkedEncrypt(
+    combined.buffer as ArrayBuffer,
+    mainPassphrase,
+    iterations,
+    (chunkIndex, totalChunks) => {
+      if (chunkIndex === 0) opts.onProgress?.derivingDone();
+      opts.onProgress?.encrypting(chunkIndex, totalChunks);
+    }
+  );
+
+  opts.onProgress?.packaging();
+  const headerBytesEnc = new TextEncoder().encode(headerJson);
+  const headerLenBuf = new Uint8Array(4);
+  new DataView(headerLenBuf.buffer).setUint32(0, headerBytesEnc.length, false);
+
+  const parts: BlobPart[] = [
+    MAGIC_BIN.buffer as ArrayBuffer,
+    headerLenBuf.buffer as ArrayBuffer,
+    headerBytesEnc.buffer as ArrayBuffer,
+    result.salt.buffer as ArrayBuffer,
+    result.baseIv.buffer as ArrayBuffer,
+  ];
+
+  for (const chunk of result.chunks) {
+    parts.push(chunk.buffer as ArrayBuffer);
   }
 
-  return lines.join("\n");
+  return new Blob(parts, { type: "application/octet-stream" });
 }
 
 // ─── Decode ───
@@ -167,92 +199,133 @@ export type DecodeResult =
 
 export interface ParsedFile {
   header: ZeferHeader;
-  encryptedLines: string[];
+  binary: boolean;
+  // Text format fields
+  encryptedLines?: string[];
+  // Binary format fields
+  binaryData?: Uint8Array;
 }
 
-export function parseFile(fileContent: string): ParsedFile | null {
+export function parseFile(fileContent: string, rawBytes?: ArrayBuffer): ParsedFile | null {
+  // Check for binary format first
+  if (rawBytes && rawBytes.byteLength >= 5) {
+    const magic = new Uint8Array(rawBytes, 0, 5);
+    if (magic[0] === 0x5A && magic[1] === 0x45 && magic[2] === 0x46 && magic[3] === 0x42 && magic[4] === 0x33) {
+      // ZEFB3 binary format
+      const view = new DataView(rawBytes, 5);
+      const headerLen = view.getUint32(0, false);
+      const headerStr = new TextDecoder().decode(new Uint8Array(rawBytes, 9, headerLen));
+      try {
+        const header = JSON.parse(headerStr) as ZeferHeader;
+        if (!header.mode) header.mode = "file";
+        return {
+          header,
+          binary: true,
+          binaryData: new Uint8Array(rawBytes, 9 + headerLen),
+        };
+      } catch {
+        return null;
+      }
+    }
+  }
+
+  // Text format
   const lines = fileContent.trim().split("\n");
   if (lines.length < 3) return null;
-
-  // Support ZEFER2 and ZEFER3
-  if (lines[0] !== MAGIC && lines[0] !== "ZEFER2") return null;
+  if (lines[0] !== MAGIC_TEXT && lines[0] !== "ZEFER2") return null;
 
   try {
     const header = JSON.parse(lines[1]) as ZeferHeader;
-    if (!header.mode) header.mode = "text"; // ZEFER2 backward compat
-    return { header, encryptedLines: lines.slice(2) };
+    if (!header.mode) header.mode = "text";
+    return { header, binary: false, encryptedLines: lines.slice(2) };
   } catch {
     return null;
   }
 }
 
-async function tryDecryptCombined(
+async function tryDecryptText(
   encryptedLines: string[],
   passphrase: string,
   header: ZeferHeader
 ): Promise<{ meta: ZeferMeta; rawData: ArrayBuffer } | null> {
   for (const line of encryptedLines) {
     try {
-      const decryptedBuf = await decryptBytes(line, passphrase, header.iterations);
-      const decryptedArr = new Uint8Array(decryptedBuf);
-
-      // Try length-prefix format first (ZEFER3 current)
-      // Format: [4 bytes big-endian length][meta JSON][data bytes]
-      if (decryptedArr.length >= 4) {
-        const metaLength = new DataView(decryptedArr.buffer, decryptedArr.byteOffset).getUint32(0, false);
-        if (metaLength > 0 && metaLength + 4 <= decryptedArr.length) {
-          try {
-            const metaStr = new TextDecoder().decode(decryptedArr.slice(4, 4 + metaLength));
-            const testMeta = JSON.parse(metaStr);
-            if (isValidMeta(testMeta)) {
-              const dataBytes = decryptedArr.slice(4 + metaLength);
-              return { meta: testMeta as ZeferMeta, rawData: dataBytes.buffer as ArrayBuffer };
-            }
-          } catch {
-            // Not length-prefix format, try legacy
-          }
-        }
-      }
-
-      // Fallback: null-byte separator (older ZEFER3 files)
-      const sepIndex = decryptedArr.indexOf(0);
-      if (sepIndex > 0 && sepIndex < decryptedArr.length - 1) {
-        try {
-          const metaStr = new TextDecoder().decode(decryptedArr.slice(0, sepIndex));
-          const testMeta = JSON.parse(metaStr);
-          if (isValidMeta(testMeta)) {
-            const dataBytes = decryptedArr.slice(sepIndex + 1);
-            return { meta: testMeta as ZeferMeta, rawData: dataBytes.buffer as ArrayBuffer };
-          }
-        } catch {
-          // Not null-byte format either
-        }
-      }
-
-      // Fallback: ZEFER2 format (entire content is JSON text)
-      const text = new TextDecoder().decode(decryptedBuf);
-      const raw = header.compression === "none" ? text : await decompress(text, header.compression);
-      const legacy = JSON.parse(raw);
-      const meta: ZeferMeta = {
-        v: 3,
-        fileName: legacy.fileName,
-        fileType: null,
-        fileSize: 0,
-        expiresAt: legacy.expiresAt,
-        createdAt: legacy.createdAt,
-        answerHash: legacy.answerHash,
-        allowedIps: legacy.allowedIps || [],
-        question: legacy.question || null,
-        maxAttempts: legacy.maxAttempts || 0,
-      };
-      const contentBytes = new TextEncoder().encode(legacy.content);
-
-      return { meta, rawData: contentBytes.buffer as ArrayBuffer };
+      const decryptedBuf = await decryptFromBase64(line, passphrase, header.iterations);
+      return extractPayload(new Uint8Array(decryptedBuf), header);
     } catch {
       continue;
     }
   }
   return null;
+}
+
+async function tryDecryptBinary(
+  data: Uint8Array,
+  passphrase: string,
+  header: ZeferHeader
+): Promise<{ meta: ZeferMeta; rawData: ArrayBuffer } | null> {
+  // Binary format: salt(32) + baseIv(12) + chunked encrypted data
+  if (data.length < 44) return null;
+  const salt = data.slice(0, 32);
+  const baseIv = data.slice(32, 44);
+  const encryptedChunks = data.slice(44);
+
+  try {
+    const decryptedBuf = await chunkedDecrypt(encryptedChunks, salt, baseIv, passphrase, header.iterations);
+    return await extractPayload(new Uint8Array(decryptedBuf), header);
+  } catch {
+    return null;
+  }
+}
+
+async function extractPayload(
+  decryptedArr: Uint8Array,
+  header: ZeferHeader
+): Promise<{ meta: ZeferMeta; rawData: ArrayBuffer } | null> {
+  // Try length-prefix format (ZEFER3 current)
+  if (decryptedArr.length >= 4) {
+    const metaLength = new DataView(decryptedArr.buffer, decryptedArr.byteOffset).getUint32(0, false);
+    if (metaLength > 0 && metaLength + 4 <= decryptedArr.length) {
+      try {
+        const metaStr = new TextDecoder().decode(decryptedArr.slice(4, 4 + metaLength));
+        const testMeta = JSON.parse(metaStr);
+        if (isValidMeta(testMeta)) {
+          const dataBytes = decryptedArr.slice(4 + metaLength);
+          return { meta: testMeta as ZeferMeta, rawData: dataBytes.buffer as ArrayBuffer };
+        }
+      } catch { /* try next */ }
+    }
+  }
+
+  // Fallback: null-byte separator (older files)
+  const sepIndex = decryptedArr.indexOf(0);
+  if (sepIndex > 0 && sepIndex < decryptedArr.length - 1) {
+    try {
+      const metaStr = new TextDecoder().decode(decryptedArr.slice(0, sepIndex));
+      const testMeta = JSON.parse(metaStr);
+      if (isValidMeta(testMeta)) {
+        const dataBytes = decryptedArr.slice(sepIndex + 1);
+        return { meta: testMeta as ZeferMeta, rawData: dataBytes.buffer as ArrayBuffer };
+      }
+    } catch { /* try next */ }
+  }
+
+  // Fallback: ZEFER2 format
+  try {
+    const text = new TextDecoder().decode(decryptedArr);
+    const raw = header.compression === "none" ? text : await decompress(text, header.compression) as unknown as string;
+    const legacy = JSON.parse(typeof raw === "string" ? raw : text);
+    const meta: ZeferMeta = {
+      v: 3, fileName: legacy.fileName, fileType: null, fileSize: 0,
+      expiresAt: legacy.expiresAt, createdAt: legacy.createdAt,
+      answerHash: legacy.answerHash, allowedIps: legacy.allowedIps || [],
+      question: legacy.question || null, maxAttempts: legacy.maxAttempts || 0,
+    };
+    const contentBytes = new TextEncoder().encode(legacy.content);
+    return { meta, rawData: contentBytes.buffer as ArrayBuffer };
+  } catch {
+    return null;
+  }
 }
 
 export async function decodeZefer(
@@ -261,59 +334,63 @@ export async function decodeZefer(
   options?: {
     secondPassphrase?: string;
     questionAnswer?: string;
+    rawBytes?: ArrayBuffer;
+    onProgress?: {
+      deriving: () => void;
+      derivingDone: () => void;
+      decrypting: (chunkIndex: number, totalChunks: number) => void;
+      decompressing: () => void;
+      verifying: () => void;
+    };
   }
 ): Promise<DecodeResult> {
-  const parsed = parseFile(fileContent);
+  const parsed = parseFile(fileContent, options?.rawBytes);
   if (!parsed) return { ok: false, error: "invalid_format" };
 
-  const { header, encryptedLines } = parsed;
+  const { header } = parsed;
   const { secondPassphrase, questionAnswer } = options || {};
 
-  // Build candidates
   const candidates: string[] = [];
   candidates.push(passphrase);
   if (secondPassphrase) {
     candidates.push(combineDualKeys(passphrase, secondPassphrase));
   }
 
-  // Timing normalization: record start time to ensure constant response time
-  // This prevents an attacker from distinguishing success vs failure by timing
   const startTime = performance.now();
-  const MIN_RESPONSE_MS = 100; // minimum ms before returning (on top of PBKDF2 time)
+  const MIN_RESPONSE_MS = 100;
 
   let result: { meta: ZeferMeta; rawData: ArrayBuffer } | null = null;
+
   for (const candidate of candidates) {
-    result = await tryDecryptCombined(encryptedLines, candidate, header);
+    if (parsed.binary && parsed.binaryData) {
+      result = await tryDecryptBinary(parsed.binaryData, candidate, header);
+    } else if (parsed.encryptedLines) {
+      result = await tryDecryptText(parsed.encryptedLines, candidate, header);
+    }
     if (result) break;
   }
 
   if (!result) {
-    // Ensure consistent timing on failure
     const elapsed = performance.now() - startTime;
-    if (elapsed < MIN_RESPONSE_MS) {
-      await new Promise((r) => setTimeout(r, MIN_RESPONSE_MS - elapsed));
-    }
+    if (elapsed < MIN_RESPONSE_MS) await new Promise((r) => setTimeout(r, MIN_RESPONSE_MS - elapsed));
     return { ok: false, error: "wrong_passphrase" };
   }
 
   const { meta, rawData } = result;
 
   const attemptKey = meta.maxAttempts > 0
-    ? `zefer_attempts_${encryptedLines[0].substring(0, 40)}`
+    ? `zefer_attempts_${(parsed.encryptedLines?.[0] || "bin").substring(0, 40)}`
     : null;
 
-  // Max attempts — check current count BEFORE incrementing
   if (attemptKey) {
     const attempts = parseInt(localStorage.getItem(attemptKey) || "0", 10);
     if (attempts >= meta.maxAttempts) return { ok: false, error: "max_attempts" };
   }
 
-  // Secret question — does NOT consume an attempt if answer is missing/wrong
   if (meta.answerHash && meta.question) {
     if (!questionAnswer) return { ok: false, error: "needs_answer" };
     const hash = await hashAnswer(questionAnswer);
     if (hash !== meta.answerHash) {
-      // Wrong answer DOES consume an attempt
       if (attemptKey) {
         const attempts = parseInt(localStorage.getItem(attemptKey) || "0", 10);
         localStorage.setItem(attemptKey, String(attempts + 1));
@@ -322,21 +399,26 @@ export async function decodeZefer(
     }
   }
 
-  // Expiration
   if (meta.expiresAt > 0 && Date.now() > meta.expiresAt) return { ok: false, error: "expired" };
 
-  // All checks passed — clear attempt counter
   if (attemptKey) localStorage.removeItem(attemptKey);
 
-  // Build payload
+  // Decompress if compression was applied
+  let finalData: ArrayBuffer;
+  if (header.compression !== "none") {
+    const decompressed = await decompressBytes(new Uint8Array(rawData), header.compression);
+    finalData = decompressed.buffer as ArrayBuffer;
+  } else {
+    finalData = rawData;
+  }
+
   let content: string | null = null;
   let fileData: ArrayBuffer | null = null;
 
   if (header.mode === "file") {
-    fileData = rawData;
+    fileData = finalData;
   } else {
-    const text = new TextDecoder().decode(rawData);
-    content = header.compression !== "none" ? await decompress(text, header.compression) : text;
+    content = new TextDecoder().decode(finalData);
   }
 
   return { ok: true, payload: { meta, content, fileData }, header };
