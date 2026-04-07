@@ -518,6 +518,16 @@ const translations = {
     en: "Select a file to encrypt.",
     pt: "Selecione um arquivo para criptografar.",
   },
+  "form.error.binary": {
+    es: "El contenido parece ser un archivo binario. Usa el modo Archivo para cifrar este tipo de contenido.",
+    en: "The content appears to be a binary file. Use File mode to encrypt this type of content.",
+    pt: "O conteúdo parece ser um arquivo binário. Use o modo Arquivo para criptografar este tipo de conteúdo.",
+  },
+  "form.error.file.usetext": {
+    es: "Los archivos .txt y .env deben cifrarse en modo Texto. Cambia al modo Texto y carga el archivo allí.",
+    en: ".txt and .env files must be encrypted in Text mode. Switch to Text mode and upload the file there.",
+    pt: "Arquivos .txt e .env devem ser criptografados no modo Texto. Mude para o modo Texto e carregue o arquivo lá.",
+  },
   "success.copied": {
     es: "¡Copiado!",
     en: "Copied!",

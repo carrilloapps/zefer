@@ -1,18 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import { Lock, Unlock } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import EncryptForm from "@/app/components/EncryptForm";
 import DecryptForm from "@/app/components/DecryptForm";
 import { useLanguage } from "@/app/components/LanguageProvider";
-
-type Tab = "encrypt" | "decrypt";
+import { usePreferences } from "@/app/lib/preferences";
 
 export default function HomeContent() {
   const { t } = useLanguage();
-  const [tab, setTab] = useState<Tab>("encrypt");
+  const { tab, setTab } = usePreferences();
 
   return (
     <main className="flex-1 flex flex-col">

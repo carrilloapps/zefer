@@ -4,12 +4,14 @@ import type { CompressionMethod } from "./compression";
 const STORAGE_KEY = "zefer-prefs";
 
 type InputMode = "text" | "file";
+type Tab = "encrypt" | "decrypt";
 
 interface Preferences {
   ttl: number;
   iterations: number;
   compression: CompressionMethod;
   inputMode: InputMode;
+  tab: Tab;
 }
 
 const DEFAULTS: Preferences = {
@@ -17,6 +19,7 @@ const DEFAULTS: Preferences = {
   iterations: 600_000,
   compression: "none",
   inputMode: "text",
+  tab: "encrypt",
 };
 
 function load(): Preferences {
@@ -53,9 +56,11 @@ export function usePreferences() {
     iterations: prefs.iterations,
     compression: prefs.compression,
     inputMode: prefs.inputMode,
+    tab: prefs.tab,
     setTtl: (v: number) => update({ ttl: v }),
     setIterations: (v: number) => update({ iterations: v }),
     setCompression: (v: CompressionMethod) => update({ compression: v }),
     setInputMode: (v: InputMode) => update({ inputMode: v }),
+    setTab: (v: Tab) => update({ tab: v }),
   };
 }

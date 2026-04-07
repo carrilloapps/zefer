@@ -126,17 +126,49 @@ export default function EncryptForm() {
     benchmarkDevice().then(setDeviceSpeed).catch(() => {});
   }, []);
 
-  // Text mode: .txt / .env upload
+  // Text mode: STRICTLY .txt / .env only
   function handleTextFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Strict extension check
     const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
-    if (!TEXT_EXTENSIONS.includes(ext)) { setError(t("form.error.file.type")); return; }
-    if (file.size > TEXT_MAX) { setError(t("form.error.file.size")); return; }
+    if (!TEXT_EXTENSIONS.includes(ext)) {
+      setError(t("form.error.file.type"));
+      // Reset the input so the same file can't be re-selected
+      if (textFileRef.current) textFileRef.current.value = "";
+      return;
+    }
+
+    // Strict MIME type check (browsers report these for text files)
+    const validMimes = ["text/plain", "application/x-env", "application/octet-stream", ""];
+    if (file.type && !validMimes.includes(file.type)) {
+      setError(t("form.error.file.type"));
+      if (textFileRef.current) textFileRef.current.value = "";
+      return;
+    }
+
+    if (file.size > TEXT_MAX) {
+      setError(t("form.error.file.size"));
+      if (textFileRef.current) textFileRef.current.value = "";
+      return;
+    }
+
     setError(null);
     const reader = new FileReader();
     reader.onload = (ev) => {
-      if (typeof ev.target?.result === "string") { setContent(ev.target.result); setTextFileName(file.name); }
+      const text = ev.target?.result;
+      if (typeof text !== "string") return;
+
+      // Final check: reject binary content
+      if (hasBinaryContent(text)) {
+        setError(t("form.error.binary"));
+        if (textFileRef.current) textFileRef.current.value = "";
+        return;
+      }
+
+      setContent(text);
+      setTextFileName(file.name);
     };
     reader.readAsText(file);
   }
@@ -197,6 +229,7 @@ export default function EncryptForm() {
     setError(null);
 
     if (inputMode === "text" && !content.trim()) { setError(t("form.error.empty")); return; }
+    if (inputMode === "text" && hasBinaryContent(content)) { setError(t("form.error.binary")); return; }
     if (inputMode === "file" && !fileData) { setError(t("form.error.nofile")); return; }
     if (!passphrase || passphrase.length < 6) { setError(t("form.error.passphrase")); return; }
     if (dualKey && (!secondPassphrase || secondPassphrase.length < 6)) { setError(t("form.error.passphrase2")); return; }
