@@ -1,6 +1,6 @@
 import { decryptFromBase64, combineDualKeys, hashAnswer } from "./crypto";
 import { chunkedEncrypt, chunkedDecryptToBuffer, CHUNK_SIZE } from "./chunked-crypto";
-import { compressBytes, decompressBytes, decompress, type CompressionMethod } from "./compression";
+import { compressBytes, decompressBytes, type CompressionMethod } from "./compression";
 
 const MAGIC_TEXT = "ZEFER3";
 const MAGIC_BIN = new Uint8Array([0x5A, 0x45, 0x46, 0x42, 0x33]); // "ZEFB3" — binary format
@@ -358,11 +358,10 @@ async function extractPayload(
     } catch { /* try next */ }
   }
 
-  // Fallback: ZEFER2 format
+  // Fallback: ZEFER2 format (compression not supported — decodeZefer handles it separately)
   try {
     const text = new TextDecoder().decode(decryptedArr);
-    const raw = header.compression === "none" ? text : await decompress(text, header.compression) as unknown as string;
-    const legacy = JSON.parse(typeof raw === "string" ? raw : text);
+    const legacy = JSON.parse(text);
     const meta: ZeferMeta = {
       v: 3, fileName: legacy.fileName, fileType: null, fileSize: 0,
       expiresAt: legacy.expiresAt, createdAt: legacy.createdAt,

@@ -70,7 +70,7 @@ export async function compressBytes(
 
   const cs = new CompressionStream(method as CompressionFormat);
   const writer = cs.writable.getWriter();
-  writer.write(data.buffer as ArrayBuffer);
+  writer.write(data as unknown as ArrayBuffer);
   writer.close();
 
   return streamToUint8Array(cs.readable);
@@ -84,7 +84,7 @@ export async function decompressBytes(
 
   const ds = new DecompressionStream(method as CompressionFormat);
   const writer = ds.writable.getWriter();
-  writer.write(data.buffer as ArrayBuffer);
+  writer.write(data as unknown as ArrayBuffer);
   writer.close();
 
   return streamToUint8Array(ds.readable, MAX_DECOMPRESS_SIZE);
