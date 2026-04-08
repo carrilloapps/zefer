@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Lock,
   Eye,
@@ -95,6 +96,58 @@ export default function EncryptForm() {
   });
   useEffect(() => { setLimits(analyzeDevice()); }, []);
 
+  // URL params (long and short aliases)
+  const searchParams = useSearchParams();
+  const paramsApplied = useRef(false);
+  const securityMap: Record<string, number> = { standard: 300_000, high: 600_000, maximum: 1_000_000 };
+  useEffect(() => {
+    if (paramsApplied.current) return;
+    paramsApplied.current = true;
+    const g = (long: string, short: string) => searchParams.get(long) ?? searchParams.get(short) ?? null;
+    let adv = false;
+    let hasSensitive = false;
+
+    // Core
+    const mode = g("mode", "m");
+    if (mode === "text" || mode === "file") setInputMode(mode);
+    const ttlVal = g("ttl", "ttl");
+    if (ttlVal) { const v = parseInt(ttlVal, 10); if (!isNaN(v) && v >= 0) setTtl(v); }
+    const comp = g("compression", "c");
+    if (comp === "gzip" || comp === "deflate" || comp === "none") setCompression(comp as CompressionMethod);
+    const sec = g("security", "s");
+    if (sec && securityMap[sec]) setIterations(securityMap[sec]);
+    else { const iter = g("iterations", "i"); if (iter) { const v = parseInt(iter, 10); if (!isNaN(v) && v > 0) setIterations(v); } }
+
+    // Auth
+    const pass = g("passphrase", "p");
+    if (pass) { setPassphrase(pass); hasSensitive = true; }
+    const pass2 = g("passphrase2", "p2");
+    if (pass2) { setSecondPassphrase(pass2); setDualKey(true); adv = true; hasSensitive = true; }
+    const dual = g("dual", "d");
+    if (dual === "1" || dual === "true") { setDualKey(true); adv = true; }
+    const rev = g("reveal", "r");
+    if (rev) { setRevealKey(rev); adv = true; hasSensitive = true; }
+
+    // Metadata
+    const hintVal = g("hint", "h");
+    if (hintVal) { setHint(hintVal); adv = true; }
+    const noteVal = g("note", "n");
+    if (noteVal) { setNote(noteVal); adv = true; }
+
+    // Security
+    const quest = g("question", "q");
+    if (quest) { setQuestion(quest); adv = true; }
+    const ans = g("answer", "a");
+    if (ans) { setQuestionAnswer(ans); adv = true; hasSensitive = true; }
+    const att = g("attempts", "att");
+    if (att) { const v = parseInt(att, 10); if (!isNaN(v) && v >= 0) { setMaxAttempts(v); adv = true; } }
+    const ipsVal = g("ips", "ips");
+    if (ipsVal) { setAllowedIpsInput(ipsVal); adv = true; }
+
+    if (adv) setShowAdvanced(true);
+    if (hasSensitive) window.history.replaceState({}, "", window.location.pathname);
+  }, [searchParams, setInputMode, setTtl, setIterations, setCompression]);
+
   // Advanced
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [dualKey, setDualKey] = useState(false);
@@ -184,10 +237,7 @@ export default function EncryptForm() {
   }
 
   // File mode: any file EXCEPT .txt and .env (those must use text mode)
-  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  function processFile(file: File) {
     const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
     if (TEXT_EXTENSIONS.includes(ext)) {
       setError(t("form.error.file.usetext"));
@@ -221,6 +271,20 @@ export default function EncryptForm() {
       }
     };
     reader.readAsArrayBuffer(file);
+  }
+
+  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  }
+
+  const [isDragging, setIsDragging] = useState(false);
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
   }
 
   function clearFile() {
@@ -396,7 +460,7 @@ export default function EncryptForm() {
         {inputMode === "file" && (
           <div className="mb-4 animate-in">
             <label className="text-xs font-medium theme-text mb-2 block">{t("mode.file.label")}</label>
-            <div role="button" tabIndex={0} onClick={() => fileRef.current?.click()} onKeyDown={(e) => { if (e.key === "Enter") fileRef.current?.click(); }} className="w-full glass !rounded-xl p-5 flex flex-col items-center gap-2 cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors duration-200 dropzone-pulse">
+            <div role="button" tabIndex={0} onClick={() => fileRef.current?.click()} onKeyDown={(e) => { if (e.key === "Enter") fileRef.current?.click(); }} onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }} onDragEnter={(e) => { e.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)} onDrop={handleDrop} className={`w-full glass !rounded-xl p-5 flex flex-col items-center gap-2 cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors duration-200 dropzone-pulse ${isDragging ? "ring-2 ring-[var(--primary)] bg-[var(--glass-bg-hover)]" : ""}`}>
               {fileName ? (
                 <div className="flex items-center gap-3">
                   <FileText className="w-5 h-5 text-primary" />

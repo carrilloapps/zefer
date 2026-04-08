@@ -1,0 +1,140 @@
+# Zefer
+
+> Client-side encryption tool. Converts text and files into password-protected .zefer files using AES-256-GCM. 100% browser-based, zero-knowledge, open source.
+
+Zefer encrypts secrets (text, files, API keys, images, ZIPs) into `.zefer` files that can only be decrypted with the correct passphrase. All cryptographic operations happen in the browser via the Web Crypto API. No data ever reaches a server.
+
+- Live: https://zefer.carrillo.app
+- Source: https://github.com/carrilloapps/zefer
+- License: MIT
+- Author: Jose Carrillo (@carrilloapps)
+
+## Docs
+
+- [How It Works](https://zefer.carrillo.app/how): 7-step encryption process, 5 features, 12 technical specs
+- [Privacy & Security](https://zefer.carrillo.app/privacy): 9-section policy, GDPR/CCPA/LGPD compliance
+- [Terms & Conditions](https://zefer.carrillo.app/terms): 12 sections, MIT license, Colombia Law 1581
+- [Project Info](https://zefer.carrillo.app/project): Tech stack, creator, donate
+- [Device Detection](https://zefer.carrillo.app/device): RAM/CPU/GPU analysis, dynamic file limits
+- [Usage Guide](https://zefer.carrillo.app/install): Encrypt/decrypt steps, advanced features, self-hosting, PWA
+
+## Encryption
+
+1. User enters text or selects a file (click or drag-and-drop)
+2. Sets a passphrase (minimum 6 characters)
+3. PBKDF2-SHA256 derives a 256-bit key from passphrase + 32-byte random salt
+4. AES-256-GCM encrypts the payload with a 12-byte random IV
+5. Files over 16MB are split into chunks (unique IV per chunk via base_iv XOR chunk_index)
+6. Result is packaged as a ZEFB3 binary file (or ZEFR3 if reveal key is used)
+
+## Security Features
+
+All security metadata lives inside the encrypted payload (invisible without the key):
+
+- **Reveal key**: same payload encrypted with a second passphrase (ZEFR3 format, independent salt/IV/key)
+- **Dual passphrase**: two keys combined via `\x00ZEFER_DUAL\x00` separator before derivation
+- **Secret question**: answer hashed with PBKDF2-SHA256 (100k iterations, deterministic salt)
+- **IP restriction**: IPv4/IPv6 allowlist (comma-separated, checked client-side after decryption)
+- **Expiration**: UTC timestamp, 30min to 2 weeks or never
+- **Max attempts**: localStorage-based counter per file
+- **Compression**: Gzip or Deflate via CompressionStream API (before encryption)
+- **PBKDF2 iterations**: 300k (standard), 600k (high), 1M (maximum)
+
+## Binary File Format
+
+### ZEFB3 (single key)
+
+```
+ZEFB3 (5 bytes: 0x5A 0x45 0x46 0x42 0x33)
+header_length (4 bytes, big-endian)
+header_json {"iterations":N,"compression":"...","hint":null,"note":null,"mode":"text|file"}
+salt (32 bytes) + base_iv (12 bytes)
+chunks: [4-byte length][AES-GCM ciphertext + 16-byte auth tag] ...
+```
+
+### ZEFR3 (with reveal key)
+
+```
+ZEFR3 (5 bytes: 0x5A 0x45 0x46 0x52 0x33)
+header_length (4 bytes, big-endian)
+header_json (same fields as ZEFB3)
+main_block_size (4 bytes, big-endian)
+main_block: salt(32) + iv(12) + chunks
+reveal_block: salt(32) + iv(12) + chunks
+```
+
+### Encrypted metadata (inside AES-256-GCM payload)
+
+Packed as: 4-byte meta length (big-endian) + metadata JSON + raw content bytes
+
+```json
+{"v":3,"fileName":"...","fileType":"...","fileSize":0,"expiresAt":0,"createdAt":0,"answerHash":null,"allowedIps":[],"question":null,"maxAttempts":0}
+```
+
+## URL Parameters
+
+Pre-configure encrypt/decrypt forms via URL. Every param has a long name and short alias. Sensitive params (`p`, `p2`, `r`, `a`) are auto-cleared from the URL after reading.
+
+### Tab: `tab`/`t` = `encrypt` | `decrypt`
+
+### Encrypt
+
+| Long | Short | Type | Values |
+|------|-------|------|--------|
+| passphrase | p | string | min 6 chars |
+| passphrase2 | p2 | string | enables dual key |
+| dual | d | flag | 1/true |
+| reveal | r | string | min 6 chars |
+| mode | m | enum | text/file |
+| ttl | - | number | 0=never, 30, 60, 1440, 10080, 20160 (minutes) |
+| security | s | enum | standard/high/maximum |
+| iterations | i | number | 300000-1000000 |
+| compression | c | enum | none/gzip/deflate |
+| hint | h | string | public hint |
+| note | n | string | public note |
+| question | q | string | security question |
+| answer | a | string | question answer |
+| attempts | att | number | 0/3/5/10 |
+| ips | - | string | comma-separated IPv4/IPv6 |
+
+### Decrypt
+
+| Long | Short | Type |
+|------|-------|------|
+| passphrase | p | string |
+| passphrase2 | p2 | string |
+| dual | d | flag |
+| answer | a | string |
+
+### Examples
+
+```
+/?t=decrypt&p=myKey123
+/?t=encrypt&m=file&ttl=30&c=gzip&s=high
+/?t=encrypt&p=key1&p2=key2&q=Color%3F&a=blue&ips=10.0.0.1,192.168.1.5&att=5
+```
+
+## Tech Stack
+
+- Next.js 16.2.2 (React 19), TypeScript 5, Tailwind CSS v4
+- Web Crypto API (SubtleCrypto), CompressionStream API
+- Lucide React, Sonner (toasts)
+- Vitest (125 tests, 100% line coverage)
+- i18n: Spanish, English, Portuguese
+- WCAG 2.1 AA compliant, responsive, dark/light themes
+
+## What Zefer Does NOT Do
+
+- Does not store data on servers
+- Does not use cookies, trackers, or analytics
+- Does not collect personal information
+- Does not have user accounts
+- Does not transmit passphrases or keys
+- Cannot recover lost passphrases
+
+## Optional
+
+- [Architecture](https://github.com/carrilloapps/zefer/blob/main/docs/ARCHITECTURE.md)
+- [Security Model](https://github.com/carrilloapps/zefer/blob/main/docs/SECURITY.md)
+- [Deployment](https://github.com/carrilloapps/zefer/blob/main/docs/DEPLOYMENT.md)
+- [Contributing](https://github.com/carrilloapps/zefer/blob/main/docs/CONTRIBUTING.md)

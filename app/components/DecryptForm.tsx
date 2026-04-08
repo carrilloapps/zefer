@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Lock,
   Unlock,
@@ -50,6 +51,27 @@ export default function DecryptForm() {
   const [secondPassphrase, setSecondPassphrase] = useState("");
   const [showSecondPass, setShowSecondPass] = useState(false);
 
+  // URL params (long and short aliases)
+  const searchParams = useSearchParams();
+  const paramsApplied = useRef(false);
+  useEffect(() => {
+    if (paramsApplied.current) return;
+    paramsApplied.current = true;
+    const g = (long: string, short: string) => searchParams.get(long) ?? searchParams.get(short) ?? null;
+    let hasSensitive = false;
+
+    const pass = g("passphrase", "p");
+    if (pass) { setPassphrase(pass); hasSensitive = true; }
+    const pass2 = g("passphrase2", "p2");
+    if (pass2) { setSecondPassphrase(pass2); setUseDualKey(true); hasSensitive = true; }
+    const dual = g("dual", "d");
+    if (dual === "1" || dual === "true") setUseDualKey(true);
+    const ans = g("answer", "a");
+    if (ans) { setQuestionAnswer(ans); hasSensitive = true; }
+
+    if (hasSensitive) window.history.replaceState({}, "", window.location.pathname);
+  }, [searchParams]);
+
   // Post-decryption question
   const [questionAnswer, setQuestionAnswer] = useState("");
 
@@ -65,9 +87,7 @@ export default function DecryptForm() {
   const [copied, setCopied] = useState(false);
 
 
-  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  function processFile(file: File) {
     if (!file.name.endsWith(".zefer")) {
       setError(t("decrypt.error.format"));
       return;
@@ -110,6 +130,20 @@ export default function DecryptForm() {
       textReader.readAsText(file);
     };
     bufReader.readAsArrayBuffer(file);
+  }
+
+  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  }
+
+  const [isDragging, setIsDragging] = useState(false);
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
   }
 
   async function handleDecrypt(e: React.FormEvent) {
@@ -344,10 +378,16 @@ export default function DecryptForm() {
         {/* File upload */}
         <div className="mb-4">
           <label className="text-xs font-medium theme-text mb-2 block">{t("decrypt.file.label")}</label>
-          <button
-            type="button"
+          <div
+            role="button"
+            tabIndex={0}
             onClick={() => fileInputRef.current?.click()}
-            className="w-full glass !rounded-xl p-5 flex flex-col items-center gap-2 cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors duration-200 dropzone-pulse"
+            onKeyDown={(e) => { if (e.key === "Enter") fileInputRef.current?.click(); }}
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragEnter={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+            className={`w-full glass !rounded-xl p-5 flex flex-col items-center gap-2 cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors duration-200 dropzone-pulse ${isDragging ? "ring-2 ring-[var(--primary)] bg-[var(--glass-bg-hover)]" : ""}`}
           >
             {zeferFileName ? (
               <div className="flex items-center gap-2 text-primary">
@@ -361,7 +401,7 @@ export default function DecryptForm() {
                 {limits && <span className="text-[10px] theme-faint">{t("mode.file.limit")} {limits.maxFileSizeLabel}</span>}
               </>
             )}
-          </button>
+          </div>
           <input ref={fileInputRef} type="file" accept=".zefer" onChange={handleFileUpload} className="hidden" />
           {limits && (
             <div className="mt-3">

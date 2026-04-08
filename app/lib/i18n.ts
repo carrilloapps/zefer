@@ -94,7 +94,7 @@ const translations = {
   "steps.title": {
     es: "¿Cómo funciona?",
     en: "How it works",
-    pt: "Como funciona",
+    pt: "Como funciona?",
   },
   "steps.1.title": {
     es: "Cifra y descarga",
@@ -166,9 +166,9 @@ const translations = {
     pt: "Arquivo .zefer",
   },
   "decrypt.file.placeholder": {
-    es: "Haz clic para seleccionar un archivo .zefer",
-    en: "Click to select a .zefer file",
-    pt: "Clique para selecionar um arquivo .zefer",
+    es: "Haz clic o arrastra y suelta un archivo .zefer",
+    en: "Click or drag and drop a .zefer file",
+    pt: "Clique ou arraste e solte um arquivo .zefer",
   },
   "decrypt.submit": {
     es: "Descifrar archivo",
@@ -447,9 +447,9 @@ const translations = {
     pt: "Selecione um arquivo para criptografar",
   },
   "mode.file.placeholder": {
-    es: "Haz clic para seleccionar cualquier archivo",
-    en: "Click to select any file",
-    pt: "Clique para selecionar qualquer arquivo",
+    es: "Haz clic o arrastra y suelta cualquier archivo",
+    en: "Click or drag and drop any file",
+    pt: "Clique ou arraste e solte qualquer arquivo",
   },
   "mode.file.limit": {
     es: "Límite:",
@@ -1002,7 +1002,7 @@ const translations = {
   "footer.product.how": {
     es: "¿Cómo funciona?",
     en: "How it works",
-    pt: "Como funciona",
+    pt: "Como funciona?",
   },
   "footer.product.device": {
     es: "Rendimiento",
@@ -1244,7 +1244,7 @@ const translations = {
   "privacy.subtitle": {
     es: "¿Cómo protegemos tu información?",
     en: "How we protect your information",
-    pt: "Como protegemos sua informação",
+    pt: "Como protegemos sua informação?",
   },
   "privacy.intro": {
     es: "Zefer fue diseñado desde cero con un único principio: tu información es solo tuya. Todo el cifrado y descifrado ocurre exclusivamente en tu navegador. Ningún dato se envía, almacena ni procesa en nuestros servidores. Es matemáticamente imposible que nosotros, o cualquier tercero, acceda al contenido de tus archivos .zefer.",
@@ -1672,6 +1672,283 @@ const translations = {
     es: "Síguenos en GitHub para recibir notificaciones cuando las aplicaciones nativas estén disponibles.",
     en: "Follow us on GitHub to get notified when native apps are available.",
     pt: "Siga-nos no GitHub para ser notificado quando os aplicativos nativos estiverem disponíveis.",
+  },
+  "install.native.title": {
+    es: "Aplicaciones nativas",
+    en: "Native apps",
+    pt: "Aplicativos nativos",
+  },
+
+  // ─── Install: Usage guide ───
+  "install.usage.title": {
+    es: "Cómo usar Zefer",
+    en: "How to Use Zefer",
+    pt: "Como usar o Zefer",
+  },
+  "install.usage.desc": {
+    es: "Guía completa para cifrar y descifrar archivos con Zefer.",
+    en: "Complete guide to encrypt and decrypt files with Zefer.",
+    pt: "Guia completo para criptografar e descriptografar arquivos com o Zefer.",
+  },
+  "install.usage.encrypt.title": {
+    es: "Cifrar",
+    en: "Encrypt",
+    pt: "Criptografar",
+  },
+  "install.usage.encrypt.step1": {
+    es: "Selecciona modo texto o archivo",
+    en: "Select text mode or file mode",
+    pt: "Selecione modo texto ou arquivo",
+  },
+  "install.usage.encrypt.step2": {
+    es: "Escribe tu contenido o arrastra un archivo",
+    en: "Enter your content or drag a file",
+    pt: "Digite seu conteúdo ou arraste um arquivo",
+  },
+  "install.usage.encrypt.step3": {
+    es: "Establece una frase clave (mínimo 6 caracteres)",
+    en: "Set a passphrase (minimum 6 characters)",
+    pt: "Defina uma frase-chave (mínimo 6 caracteres)",
+  },
+  "install.usage.encrypt.step4": {
+    es: "Configura expiración, compresión y nivel de seguridad",
+    en: "Configure expiration, compression, and security level",
+    pt: "Configure expiração, compressão e nível de segurança",
+  },
+  "install.usage.encrypt.step5": {
+    es: "Descarga el archivo .zefer",
+    en: "Download the .zefer file",
+    pt: "Baixe o arquivo .zefer",
+  },
+  "install.usage.decrypt.title": {
+    es: "Descifrar",
+    en: "Decrypt",
+    pt: "Descriptografar",
+  },
+  "install.usage.decrypt.step1": {
+    es: "Sube o arrastra un archivo .zefer",
+    en: "Upload or drag a .zefer file",
+    pt: "Envie ou arraste um arquivo .zefer",
+  },
+  "install.usage.decrypt.step2": {
+    es: "Ingresa la frase clave",
+    en: "Enter the passphrase",
+    pt: "Digite a frase-chave",
+  },
+  "install.usage.decrypt.step3": {
+    es: "Responde la pregunta de seguridad si se requiere",
+    en: "Answer the security question if required",
+    pt: "Responda a pergunta de segurança se necessário",
+  },
+  "install.usage.decrypt.step4": {
+    es: "Visualiza o descarga el contenido descifrado",
+    en: "View or download the decrypted content",
+    pt: "Visualize ou baixe o conteúdo descriptografado",
+  },
+  "install.usage.advanced.title": {
+    es: "Opciones avanzadas",
+    en: "Advanced Features",
+    pt: "Recursos avançados",
+  },
+  "install.usage.advanced.revealkey": {
+    es: "Clave de revelado: comparte una contraseña diferente con el destinatario, manteniendo tu frase clave principal privada.",
+    en: "Reveal key: share a different password with recipients while keeping your main passphrase private.",
+    pt: "Chave de revelação: compartilhe uma senha diferente com destinatários, mantendo sua frase-chave principal privada.",
+  },
+  "install.usage.advanced.dualkey": {
+    es: "Doble frase clave: requiere dos contraseñas diferentes para descifrar (autorización de dos personas).",
+    en: "Dual passphrase: require two different passwords to decrypt (two-person authorization).",
+    pt: "Frase-chave dupla: requer duas senhas diferentes para descriptografar (autorização de duas pessoas).",
+  },
+  "install.usage.advanced.question": {
+    es: "Pregunta secreta: agrega una capa extra de autenticación con respuesta hasheada con PBKDF2.",
+    en: "Secret question: add an extra authentication step with a PBKDF2-hashed answer.",
+    pt: "Pergunta secreta: adicione uma camada extra de autenticação com resposta hasheada com PBKDF2.",
+  },
+  "install.usage.advanced.ip": {
+    es: "Restricción por IP: limita el descifrado a direcciones IPv4/IPv6 específicas.",
+    en: "IP restriction: limit decryption to specific IPv4/IPv6 addresses.",
+    pt: "Restrição por IP: limite a descriptografia a endereços IPv4/IPv6 específicos.",
+  },
+  "install.usage.advanced.attempts": {
+    es: "Máximo de intentos: limita la cantidad de intentos de descifrado.",
+    en: "Max attempts: limit the number of decryption tries.",
+    pt: "Máximo de tentativas: limite o número de tentativas de descriptografia.",
+  },
+  "install.usage.advanced.compression": {
+    es: "Compresión: reduce el tamaño del archivo con Gzip o Deflate antes de cifrar.",
+    en: "Compression: reduce file size with Gzip or Deflate before encryption.",
+    pt: "Compressão: reduza o tamanho do arquivo com Gzip ou Deflate antes da criptografia.",
+  },
+  "install.usage.url.title": {
+    es: "Parámetros URL",
+    en: "URL Parameters",
+    pt: "Parâmetros URL",
+  },
+  "install.usage.url.desc": {
+    es: "Pre-configura los formularios vía URL para automatización de flujos.",
+    en: "Pre-configure forms via URL for workflow automation.",
+    pt: "Pré-configure formulários via URL para automação de fluxos.",
+  },
+  "install.usage.selfhost.title": {
+    es: "Alojamiento propio",
+    en: "Self-Hosting",
+    pt: "Hospedagem própria",
+  },
+  "install.usage.selfhost.step1": {
+    es: "Clona el repositorio",
+    en: "Clone the repository",
+    pt: "Clone o repositório",
+  },
+  "install.usage.selfhost.step2": {
+    es: "Instala las dependencias",
+    en: "Install dependencies",
+    pt: "Instale as dependências",
+  },
+  "install.usage.selfhost.step3": {
+    es: "Compila el proyecto",
+    en: "Build the project",
+    pt: "Compile o projeto",
+  },
+  "install.usage.selfhost.step4": {
+    es: "Inicia el servidor",
+    en: "Start the server",
+    pt: "Inicie o servidor",
+  },
+  "install.usage.selfhost.note": {
+    es: "HTTPS es requerido para que la Web Crypto API funcione.",
+    en: "HTTPS is required for the Web Crypto API to work.",
+    pt: "HTTPS é necessário para que a Web Crypto API funcione.",
+  },
+  "install.usage.pwa.title": {
+    es: "Instalar como PWA",
+    en: "Install as PWA",
+    pt: "Instalar como PWA",
+  },
+  "install.usage.pwa.desc": {
+    es: "Abre zefer.carrillo.app en Chrome o Edge, haz clic en el ícono de instalación en la barra de direcciones, y usa Zefer como aplicación de escritorio.",
+    en: "Open zefer.carrillo.app in Chrome or Edge, click the install icon in the address bar, and use Zefer as a desktop app.",
+    pt: "Abra zefer.carrillo.app no Chrome ou Edge, clique no ícone de instalação na barra de endereços e use o Zefer como aplicativo de desktop.",
+  },
+  "install.guides.title": {
+    es: "Documentación",
+    en: "Documentation",
+    pt: "Documentação",
+  },
+  "install.guides.usage": {
+    es: "Guía de uso",
+    en: "Usage Guide",
+    pt: "Guia de uso",
+  },
+  "install.guides.usage.desc": {
+    es: "Cifrar, descifrar y opciones avanzadas",
+    en: "Encrypt, decrypt, and advanced options",
+    pt: "Criptografar, descriptografar e opções avançadas",
+  },
+  "install.guides.selfhost.desc": {
+    es: "Aloja tu propia instancia de Zefer",
+    en: "Host your own Zefer instance",
+    pt: "Hospede sua própria instância do Zefer",
+  },
+  "install.guides.url.desc": {
+    es: "Automatiza flujos con parámetros URL",
+    en: "Automate workflows with URL params",
+    pt: "Automatize fluxos com parâmetros URL",
+  },
+  "install.guide.badge": {
+    es: "Guía completa",
+    en: "Complete guide",
+    pt: "Guia completo",
+  },
+  "install.guide.quickstart": {
+    es: "Empieza ahora",
+    en: "Get started now",
+    pt: "Comece agora",
+  },
+  "install.guide.quickstart.desc": {
+    es: "No necesitas instalar nada. Zefer funciona directamente en tu navegador.",
+    en: "No installation needed. Zefer works directly in your browser.",
+    pt: "Não precisa instalar nada. O Zefer funciona diretamente no seu navegador.",
+  },
+  "install.guide.url.tab": {
+    es: "Usa tab/t para seleccionar pestaña: /?tab=encrypt o /?t=decrypt",
+    en: "Use tab/t to select tab: /?tab=encrypt or /?t=decrypt",
+    pt: "Use tab/t para selecionar aba: /?tab=encrypt ou /?t=decrypt",
+  },
+  "install.guide.url.sensitive": {
+    es: "Los parámetros sensibles (passphrase, passphrase2, reveal, answer) se eliminan automáticamente de la URL después de leerlos.",
+    en: "Sensitive parameters (passphrase, passphrase2, reveal, answer) are automatically removed from the URL after reading.",
+    pt: "Parâmetros sensíveis (passphrase, passphrase2, reveal, answer) são removidos automaticamente da URL após a leitura.",
+  },
+  "install.guide.param.passphrase": {
+    es: "Frase clave principal (mínimo 6 caracteres)",
+    en: "Main passphrase (minimum 6 characters)",
+    pt: "Frase-chave principal (mínimo 6 caracteres)",
+  },
+  "install.guide.param.passphrase2": {
+    es: "Segunda frase clave (activa doble clave automáticamente)",
+    en: "Second passphrase (auto-enables dual key)",
+    pt: "Segunda frase-chave (ativa chave dupla automaticamente)",
+  },
+  "install.guide.param.dual": {
+    es: "Activar modo doble clave (1 o true)",
+    en: "Enable dual key mode (1 or true)",
+    pt: "Ativar modo chave dupla (1 ou true)",
+  },
+  "install.guide.param.reveal": {
+    es: "Clave de revelado para el destinatario",
+    en: "Reveal key for the recipient",
+    pt: "Chave de revelação para o destinatário",
+  },
+  "install.guide.param.mode": {
+    es: "Modo de entrada: text o file",
+    en: "Input mode: text or file",
+    pt: "Modo de entrada: text ou file",
+  },
+  "install.guide.param.ttl": {
+    es: "Expiración en minutos (0=nunca, 30, 60, 1440, 10080, 20160)",
+    en: "Expiration in minutes (0=never, 30, 60, 1440, 10080, 20160)",
+    pt: "Expiração em minutos (0=nunca, 30, 60, 1440, 10080, 20160)",
+  },
+  "install.guide.param.security": {
+    es: "Nivel PBKDF2: standard, high, maximum",
+    en: "PBKDF2 level: standard, high, maximum",
+    pt: "Nível PBKDF2: standard, high, maximum",
+  },
+  "install.guide.param.compression": {
+    es: "Compresión: none, gzip, deflate",
+    en: "Compression: none, gzip, deflate",
+    pt: "Compressão: none, gzip, deflate",
+  },
+  "install.guide.param.hint": {
+    es: "Pista pública (visible sin frase clave)",
+    en: "Public hint (visible without passphrase)",
+    pt: "Dica pública (visível sem frase-chave)",
+  },
+  "install.guide.param.note": {
+    es: "Nota pública (visible sin frase clave)",
+    en: "Public note (visible without passphrase)",
+    pt: "Nota pública (visível sem frase-chave)",
+  },
+  "install.guide.param.question": {
+    es: "Pregunta de seguridad",
+    en: "Security question",
+    pt: "Pergunta de segurança",
+  },
+  "install.guide.param.answer": {
+    es: "Respuesta a la pregunta de seguridad",
+    en: "Security question answer",
+    pt: "Resposta à pergunta de segurança",
+  },
+  "install.guide.param.attempts": {
+    es: "Máximo de intentos de descifrado (0=ilimitado)",
+    en: "Max decryption attempts (0=unlimited)",
+    pt: "Máximo de tentativas de descriptografia (0=ilimitado)",
+  },
+  "install.guide.param.ips": {
+    es: "IPs permitidas separadas por coma (IPv4/IPv6)",
+    en: "Allowed IPs comma-separated (IPv4/IPv6)",
+    pt: "IPs permitidos separados por vírgula (IPv4/IPv6)",
   },
 
   "terms.changes.desc": {

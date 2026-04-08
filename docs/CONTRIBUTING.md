@@ -22,15 +22,25 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ```
 app/
-  api/           # Server-side API routes (minimal)
-  components/    # React components (all client-side)
-  lib/           # Core logic (crypto, compression, device, i18n, etc.)
+  api/           # Server-side API routes (/api/author only)
+  components/    # 22 React client components
+  lib/           # 10 core logic modules (crypto, compression, device, i18n, etc.)
   [page]/        # Next.js file-based routing
   globals.css    # Design system (CSS variables, glass effects, animations)
-scripts/
-  generate-secret.mjs   # Instance secret generator
 docs/            # Documentation
+public/          # Static assets (llms.txt)
 ```
+
+## Testing
+
+```bash
+npm test              # Run 125 tests (Vitest)
+npm run test:watch    # Watch mode for development
+```
+
+Coverage thresholds enforced: 100% lines, 100% functions, 100% statements, 99% branches.
+
+**Always run tests before submitting a PR.**
 
 ## Conventions
 
@@ -38,8 +48,8 @@ docs/            # Documentation
 
 - TypeScript strict mode
 - ESLint with Next.js config
-- No default exports except for pages and layouts (Next.js requirement)
-- Components are `"use client"` when they use hooks, state, or browser APIs
+- Components use default exports (`"use client"` with PascalCase filenames)
+- All interactive elements need `cursor-pointer`
 
 ### Theming
 
@@ -48,21 +58,15 @@ All colors MUST use CSS custom properties or theme utility classes:
 ```tsx
 // Correct
 <p className="theme-muted">Text</p>
-<p className="theme-heading">Heading</p>
 <div className="glass">Card</div>
 
 // Wrong
 <p className="text-gray-500">Text</p>
-<p className="text-white">Heading</p>
 ```
 
 Available theme classes:
-- `theme-heading` — strongest text
-- `theme-text` — body text
-- `theme-muted` — secondary text
-- `theme-faint` — tertiary text (still WCAG AA compliant)
-- `theme-primary-faint` — primary background tint
-- `theme-primary-border` — primary border
+- `theme-heading`, `theme-text`, `theme-muted`, `theme-faint` — text hierarchy
+- `theme-primary-faint`, `theme-primary-border` — primary accents
 - `theme-danger`, `theme-warning` — semantic colors
 - `glass`, `glass-nav`, `glass-banner` — glass morphism
 
@@ -72,26 +76,25 @@ All user-facing text MUST be in `app/lib/i18n.ts` with translations in all three
 
 ```typescript
 "key.name": {
-  es: "Texto en español",
+  es: "Texto en espanol",
   en: "English text",
-  pt: "Texto em português",
+  pt: "Texto em portugues",
 },
 ```
 
 ### Accessibility
 
 - All text must pass WCAG 2.1 AA (4.5:1 contrast ratio)
-- Interactive elements need `cursor-pointer`
 - Form inputs need associated `<label>` elements
 - Icon-only buttons need `aria-label`
 - Animations must respect `prefers-reduced-motion`
+- File uploads must support both click and drag-and-drop
 
 ### Responsive
 
-- Mobile-first: default styles for mobile, `sm:` / `md:` / `lg:` for larger screens
+- Mobile-first: default styles for mobile, `sm:` / `md:` / `lg:` for larger
 - Use `min-[Xpx]:` for breakpoints between Tailwind defaults
 - Popovers: `fixed` on mobile, `absolute` on desktop
-- Grids: stack on mobile, columns on desktop
 - Inputs: `font-size: 16px` minimum on mobile (prevents iOS zoom)
 
 ## Making Changes
@@ -99,9 +102,10 @@ All user-facing text MUST be in `app/lib/i18n.ts` with translations in all three
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/your-feature`
 3. Make your changes
-4. Run the build: `npm run build`
-5. Verify no TypeScript errors
-6. Submit a pull request
+4. Run tests: `npm test`
+5. Run the build: `npm run build`
+6. Verify no TypeScript errors: `npx tsc --noEmit`
+7. Submit a pull request
 
 ## Adding a New Language
 
@@ -117,7 +121,9 @@ All user-facing text MUST be in `app/lib/i18n.ts` with translations in all three
 4. Handle in `encodeZefer()` and `decodeZefer()`
 5. Add post-decryption check in `DecryptForm.tsx`
 6. Add i18n keys for all three languages
-7. Add to the How page features section
+7. Add URL parameter support (long + short alias) in the `useEffect` block
+8. Add tests for the new feature
+9. Update documentation (CLAUDE.md, README.md, llms.txt)
 
 ## Security Considerations
 

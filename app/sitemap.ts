@@ -12,5 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/device`, lastModified, changeFrequency: "monthly", priority: 0.5 },
     { url: `${baseUrl}/terms`, lastModified, changeFrequency: "monthly", priority: 0.5 },
     { url: `${baseUrl}/install`, lastModified, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${baseUrl}/install/guide`, lastModified, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${baseUrl}/llms.txt`, lastModified, changeFrequency: "monthly", priority: 0.3 },
   ];
 }

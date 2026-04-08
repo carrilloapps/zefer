@@ -2,13 +2,12 @@
 
 ## Threat Model
 
-Zefer is designed to protect secrets shared between two parties who communicate the passphrase out-of-band. The primary threats addressed are:
+Zefer protects secrets shared between two parties who communicate the passphrase out-of-band. The primary threats addressed:
 
 1. **Interception** — A third party intercepts the `.zefer` file in transit
 2. **Server compromise** — An attacker gains access to the hosting server
-3. **Instance cloning** — Someone deploys a rogue Zefer instance
-4. **Brute force** — An attacker tries to guess the passphrase
-5. **Metadata leakage** — An attacker learns something from the file without decrypting
+3. **Brute force** — An attacker tries to guess the passphrase
+4. **Metadata leakage** — An attacker learns something from the file without decrypting
 
 ## Cryptographic Primitives
 
@@ -16,8 +15,7 @@ Zefer is designed to protect secrets shared between two parties who communicate 
 |---|---|---|
 | Symmetric encryption | AES-256-GCM | 256-bit key, 96-bit IV, 128-bit auth tag |
 | Key derivation | PBKDF2-SHA256 | 300k / 600k / 1M iterations, 256-bit salt |
-| Answer hashing | SHA-256 | Normalized (lowercase, trimmed) |
-| Instance binding | SHA-256 | `ZEFER_INSTANCE:` + secret |
+| Answer hashing | PBKDF2-SHA256 | 100,000 iterations, deterministic salt derived via SHA-256 |
 | Random generation | `crypto.getRandomValues` | OS-level CSPRNG |
 
 All cryptographic operations use the browser's native **Web Crypto API** (`SubtleCrypto`), which is:
@@ -31,16 +29,17 @@ Given only the `.zefer` file, an attacker can determine:
 
 | Visible | Not Visible |
 |---|---|
-| PBKDF2 iteration count | Passphrase |
-| Compression method | Content |
-| Hint text (if set by user) | File name, type, size |
-| Note text (if set by user) | Expiration date |
-| Number of encrypted lines (1 or 2) | Whether strict mode is used |
-| File is a Zefer file (magic number) | Whether IP restriction exists |
-| | Whether a secret question exists |
-| | Whether dual key is required |
-| | Allowed IP addresses |
+| File format magic (ZEFB3 or ZEFR3) | Passphrase |
+| PBKDF2 iteration count | Content |
+| Compression method | File name, type, size |
+| Hint text (if set by user) | Expiration date |
+| Note text (if set by user) | Whether IP restriction exists |
+| Text vs file mode | Whether a secret question exists |
+| ZEFR3 magic reveals a reveal key exists | Whether dual key is required |
+| Salt and IV per encrypted block | Allowed IP addresses |
 | | Max attempt count |
+
+**Salt and IV exposure is by design** — AES-GCM requires unique nonces, and PBKDF2 requires salt. These are not secret. The security relies entirely on the passphrase entropy + PBKDF2 stretching.
 
 ## Security Features
 
@@ -63,17 +62,19 @@ With 600,000 iterations on a modern GPU (~1M hashes/sec for PBKDF2-SHA256):
 
 ### AES-256-GCM
 
-- 256-bit keys: 2^256 possible keys (~1.2 × 10^77)
+- 256-bit keys: 2^256 possible keys (~1.2 x 10^77)
 - GCM provides authenticated encryption: tampering is detected
 - Unique IV per encryption prevents nonce reuse attacks
 - Auth tag prevents ciphertext modification
+- Chunked encryption: files >16MB are split into chunks, each with a unique IV derived from `base_iv XOR chunk_index`
 
 ### Reveal Key
 
-- Encrypts the same payload with a second passphrase
-- Stored as a separate encrypted line in the `.zefer` file
+- Encrypts the same payload with a second passphrase (independent salt, IV, and key)
+- Stored as a second encrypted block in ZEFR3 binary format
 - User shares the reveal key; main passphrase stays private
 - Both produce identical decrypted output
+- Cannot be the same as the main passphrase (validated in UI)
 
 ### Dual Passphrase
 
@@ -85,20 +86,8 @@ With 600,000 iterations on a modern GPU (~1M hashes/sec for PBKDF2-SHA256):
 
 - Allowed IPs stored inside the encrypted payload (not visible without key)
 - Verified by fetching client's public IP from `api64.ipify.org`
-- Supports IPv4 and IPv6
+- Supports IPv4 and IPv6, comma-separated
 - Checked after successful decryption
-
-### Strict Instance Mode
-
-- Instance admin sets `ZEFER_INSTANCE_SECRET` in server environment
-- `/api/instance` returns `SHA-256("ZEFER_INSTANCE:" + secret)`
-- Hash mixed into PBKDF2 key material: `passphrase + \x00ZEFER_STRICT\x00 + hash`
-- Different instances produce different hashes → different keys → cannot decrypt
-
-**Attack resistance:**
-- Attacker inspects client JS → sees the hash, not the secret
-- Attacker clones the repo → no `.env` → no secret → strict mode disabled
-- Attacker sets own secret → different hash → incompatible files
 
 ### Max Attempts
 
@@ -122,11 +111,12 @@ With 600,000 iterations on a modern GPU (~1M hashes/sec for PBKDF2-SHA256):
 - No `dangerouslySetInnerHTML` used anywhere in the project
 
 ### Answer Hash Strengthening
-- Secret question answers are hashed using PBKDF2 with 100,000 iterations (not plain SHA-256)
+- Secret question answers are hashed using PBKDF2-SHA256 with 100,000 iterations
 - Deterministic salt derived from the answer via SHA-256 (reproducible but resistant to rainbow tables)
+- Input normalized (lowercase, trimmed) before hashing
 
 ### Timing Attack Mitigation
-- Decryption responses include a minimum delay floor to normalize response times
+- Decryption responses include a minimum delay floor (100ms) to normalize response times
 - PBKDF2 derivation dominates timing (~600ms), making side-channel detection impractical
 
 ### Decompression Bomb Protection
@@ -141,34 +131,16 @@ With 600,000 iterations on a modern GPU (~1M hashes/sec for PBKDF2-SHA256):
 - Uses rejection sampling to eliminate modulo bias in charset selection
 - Produces cryptographically uniform distribution across all character pools
 
-## What an Attacker Can Learn from the File
-
-**With only the .zefer file (no passphrase):**
-
-| Visible | Not Visible |
-|---|---|
-| PBKDF2 iteration count | Passphrase |
-| Compression method | Content |
-| Hint text (if set) | File name, type, size |
-| Note text (if set) | Expiration date |
-| Text vs file mode | Whether IP restriction exists |
-| Number of encrypted lines (1 or 2) | Whether a secret question exists |
-| Salt and IV per encrypted line | Whether dual key is required |
-| | Allowed IP addresses |
-| | Max attempt count |
-
-**Salt and IV exposure is by design** — AES-GCM requires unique nonces, and PBKDF2 requires salt. These are not secret. The security relies entirely on the passphrase entropy + PBKDF2 stretching.
-
 ## Known Limitations
 
-These are inherent to 100% client-side architecture and cannot be fixed without introducing a server:
+These are inherent to 100% client-side architecture:
 
-1. **Max attempts**: Enforced via `localStorage`. A determined attacker can clear storage, use incognito mode, or use a different browser. This is friction, not a guarantee.
-2. **Expiration**: Checked against `Date.now()` which trusts the client system clock. An attacker can set their clock backward. Once decrypted, the content can be saved regardless of expiration.
-3. **IP restriction**: Checked client-side after successful decryption. An attacker can modify the JavaScript to skip the check, or use a VPN to match the allowed IP. The allowed IP list is inside the encrypted payload (not visible without the key), but the enforcement is client-side.
+1. **Max attempts**: Enforced via `localStorage`. A determined attacker can clear storage or use incognito mode. This is friction, not a guarantee.
+2. **Expiration**: Checked against `Date.now()` which trusts the client system clock. An attacker can set their clock backward.
+3. **IP restriction**: Checked client-side after successful decryption. An attacker can modify the JavaScript to skip the check, or use a VPN to match the allowed IP.
 4. **No forward secrecy**: If the passphrase is compromised, all files encrypted with it can be decrypted. Use unique passphrases per file for maximum security.
-5. **Browser memory**: Passphrases exist in browser memory during encryption/decryption. JavaScript does not provide explicit memory clearing. Close the browser tab after use.
-6. **Compression oracle**: If compression is enabled, the compressed ciphertext size can reveal whether plaintext is repetitive/structured. For maximum security, use no compression.
+5. **Browser memory**: Passphrases exist in browser memory during encryption/decryption. Close the browser tab after use.
+6. **Compression oracle**: If compression is enabled, the compressed ciphertext size can reveal whether plaintext is repetitive. For maximum security, use no compression.
 
 ## What IS Guaranteed
 

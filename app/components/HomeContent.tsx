@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Lock, Unlock } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
@@ -11,6 +13,12 @@ import { usePreferences } from "@/app/lib/preferences";
 export default function HomeContent() {
   const { t } = useLanguage();
   const { tab, setTab } = usePreferences();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const urlTab = searchParams.get("tab") || searchParams.get("t");
+    if (urlTab === "encrypt" || urlTab === "decrypt") setTab(urlTab);
+  }, [searchParams, setTab]);
 
   return (
     <main className="flex-1 flex flex-col">
