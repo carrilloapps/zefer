@@ -239,6 +239,7 @@ export default function EncryptForm() {
     if (!passphrase || passphrase.length < 6) { setError(t("form.error.passphrase")); return; }
     if (dualKey && (!secondPassphrase || secondPassphrase.length < 6)) { setError(t("form.error.passphrase2")); return; }
     if (revealKey && revealKey.length < 6) { setError(t("form.error.revealkey")); return; }
+    if (revealKey && revealKey === passphrase) { setError(t("form.error.revealkey.same")); return; }
     if (question && !questionAnswer) { setError(t("form.error.noanswer")); return; }
 
     setLoading(true);

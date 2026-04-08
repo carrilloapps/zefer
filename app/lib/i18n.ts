@@ -673,14 +673,19 @@ const translations = {
     pt: "Chave alternativa para compartilhar (mínimo de 6 caracteres)",
   },
   "advanced.revealkey.help": {
-    es: "Comparte esta clave en lugar de tu contraseña principal. Ambas descifran el archivo.",
-    en: "Share this key instead of your main passphrase. Both can decrypt the file.",
-    pt: "Compartilhe esta chave em vez da sua frase-chave principal. Ambas descriptografam o arquivo.",
+    es: "Comparte esta clave en lugar de tu contraseña principal. Ambas descifran el archivo. El archivo resultante ocupa aproximadamente el doble de tamaño.",
+    en: "Share this key instead of your main passphrase. Both can decrypt the file. The resulting file will be approximately double the size.",
+    pt: "Compartilhe esta chave em vez da sua frase-chave principal. Ambas descriptografam o arquivo. O arquivo resultante ocupa aproximadamente o dobro do tamanho.",
   },
   "form.error.revealkey": {
     es: "La clave de revelado debe tener al menos 6 caracteres.",
     en: "The reveal key must be at least 6 characters.",
     pt: "A chave de revelação deve ter pelo menos 6 caracteres.",
+  },
+  "form.error.revealkey.same": {
+    es: "La clave de revelado debe ser diferente a la contraseña principal.",
+    en: "The reveal key must be different from the main passphrase.",
+    pt: "A chave de revelação deve ser diferente da senha principal.",
   },
 
   // ─── IP restriction ───

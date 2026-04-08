@@ -1,9 +1,10 @@
 import { decryptFromBase64, combineDualKeys, hashAnswer } from "./crypto";
-import { chunkedEncrypt, chunkedDecryptToBuffer } from "./chunked-crypto";
+import { chunkedEncrypt, chunkedDecryptToBuffer, CHUNK_SIZE } from "./chunked-crypto";
 import { compressBytes, decompressBytes, decompress, type CompressionMethod } from "./compression";
 
 const MAGIC_TEXT = "ZEFER3";
 const MAGIC_BIN = new Uint8Array([0x5A, 0x45, 0x46, 0x42, 0x33]); // "ZEFB3" — binary format
+const MAGIC_BIN_REVEAL = new Uint8Array([0x5A, 0x45, 0x46, 0x52, 0x33]); // "ZEFR3" — binary with reveal key
 
 // ─── Public header ───
 
@@ -144,39 +145,72 @@ export async function encodeZefer(opts: EncodeOptions): Promise<Blob> {
   combined.set(metaBytes, 4);
   combined.set(new Uint8Array(dataToEncrypt), 4 + metaBytes.length);
 
-  let mainPassphrase = dualKey && opts.secondPassphrase
+  const mainPassphrase = dualKey && opts.secondPassphrase
     ? combineDualKeys(opts.passphrase, opts.secondPassphrase)
     : opts.passphrase;
 
   const headerJson = JSON.stringify(header);
 
-  // All modes use binary chunked format (ZEFB3)
+  // All modes use binary chunked format (ZEFB3 / ZEFR3)
+  const estimatedChunks = Math.ceil(combined.byteLength / CHUNK_SIZE);
+  const grandTotal = estimatedChunks * (hasRevealKey ? 2 : 1);
+
   opts.onProgress?.deriving();
   const result = await chunkedEncrypt(
     combined.buffer as ArrayBuffer,
     mainPassphrase,
     iterations,
     (chunkIndex, totalChunks) => {
-      if (chunkIndex === 0) opts.onProgress?.derivingDone();
-      opts.onProgress?.encrypting(chunkIndex, totalChunks);
+      if (chunkIndex === 1) opts.onProgress?.derivingDone();
+      opts.onProgress?.encrypting(chunkIndex, grandTotal);
     }
   );
+
+  // Encrypt with reveal key if provided (same payload, different passphrase)
+  const revealResult = hasRevealKey
+    ? await chunkedEncrypt(
+        combined.buffer as ArrayBuffer,
+        opts.revealKey!.trim(),
+        iterations,
+        (chunkIndex) => {
+          opts.onProgress?.encrypting(estimatedChunks + chunkIndex, grandTotal);
+        }
+      )
+    : null;
 
   opts.onProgress?.packaging();
   const headerBytesEnc = new TextEncoder().encode(headerJson);
   const headerLenBuf = new Uint8Array(4);
   new DataView(headerLenBuf.buffer).setUint32(0, headerBytesEnc.length, false);
 
+  const magic = revealResult ? MAGIC_BIN_REVEAL : MAGIC_BIN;
   const parts: BlobPart[] = [
-    MAGIC_BIN.buffer as ArrayBuffer,
+    magic.buffer as ArrayBuffer,
     headerLenBuf.buffer as ArrayBuffer,
     headerBytesEnc.buffer as ArrayBuffer,
-    result.salt.buffer as ArrayBuffer,
-    result.baseIv.buffer as ArrayBuffer,
   ];
 
-  for (const chunk of result.chunks) {
-    parts.push(chunk.buffer as ArrayBuffer);
+  if (revealResult) {
+    // Dual-block format: [mainBlockSize][mainBlock][revealBlock]
+    let mainBlockSize = 32 + 12; // salt + baseIv
+    for (const chunk of result.chunks) mainBlockSize += chunk.byteLength;
+
+    const mainBlockSizeBuf = new Uint8Array(4);
+    new DataView(mainBlockSizeBuf.buffer).setUint32(0, mainBlockSize, false);
+    parts.push(mainBlockSizeBuf.buffer as ArrayBuffer);
+
+    parts.push(result.salt.buffer as ArrayBuffer);
+    parts.push(result.baseIv.buffer as ArrayBuffer);
+    for (const chunk of result.chunks) parts.push(chunk.buffer as ArrayBuffer);
+
+    parts.push(revealResult.salt.buffer as ArrayBuffer);
+    parts.push(revealResult.baseIv.buffer as ArrayBuffer);
+    for (const chunk of revealResult.chunks) parts.push(chunk.buffer as ArrayBuffer);
+  } else {
+    // Single-block format (original)
+    parts.push(result.salt.buffer as ArrayBuffer);
+    parts.push(result.baseIv.buffer as ArrayBuffer);
+    for (const chunk of result.chunks) parts.push(chunk.buffer as ArrayBuffer);
   }
 
   return new Blob(parts, { type: "application/octet-stream" });
@@ -204,24 +238,38 @@ export interface ParsedFile {
   encryptedLines?: string[];
   // Binary format fields
   binaryData?: Uint8Array;
+  revealBinaryData?: Uint8Array;
 }
 
 export function parseFile(fileContent: string, rawBytes?: ArrayBuffer): ParsedFile | null {
   // Check for binary format first
   if (rawBytes && rawBytes.byteLength >= 5) {
     const magic = new Uint8Array(rawBytes, 0, 5);
-    if (magic[0] === 0x5A && magic[1] === 0x45 && magic[2] === 0x46 && magic[3] === 0x42 && magic[4] === 0x33) {
-      // ZEFB3 binary format
+    const isBinary = magic[0] === 0x5A && magic[1] === 0x45 && magic[2] === 0x46 && magic[4] === 0x33;
+    const isRevealFormat = magic[3] === 0x52; // 'R' in ZEFR3
+    if (isBinary && (magic[3] === 0x42 || isRevealFormat)) {
+      // ZEFB3 / ZEFR3 binary format
       const view = new DataView(rawBytes, 5);
       const headerLen = view.getUint32(0, false);
       const headerStr = new TextDecoder().decode(new Uint8Array(rawBytes, 9, headerLen));
       try {
         const header = JSON.parse(headerStr) as ZeferHeader;
         if (!header.mode) header.mode = "file";
+        const dataOffset = 9 + headerLen;
+        if (isRevealFormat) {
+          const mainBlockSize = new DataView(rawBytes, dataOffset).getUint32(0, false);
+          const mainStart = dataOffset + 4;
+          return {
+            header,
+            binary: true,
+            binaryData: new Uint8Array(rawBytes, mainStart, mainBlockSize),
+            revealBinaryData: new Uint8Array(rawBytes, mainStart + mainBlockSize),
+          };
+        }
         return {
           header,
           binary: true,
-          binaryData: new Uint8Array(rawBytes, 9 + headerLen),
+          binaryData: new Uint8Array(rawBytes, dataOffset),
         };
       } catch {
         return null;
@@ -369,6 +417,12 @@ export async function decodeZefer(
         if (ci === 1) options?.onProgress?.derivingDone();
         options?.onProgress?.decrypting(ci, tc);
       });
+      if (!result && parsed.revealBinaryData) {
+        result = await tryDecryptBinary(parsed.revealBinaryData, candidate, header, (ci, tc) => {
+          if (ci === 1) options?.onProgress?.derivingDone();
+          options?.onProgress?.decrypting(ci, tc);
+        });
+      }
     } else if (parsed.encryptedLines) {
       result = await tryDecryptText(parsed.encryptedLines, candidate, header);
       if (result) options?.onProgress?.derivingDone();
