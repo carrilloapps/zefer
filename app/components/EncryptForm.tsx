@@ -23,6 +23,8 @@ import {
   Hash,
   Gauge,
   Globe,
+  Copy,
+  Link2,
 } from "lucide-react";
 import { encodeZefer } from "@/app/lib/zefer";
 import { parseIpList, detectIp, type IpDetectionResult } from "@/app/lib/ip";
@@ -31,17 +33,21 @@ import { createEncryptTracker, type ProgressState } from "@/app/lib/progress";
 import CryptoProgress from "@/app/components/CryptoProgress";
 import KeyGenerator from "@/app/components/KeyGenerator";
 import DeviceInfo from "@/app/components/DeviceInfo";
+import { GlassSelect } from "@/app/components/ui";
 import type { CompressionMethod } from "@/app/lib/compression";
 import { useLanguage } from "@/app/components/LanguageProvider";
 import { usePreferences } from "@/app/lib/preferences";
 import { notifySuccess, notifyError, notifyWarning } from "@/app/lib/notify";
 
 const TTL_OPTIONS = [
+  { labelKey: "ttl.5min" as const, value: 5 },
+  { labelKey: "ttl.15min" as const, value: 15 },
   { labelKey: "ttl.30min" as const, value: 30 },
   { labelKey: "ttl.1hour" as const, value: 60 },
   { labelKey: "ttl.24hours" as const, value: 1440 },
   { labelKey: "ttl.7days" as const, value: 10080 },
   { labelKey: "ttl.2weeks" as const, value: 20160 },
+  { labelKey: "ttl.1month" as const, value: 43200 },
   { labelKey: "ttl.never" as const, value: 0 },
 ];
 
@@ -170,6 +176,8 @@ export default function EncryptForm() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressState | null>(null);
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   // Text mode: STRICTLY .txt / .env only
   function handleTextFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -352,6 +360,16 @@ export default function EncryptForm() {
       tracker.done();
       await new Promise((r) => setTimeout(r, 500));
 
+      // Generate share link with passphrase for short-lived files (TTL <= 30 min)
+      if (ttl > 0 && ttl <= 10080) {
+        const params = new URLSearchParams({ t: "decrypt", p: passphrase });
+        if (dualKey && secondPassphrase) params.set("p2", secondPassphrase);
+        if (revealKey) params.set("r", revealKey);
+        setShareLink(`${window.location.origin}/?${params.toString()}`);
+      } else {
+        setShareLink(null);
+      }
+
       // Clear secrets from memory immediately after successful encryption
       setPassphrase(""); setSecondPassphrase(""); setRevealKey("");
       setQuestionAnswer("");
@@ -371,7 +389,7 @@ export default function EncryptForm() {
     setContent(""); setPassphrase(""); setSecondPassphrase("");
     setTextFileName(null); setFileName(null); setFileData(null);
     setFileType(null); setFileSize(0);
-    setError(null); setDone(false);
+    setError(null); setDone(false); setShareLink(null); setLinkCopied(false);
     setHint(""); setNote(""); setQuestion("");
     setQuestionAnswer(""); setMaxAttempts(0);
     setDualKey(false);
@@ -404,6 +422,26 @@ export default function EncryptForm() {
             <p className="text-[13px] theme-muted leading-relaxed">{t("encrypt.success.desc")}</p>
           </div>
         </div>
+        {shareLink && (
+          <div className="glass !rounded-xl p-4 mb-5 animate-in">
+            <div className="flex items-center gap-2 mb-2">
+              <Link2 className="w-4 h-4 text-primary shrink-0" />
+              <p className="text-xs font-medium theme-heading">{t("encrypt.success.link.title")}</p>
+            </div>
+            <p className="text-[11px] theme-muted mb-3">{t("encrypt.success.link.desc")}</p>
+            <div className="flex gap-2">
+              <code className="flex-1 text-[11px] font-mono text-primary theme-primary-faint rounded-lg px-3 py-2 overflow-x-auto whitespace-nowrap">{shareLink}</code>
+              <button
+                type="button"
+                onClick={() => { navigator.clipboard.writeText(shareLink); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000); }}
+                className="shrink-0 glass px-3 py-2 rounded-lg cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors"
+                aria-label="Copy link"
+              >
+                {linkCopied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5 theme-muted" />}
+              </button>
+            </div>
+          </div>
+        )}
         <button onClick={reset} className="btn-primary">{t("encrypt.another")}</button>
       </div>
     );
@@ -505,21 +543,32 @@ export default function EncryptForm() {
             <label htmlFor="passphrase" className="block text-xs font-medium theme-text mb-2">{t("form.passphrase")}</label>
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <input id="passphrase" type={showPass ? "text" : "password"} value={passphrase} onChange={(e) => setPassphrase(e.target.value)} placeholder={t("form.passphrase.placeholder")} className="w-full pr-10 font-mono text-sm" />
-                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-faint hover:theme-muted transition-colors cursor-pointer" aria-label="Toggle passphrase">
+                <input id="passphrase" type={showPass ? "text" : "password"} value={passphrase} onChange={(e) => setPassphrase(e.target.value)} placeholder={t("form.passphrase.placeholder")} className="w-full pr-12 font-mono text-sm !rounded-lg border border-[var(--glass-border)]" style={{ background: "var(--input-solid)" }} />
+                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3.5 top-1/2 -translate-y-1/2 theme-faint hover:theme-text transition-colors cursor-pointer" aria-label="Toggle passphrase">
                   {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
               <KeyGenerator onSelect={setPassphrase} />
             </div>
           </div>
-          <div>
-            <label htmlFor="ttl-select" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2"><Clock className="w-3 h-3" />{t("form.expires")}</label>
-            <select id="ttl-select" value={ttl} onChange={(e) => setTtl(Number(e.target.value))} className="w-full text-sm py-[0.6875rem] px-3 cursor-pointer">
-              {TTL_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{t(opt.labelKey as Parameters<typeof t>[0])}</option>))}
-            </select>
-          </div>
+          <GlassSelect
+            value={ttl}
+            onChange={(v) => setTtl(v as number)}
+            options={TTL_OPTIONS.map((o) => ({ label: t(o.labelKey as Parameters<typeof t>[0]), value: o.value }))}
+            label={t("form.expires")}
+            icon={Clock}
+            searchable
+            searchPlaceholder={t("form.search")}
+            noResultsText={t("form.noresults")}
+          />
         </div>
+
+        {ttl === 0 && (
+          <div className="flex items-start gap-2.5 mb-4 p-3 rounded-xl theme-warning-faint animate-in">
+            <AlertTriangle className="w-4 h-4 theme-warning shrink-0 mt-0.5" />
+            <p className="text-[11px] theme-warning leading-relaxed">{t("ttl.never.warning")}</p>
+          </div>
+        )}
 
         {/* Advanced toggle */}
         <button
@@ -601,8 +650,8 @@ export default function EncryptForm() {
               </label>
               {dualKey && (
                 <div className="relative mt-2">
-                  <input id="encrypt-pass2" type={showSecondPass ? "text" : "password"} value={secondPassphrase} onChange={(e) => setSecondPassphrase(e.target.value)} placeholder={t("advanced.dualkey.placeholder")} className="w-full pr-10 font-mono text-sm" aria-label="Second passphrase" />
-                  <button type="button" onClick={() => setShowSecondPass(!showSecondPass)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-faint hover:theme-muted transition-colors cursor-pointer">
+                  <input id="encrypt-pass2" type={showSecondPass ? "text" : "password"} value={secondPassphrase} onChange={(e) => setSecondPassphrase(e.target.value)} placeholder={t("advanced.dualkey.placeholder")} className="w-full pr-12 font-mono text-sm !rounded-lg border border-[var(--glass-border)]" style={{ background: "var(--input-solid)" }} aria-label="Second passphrase" />
+                  <button type="button" onClick={() => setShowSecondPass(!showSecondPass)} className="absolute right-3.5 top-1/2 -translate-y-1/2 theme-faint hover:theme-text transition-colors cursor-pointer">
                     {showSecondPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
@@ -616,8 +665,8 @@ export default function EncryptForm() {
               </label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <input id="encrypt-reveal" type={showRevealKey ? "text" : "password"} value={revealKey} onChange={(e) => setRevealKey(e.target.value)} placeholder={t("advanced.revealkey.placeholder")} className="w-full pr-10 font-mono text-sm" aria-label="Reveal key" />
-                  <button type="button" onClick={() => setShowRevealKey(!showRevealKey)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-faint hover:theme-muted transition-colors cursor-pointer">
+                  <input id="encrypt-reveal" type={showRevealKey ? "text" : "password"} value={revealKey} onChange={(e) => setRevealKey(e.target.value)} placeholder={t("advanced.revealkey.placeholder")} className="w-full pr-12 font-mono text-sm !rounded-lg border border-[var(--glass-border)]" style={{ background: "var(--input-solid)" }} aria-label="Reveal key" />
+                  <button type="button" onClick={() => setShowRevealKey(!showRevealKey)} className="absolute right-3.5 top-1/2 -translate-y-1/2 theme-faint hover:theme-text transition-colors cursor-pointer">
                     {showRevealKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
@@ -631,12 +680,16 @@ export default function EncryptForm() {
               <label className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
                 <Shield className="w-3 h-3" />{t("advanced.attempts")}
               </label>
-              <select id="max-attempts" value={maxAttempts} onChange={(e) => setMaxAttempts(Number(e.target.value))} className="w-full text-sm py-2.5 px-3 cursor-pointer" aria-label="Maximum decryption attempts">
-                <option value={0}>{t("advanced.attempts.unlimited")}</option>
-                <option value={3}>3</option>
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-              </select>
+              <GlassSelect
+                value={maxAttempts}
+                onChange={(v) => setMaxAttempts(v as number)}
+                options={[
+                  { label: t("advanced.attempts.unlimited"), value: 0 },
+                  { label: "3", value: 3 },
+                  { label: "5", value: 5 },
+                  { label: "10", value: 10 },
+                ]}
+              />
             </div>
 
             {/* Hint */}

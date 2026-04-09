@@ -6,6 +6,7 @@ Zefer encrypts secrets (text, files, API keys, images, ZIPs) into `.zefer` files
 
 - Live: https://zefer.carrillo.app
 - Source: https://github.com/carrilloapps/zefer
+- Agent instructions: https://zefer.carrillo.app/agents.md
 - License: MIT
 - Author: Jose Carrillo (@carrilloapps)
 

@@ -112,6 +112,33 @@ const translations = {
     pt: "Descriptografe e visualize",
   },
 
+  // ─── Home resources ───
+  "home.guide": {
+    es: "Guía de uso",
+    en: "Usage Guide",
+    pt: "Guia de uso",
+  },
+  "home.guide.desc": {
+    es: "Aprende a usar todas las funciones",
+    en: "Learn how to use all features",
+    pt: "Aprenda a usar todos os recursos",
+  },
+  "home.install": {
+    es: "Instalar",
+    en: "Install",
+    pt: "Instalar",
+  },
+  "home.install.desc": {
+    es: "PWA, escritorio y self-hosting",
+    en: "PWA, desktop, and self-hosting",
+    pt: "PWA, desktop e auto-hospedagem",
+  },
+  "home.llm.desc": {
+    es: "Contexto para asistentes de IA",
+    en: "Context for AI assistants",
+    pt: "Contexto para assistentes de IA",
+  },
+
   // ─── Encrypt form ───
   "encrypt.title": {
     es: "Cifrar un secreto",
@@ -142,6 +169,16 @@ const translations = {
     es: "Envía el archivo .zefer a tu destinatario por cualquier canal: correo electrónico, chat o SMS. Solo quien conozca la frase clave podrá descifrarlo.",
     en: "Send the .zefer file to your recipient through any channel: email, chat, or SMS. Only someone with the passphrase can decrypt it.",
     pt: "Envie o arquivo .zefer ao seu destinatário por qualquer canal: e-mail, chat ou SMS. Somente quem tiver a frase-chave poderá descriptografá-lo.",
+  },
+  "encrypt.success.link.title": {
+    es: "Enlace con frase clave",
+    en: "Link with passphrase",
+    pt: "Link com frase-chave",
+  },
+  "encrypt.success.link.desc": {
+    es: "Este enlace incluye la frase clave. Compártelo solo por canales seguros. Disponible porque el archivo tiene expiración.",
+    en: "This link includes the passphrase. Share it only through secure channels. Available because the file has an expiration.",
+    pt: "Este link inclui a frase-chave. Compartilhe apenas por canais seguros. Disponível porque o arquivo tem expiração.",
   },
   "encrypt.another": {
     es: "Cifrar otro secreto",
@@ -482,6 +519,16 @@ const translations = {
     es: "Expira en:",
     en: "Expires in:",
     pt: "Expira em:",
+  },
+  "form.search": {
+    es: "Buscar...",
+    en: "Search...",
+    pt: "Buscar...",
+  },
+  "form.noresults": {
+    es: "Sin resultados",
+    en: "No results",
+    pt: "Sem resultados",
   },
   "form.encrypting": {
     es: "Cifrando…",
@@ -971,12 +1018,22 @@ const translations = {
   },
 
   // ─── TTL options ───
+  "ttl.5min": { es: "5 min", en: "5 min", pt: "5 min" },
+  "ttl.10min": { es: "10 min", en: "10 min", pt: "10 min" },
+  "ttl.15min": { es: "15 min", en: "15 min", pt: "15 min" },
+  "ttl.20min": { es: "20 min", en: "20 min", pt: "20 min" },
   "ttl.30min": { es: "30 min", en: "30 min", pt: "30 min" },
   "ttl.1hour": { es: "1 hora", en: "1 hour", pt: "1 hora" },
   "ttl.24hours": { es: "24 horas", en: "24 hours", pt: "24 horas" },
   "ttl.7days": { es: "7 días", en: "7 days", pt: "7 dias" },
   "ttl.2weeks": { es: "2 semanas", en: "2 weeks", pt: "2 semanas" },
+  "ttl.1month": { es: "1 mes", en: "1 month", pt: "1 mês" },
   "ttl.never": { es: "Sin expiración", en: "No expiration", pt: "Sem expiração" },
+  "ttl.never.warning": {
+    es: "Sin expiración significa que este archivo podrá ser descifrado en cualquier momento, sin límite de tiempo. Si la frase clave es comprometida, el contenido estará expuesto indefinidamente. Se recomienda usar una expiración para información sensible.",
+    en: "No expiration means this file can be decrypted at any time, without a time limit. If the passphrase is compromised, the content will be exposed indefinitely. Using an expiration is recommended for sensitive information.",
+    pt: "Sem expiração significa que este arquivo poderá ser descriptografado a qualquer momento, sem limite de tempo. Se a frase-chave for comprometida, o conteúdo ficará exposto indefinidamente. Recomenda-se usar uma expiração para informações sensíveis.",
+  },
 
   // ─── Footer ───
   "footer.tagline": {
@@ -1949,6 +2006,36 @@ const translations = {
     es: "IPs permitidas separadas por coma (IPv4/IPv6)",
     en: "Allowed IPs comma-separated (IPv4/IPv6)",
     pt: "IPs permitidos separados por vírgula (IPv4/IPv6)",
+  },
+  "install.guide.ai.title": {
+    es: "Integrar con asistentes de IA",
+    en: "Integrate with AI Assistants",
+    pt: "Integrar com assistentes de IA",
+  },
+  "install.guide.ai.desc": {
+    es: "Zefer publica un archivo /llms.txt siguiendo el estándar llmstxt.org para que asistentes de IA puedan entender el proyecto automáticamente.",
+    en: "Zefer publishes a /llms.txt file following the llmstxt.org standard so AI assistants can understand the project automatically.",
+    pt: "Zefer publica um arquivo /llms.txt seguindo o padrão llmstxt.org para que assistentes de IA possam entender o projeto automaticamente.",
+  },
+  "install.guide.ai.claudecode": {
+    es: "Claude Code lee automáticamente CLAUDE.md y llms.txt. Clona el repositorio y ejecuta claude en la raíz del proyecto.",
+    en: "Claude Code automatically reads CLAUDE.md and llms.txt. Clone the repo and run claude at the project root.",
+    pt: "Claude Code lê automaticamente CLAUDE.md e llms.txt. Clone o repositório e execute claude na raiz do projeto.",
+  },
+  "install.guide.ai.copilot": {
+    es: "GitHub Copilot Chat en VS Code o CLI puede usar llms.txt como contexto. Usa @workspace con referencia al archivo.",
+    en: "GitHub Copilot Chat in VS Code or CLI can use llms.txt as context. Use @workspace with a reference to the file.",
+    pt: "GitHub Copilot Chat no VS Code ou CLI pode usar llms.txt como contexto. Use @workspace com referência ao arquivo.",
+  },
+  "install.guide.ai.cursor": {
+    es: "Cursor, Windsurf y editores similares leen CLAUDE.md y .cursorrules automáticamente. El llms.txt se puede agregar como archivo de contexto.",
+    en: "Cursor, Windsurf, and similar editors read CLAUDE.md and .cursorrules automatically. The llms.txt can be added as a context file.",
+    pt: "Cursor, Windsurf e editores similares leem CLAUDE.md e .cursorrules automaticamente. O llms.txt pode ser adicionado como arquivo de contexto.",
+  },
+  "install.guide.ai.generic": {
+    es: "Para cualquier LLM o herramienta de IA, pasa la URL como contexto.",
+    en: "For any LLM or AI tool, pass the URL as context.",
+    pt: "Para qualquer LLM ou ferramenta de IA, passe a URL como contexto.",
   },
 
   "terms.changes.desc": {

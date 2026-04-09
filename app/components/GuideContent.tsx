@@ -3,7 +3,7 @@
 import {
   BookOpen, Lock, Unlock, KeyRound, Shield, MessageSquare, Hash,
   FileText, Upload, Key, Gauge, Link2, Terminal, Server,
-  Globe, Download, ArrowRight, ChevronRight,
+  Globe, Download, ArrowRight, ChevronRight, Bot, Code,
 } from "lucide-react";
 import Link from "next/link";
 import { PageLayout, PageHeader, GlassCard, IconBox } from "@/app/components/ui";
@@ -175,6 +175,53 @@ export default function GuideContent() {
           <Shield className="w-3.5 h-3.5 shrink-0" />
           {t("install.usage.selfhost.note")}
         </p>
+      </div>
+
+      {/* ─── AI Integration ─── */}
+      <div id="ai" className="mb-10 scroll-mt-24">
+        <div className="flex items-center gap-2 mb-4">
+          <IconBox icon={Bot} size="sm" />
+          <div>
+            <h2 className="text-base font-semibold theme-heading">{t("install.guide.ai.title")}</h2>
+            <p className="text-xs theme-muted">{t("install.guide.ai.desc")}</p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div className="glass p-4 animate-in">
+            <div className="flex items-center gap-2 mb-2">
+              <Terminal className="w-4 h-4 text-primary shrink-0" />
+              <p className="text-xs font-medium theme-heading">Claude Code</p>
+            </div>
+            <p className="text-[11px] theme-muted mb-2">{t("install.guide.ai.claudecode")}</p>
+            <code className="block text-[11px] font-mono text-primary theme-primary-faint rounded-lg px-3 py-2">git clone https://github.com/carrilloapps/zefer.git && cd zefer && claude</code>
+          </div>
+
+          <div className="glass p-4 animate-in">
+            <div className="flex items-center gap-2 mb-2">
+              <Code className="w-4 h-4 text-primary shrink-0" />
+              <p className="text-xs font-medium theme-heading">GitHub Copilot (VS Code / CLI)</p>
+            </div>
+            <p className="text-[11px] theme-muted mb-2">{t("install.guide.ai.copilot")}</p>
+            <code className="block text-[11px] font-mono text-primary theme-primary-faint rounded-lg px-3 py-2">@workspace /explain #file:llms.txt</code>
+          </div>
+
+          <div className="glass p-4 animate-in">
+            <div className="flex items-center gap-2 mb-2">
+              <Code className="w-4 h-4 text-primary shrink-0" />
+              <p className="text-xs font-medium theme-heading">Cursor / Windsurf / Augment</p>
+            </div>
+            <p className="text-[11px] theme-muted">{t("install.guide.ai.cursor")}</p>
+          </div>
+
+          <div className="glass p-4 animate-in">
+            <div className="flex items-center gap-2 mb-2">
+              <Bot className="w-4 h-4 text-primary shrink-0" />
+              <p className="text-xs font-medium theme-heading">{t("install.guide.ai.generic")}</p>
+            </div>
+            <code className="block text-[11px] font-mono text-primary theme-primary-faint rounded-lg px-3 py-2">https://zefer.carrillo.app/llms.txt</code>
+          </div>
+        </div>
       </div>
 
       {/* ─── Back to install ─── */}

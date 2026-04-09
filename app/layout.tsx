@@ -97,6 +97,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js"))` }} />
+      </head>
       <body className="min-h-full flex flex-col bg-grid">
         <div className="ambient-glow" aria-hidden="true" />
         <div className="blob-accent" aria-hidden="true" />

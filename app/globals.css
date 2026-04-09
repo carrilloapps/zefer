@@ -40,6 +40,8 @@
   --glass-bg-hover: rgba(255, 255, 255, 0.07);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-border-hover: rgba(255, 255, 255, 0.15);
+  --glass-solid: rgba(12, 20, 28, 0.97);
+  --input-solid: rgba(10, 17, 24, 0.95);
 
   /* Nav */
   --nav-bg: rgba(5, 10, 14, 0.75);
@@ -125,6 +127,8 @@
   --glass-bg-hover: rgba(255, 255, 255, 0.8);
   --glass-border: rgba(15, 23, 42, 0.08);
   --glass-border-hover: rgba(15, 23, 42, 0.15);
+  --glass-solid: rgba(250, 252, 254, 0.98);
+  --input-solid: rgba(245, 248, 252, 0.96);
 
   /* Nav */
   --nav-bg: rgba(255, 255, 255, 0.8);

@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Lock, Unlock } from "lucide-react";
+import { Lock, Unlock, BookOpen, Bot, Download } from "lucide-react";
+import Link from "next/link";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import EncryptForm from "@/app/components/EncryptForm";
@@ -93,6 +94,27 @@ export default function HomeContent() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Resources */}
+      <section className="pb-12 px-4 sm:px-6">
+        <div className="max-w-2xl mx-auto grid grid-cols-1 min-[480px]:grid-cols-3 gap-3">
+          <Link href="/install/guide" className="glass glass-hover glass-lift p-4 text-center cursor-pointer block">
+            <BookOpen className="w-5 h-5 text-primary mx-auto mb-2" />
+            <p className="text-xs font-semibold theme-heading">{t("home.guide")}</p>
+            <p className="text-[10px] theme-muted mt-0.5">{t("home.guide.desc")}</p>
+          </Link>
+          <Link href="/install" className="glass glass-hover glass-lift p-4 text-center cursor-pointer block">
+            <Download className="w-5 h-5 text-primary mx-auto mb-2" />
+            <p className="text-xs font-semibold theme-heading">{t("home.install")}</p>
+            <p className="text-[10px] theme-muted mt-0.5">{t("home.install.desc")}</p>
+          </Link>
+          <a href="/llms.txt" target="_blank" rel="noopener noreferrer" className="glass glass-hover glass-lift p-4 text-center cursor-pointer block">
+            <Bot className="w-5 h-5 text-primary mx-auto mb-2" />
+            <p className="text-xs font-semibold theme-heading">llms.txt</p>
+            <p className="text-[10px] theme-muted mt-0.5">{t("home.llm.desc")}</p>
+          </a>
         </div>
       </section>
 

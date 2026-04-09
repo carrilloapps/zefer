@@ -14,5 +14,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/install`, lastModified, changeFrequency: "monthly", priority: 0.4 },
     { url: `${baseUrl}/install/guide`, lastModified, changeFrequency: "monthly", priority: 0.4 },
     { url: `${baseUrl}/llms.txt`, lastModified, changeFrequency: "monthly", priority: 0.3 },
+    { url: `${baseUrl}/agents.md`, lastModified, changeFrequency: "monthly", priority: 0.3 },
   ];
 }
