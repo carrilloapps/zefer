@@ -1730,6 +1730,16 @@ const translations = {
     en: "Follow us on GitHub to get notified when native apps are available.",
     pt: "Siga-nos no GitHub para ser notificado quando os aplicativos nativos estiverem disponíveis.",
   },
+  "install.author.title": {
+    es: "Jose Carrillo — @carrilloapps",
+    en: "Jose Carrillo — @carrilloapps",
+    pt: "Jose Carrillo — @carrilloapps",
+  },
+  "install.author.desc": {
+    es: "Senior Fullstack Developer & Tech Lead. Creador de Zefer.",
+    en: "Senior Fullstack Developer & Tech Lead. Creator of Zefer.",
+    pt: "Senior Fullstack Developer & Tech Lead. Criador do Zefer.",
+  },
   "install.native.title": {
     es: "Aplicaciones nativas",
     en: "Native apps",
