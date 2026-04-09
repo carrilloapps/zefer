@@ -543,7 +543,7 @@ export default function EncryptForm() {
             <label htmlFor="passphrase" className="block text-xs font-medium theme-text mb-2">{t("form.passphrase")}</label>
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <input id="passphrase" type={showPass ? "text" : "password"} value={passphrase} onChange={(e) => setPassphrase(e.target.value)} placeholder={t("form.passphrase.placeholder")} className="w-full pr-12 font-mono text-sm !rounded-lg border border-[var(--glass-border)]" style={{ background: "var(--input-solid)" }} />
+                <input id="passphrase" type={showPass ? "text" : "password"} value={passphrase} onChange={(e) => setPassphrase(e.target.value)} placeholder={t("form.passphrase.placeholder")} className="w-full pr-12 font-mono text-sm" />
                 <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3.5 top-1/2 -translate-y-1/2 theme-faint hover:theme-text transition-colors cursor-pointer" aria-label="Toggle passphrase">
                   {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -650,7 +650,7 @@ export default function EncryptForm() {
               </label>
               {dualKey && (
                 <div className="relative mt-2">
-                  <input id="encrypt-pass2" type={showSecondPass ? "text" : "password"} value={secondPassphrase} onChange={(e) => setSecondPassphrase(e.target.value)} placeholder={t("advanced.dualkey.placeholder")} className="w-full pr-12 font-mono text-sm !rounded-lg border border-[var(--glass-border)]" style={{ background: "var(--input-solid)" }} aria-label="Second passphrase" />
+                  <input id="encrypt-pass2" type={showSecondPass ? "text" : "password"} value={secondPassphrase} onChange={(e) => setSecondPassphrase(e.target.value)} placeholder={t("advanced.dualkey.placeholder")} className="w-full pr-12 font-mono text-sm" aria-label="Second passphrase" />
                   <button type="button" onClick={() => setShowSecondPass(!showSecondPass)} className="absolute right-3.5 top-1/2 -translate-y-1/2 theme-faint hover:theme-text transition-colors cursor-pointer">
                     {showSecondPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -665,7 +665,7 @@ export default function EncryptForm() {
               </label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <input id="encrypt-reveal" type={showRevealKey ? "text" : "password"} value={revealKey} onChange={(e) => setRevealKey(e.target.value)} placeholder={t("advanced.revealkey.placeholder")} className="w-full pr-12 font-mono text-sm !rounded-lg border border-[var(--glass-border)]" style={{ background: "var(--input-solid)" }} aria-label="Reveal key" />
+                  <input id="encrypt-reveal" type={showRevealKey ? "text" : "password"} value={revealKey} onChange={(e) => setRevealKey(e.target.value)} placeholder={t("advanced.revealkey.placeholder")} className="w-full pr-12 font-mono text-sm" aria-label="Reveal key" />
                   <button type="button" onClick={() => setShowRevealKey(!showRevealKey)} className="absolute right-3.5 top-1/2 -translate-y-1/2 theme-faint hover:theme-text transition-colors cursor-pointer">
                     {showRevealKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>

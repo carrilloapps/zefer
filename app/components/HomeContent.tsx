@@ -99,21 +99,18 @@ export default function HomeContent() {
 
       {/* Resources */}
       <section className="pb-12 px-4 sm:px-6">
-        <div className="max-w-2xl mx-auto grid grid-cols-1 min-[480px]:grid-cols-3 gap-3">
-          <Link href="/install/guide" className="glass glass-hover glass-lift p-4 text-center cursor-pointer block">
-            <BookOpen className="w-5 h-5 text-primary mx-auto mb-2" />
-            <p className="text-xs font-semibold theme-heading">{t("home.guide")}</p>
-            <p className="text-[10px] theme-muted mt-0.5">{t("home.guide.desc")}</p>
+        <div className="max-w-2xl mx-auto flex flex-wrap items-center justify-center gap-2">
+          <Link href="/install/guide" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">
+            <BookOpen className="w-3 h-3" />{t("home.guide")}
           </Link>
-          <Link href="/install" className="glass glass-hover glass-lift p-4 text-center cursor-pointer block">
-            <Download className="w-5 h-5 text-primary mx-auto mb-2" />
-            <p className="text-xs font-semibold theme-heading">{t("home.install")}</p>
-            <p className="text-[10px] theme-muted mt-0.5">{t("home.install.desc")}</p>
+          <Link href="/install" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">
+            <Download className="w-3 h-3" />{t("home.install")}
           </Link>
-          <a href="/llms.txt" target="_blank" rel="noopener noreferrer" className="glass glass-hover glass-lift p-4 text-center cursor-pointer block">
-            <Bot className="w-5 h-5 text-primary mx-auto mb-2" />
-            <p className="text-xs font-semibold theme-heading">llms.txt</p>
-            <p className="text-[10px] theme-muted mt-0.5">{t("home.llm.desc")}</p>
+          <a href="/llms.txt" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">
+            <Bot className="w-3 h-3" />llms.txt
+          </a>
+          <a href="/agents.md" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">
+            <Bot className="w-3 h-3" />agents.md
           </a>
         </div>
       </section>

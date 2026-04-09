@@ -153,8 +153,8 @@ export function GlassSelect({
       <button
         type="button"
         onClick={() => { setOpen(!open); setSearch(""); }}
-        className="w-full flex items-center justify-between text-sm py-[0.6875rem] px-3 !rounded-lg border border-[var(--glass-border)] cursor-pointer hover:border-[var(--glass-border-hover)] transition-colors"
-        style={{ background: "var(--input-solid)" }}
+        className="w-full flex items-center justify-between text-sm py-[0.6875rem] px-3 rounded-xl border border-[var(--input-border)] cursor-pointer hover:border-[var(--input-border-focus)] transition-colors"
+        style={{ background: "var(--input-bg)" }}
       >
         <span className="theme-text">{current?.label ?? ""}</span>
         <ChevronDown className={`w-3.5 h-3.5 theme-faint transition-transform ${open ? "rotate-180" : ""}`} />
