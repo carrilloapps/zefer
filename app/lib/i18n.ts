@@ -653,9 +653,9 @@ const translations = {
     pt: "Dupla frase-chave",
   },
   "advanced.dualkey.placeholder": {
-    es: "Segunda frase clave (mínimo 6 caracteres)",
-    en: "Second passphrase (minimum 6 characters)",
-    pt: "Segunda frase-chave (mínimo de 6 caracteres)",
+    es: "Mínimo 6 caracteres",
+    en: "Minimum 6 characters",
+    pt: "Mínimo de 6 caracteres",
   },
   "advanced.dualkey.label2": {
     es: "Segunda frase clave",
@@ -715,9 +715,9 @@ const translations = {
     pt: "Chave de revelação",
   },
   "advanced.revealkey.placeholder": {
-    es: "Clave alternativa para compartir (mínimo 6 caracteres)",
-    en: "Alternative key to share (minimum 6 characters)",
-    pt: "Chave alternativa para compartilhar (mínimo de 6 caracteres)",
+    es: "Mínimo 6 caracteres",
+    en: "Minimum 6 characters",
+    pt: "Mínimo de 6 caracteres",
   },
   "advanced.revealkey.help": {
     es: "Comparte esta clave en lugar de tu contraseña principal. Ambas descifran el archivo. El archivo resultante ocupa aproximadamente el doble de tamaño.",

@@ -330,7 +330,10 @@ select {
   border: 1px solid var(--input-border);
   color: var(--foreground);
   border-radius: 0.75rem;
-  padding: 0.75rem 1rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
   font-size: 0.875rem;
   transition: border-color 0.25s ease, background 0.25s ease;
 }
@@ -347,6 +350,25 @@ select:focus {
 textarea::placeholder,
 input::placeholder {
   color: var(--muted);
+}
+
+input.has-toggle {
+  padding-right: 2.5rem;
+}
+
+.has-toggle-wrap {
+  position: relative;
+}
+
+.has-toggle-wrap::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  right: 2.25rem;
+  width: 0.625rem;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, var(--input-bg));
 }
 
 select option {
