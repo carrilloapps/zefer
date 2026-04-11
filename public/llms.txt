@@ -8,12 +8,14 @@ Zefer encrypts secrets (text, files, API keys, images, ZIPs) into `.zefer` files
 - Source: https://github.com/carrilloapps/zefer
 - Agent instructions: https://zefer.carrillo.app/agents.md
 - License: MIT
-- Author: Jose Carrillo (@carrilloapps)
+- Author: [José Carrillo](https://github.com/carrilloapps)
 
 ## Docs
 
 - [How It Works](https://zefer.carrillo.app/how): 7-step encryption process, 5 features, 12 technical specs
-- [Privacy & Security](https://zefer.carrillo.app/privacy): 9-section policy, GDPR/CCPA/LGPD compliance
+- [Privacy Policy](https://zefer.carrillo.app/privacy): 9-section policy, GDPR/CCPA/LGPD compliance
+- [Security Policy](https://zefer.carrillo.app/security): Vulnerability reporting, crypto architecture, response timeline
+- [Code of Conduct](https://zefer.carrillo.app/conduct): Contributor Covenant 2.1, enforcement guidelines
 - [Terms & Conditions](https://zefer.carrillo.app/terms): 12 sections, MIT license, Colombia Law 1581
 - [Project Info](https://zefer.carrillo.app/project): Tech stack, creator, donate
 - [Device Detection](https://zefer.carrillo.app/device): RAM/CPU/GPU analysis, dynamic file limits
@@ -121,7 +123,7 @@ Pre-configure encrypt/decrypt forms via URL. Every param has a long name and sho
 - Web Crypto API (SubtleCrypto), CompressionStream API
 - Lucide React, Sonner (toasts)
 - Vitest (125 tests, 100% line coverage, 7 test files)
-- i18n: Spanish, English, Portuguese (~415 translation keys)
+- i18n: Spanish, English, Portuguese (~500 translation keys)
 - WCAG 2.1 AA compliant, responsive, dark/light themes
 
 ## Accessibility Rules
@@ -138,7 +140,7 @@ When releasing a new version, update ALL: `CHANGELOG.md`, `package.json`, `app/l
 ## SEO Rules
 
 - Every `page.tsx` must export `metadata` with: title, description, keywords, openGraph, twitter, alternates.canonical
-- Legal pages (`/privacy`, `/terms`): `robots: { index: false, follow: true }` — excluded from sitemap
+- Legal/doc pages (`/privacy`, `/terms`, `/security`, `/conduct`): `robots: { index: false, follow: true }` — excluded from sitemap
 - 404 page: `robots: { index: false, follow: false }`
 - Only indexable routes go in `app/sitemap.ts`
 - JSON-LD `WebApplication` schema lives in `app/layout.tsx`

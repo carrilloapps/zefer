@@ -2,7 +2,7 @@
 
 ## What is Zefer
 
-Client-side encryption tool that converts text and files into password-protected `.zefer` files using AES-256-GCM. 100% browser-based — no server stores, processes, or transmits user data. Open source, MIT license, created by Jose Carrillo (@carrilloapps).
+Client-side encryption tool that converts text and files into password-protected `.zefer` files using AES-256-GCM. 100% browser-based — no server stores, processes, or transmits user data. Open source, MIT license, created by [José Carrillo](https://github.com/carrilloapps).
 
 **Live:** https://zefer.carrillo.app
 **Repo:** https://github.com/carrilloapps/zefer
@@ -85,14 +85,14 @@ passphrase
 ```
 app/
   api/author/route.ts      -- GitHub profile cache (1h TTL)
-  components/              -- 24 client components
+  components/              -- 27 client components
   lib/
     crypto.ts              -- AES-256-GCM, PBKDF2, benchmark, dual key
     zefer.ts               -- ZEFB3/ZEFR3 encode/decode, all security checks
     chunked-crypto.ts      -- Chunked encryption (16MB per chunk, unique IVs)
     compression.ts         -- Gzip/Deflate via CompressionStream
     device.ts              -- RAM/CPU/GPU detection, dynamic file limits
-    i18n.ts                -- ~415 translation keys x 3 languages
+    i18n.ts                -- ~500 translation keys x 3 languages
     ip.ts                  -- IP detection + allowlist check
     notify.ts              -- Toast notification helpers
     preferences.ts         -- Persisted user preferences (ttl, iterations, compression, inputMode, tab, keygenMode, keygenLength)
@@ -104,14 +104,16 @@ app/
 
 | Route | Type | Robots | Purpose |
 |---|---|---|---|
-| `/` | Static | index, follow | Home — encrypt/decrypt tabs |
-| `/how` | Static | index, follow | 7 steps + 5 features + 12 specs |
-| `/privacy` | Static | noindex, follow | 9 sections + GDPR/CCPA/LGPD compliance |
+| `/` | Static | index, follow | Home — encrypt/decrypt tabs, typewriter hero |
+| `/how` | Static | index, follow | 7 steps + 5 features + 12 specs + FAQPage schema |
+| `/privacy` | Static | noindex, follow | Privacy policy — 9 sections + GDPR/CCPA/LGPD compliance |
 | `/terms` | Static | noindex, follow | 12 sections + MIT + Colombia Law 1581 |
 | `/project` | Static | index, follow | Repo, stack, creator (GitHub API), donate |
 | `/device` | Static | index, follow | Live device detection + optimization guide |
 | `/install` | Static | index, follow | Usage guide, self-hosting, PWA, native apps (coming soon) |
 | `/install/guide` | Static | index, follow | Step-by-step usage guide for AI assistants |
+| `/security` | Static | noindex, follow | Security policy — vulnerability reporting + crypto architecture |
+| `/conduct` | Static | noindex, follow | Code of Conduct — Contributor Covenant 2.1 |
 | `/api/author` | Dynamic | — | Returns GitHub profile data (cached 1h) |
 | `/llms.txt` | Static | index, follow | LLM context file (llmstxt.org standard) |
 | `/_not-found` | Static | noindex, nofollow | 404 error page |
@@ -170,9 +172,12 @@ Two themes via `[data-theme="dark"]` / `[data-theme="light"]` on `<html>`.
 
 Text hierarchy: `theme-heading` -> `theme-text` -> `theme-muted` -> `theme-faint`
 Glass: `glass`, `glass-nav`, `glass-banner`, `glass-hover`, `glass-lift`
+Mobile drawer: `drawer-bg`, `drawer-group`, `drawer-row` (native app-style grouped rows)
+Hero: `hero-brand-text` (white text + animated green/cyan text-shadow), `hero-glow` (radial gradient behind hero, dark mode only)
 Semantic: `theme-danger`, `theme-warning`, `text-primary`
 Buttons: `btn-primary`, `chip-select`
 Animations: `animate-in`, `animate-in-down`, `animate-scale-in`, `reveal-content`, `error-shake`, `success-icon`, `glow-pulse`, `progress-bar-animated`, `skeleton-shimmer`
+View transition: `theme-circle-reveal` — Telegram-style expanding circle from toggle position (View Transitions API)
 
 ## Security Features (all inside encrypted payload)
 
@@ -206,13 +211,18 @@ When releasing a new version, ALL of these must be updated together:
 
 ## SEO & Metadata
 
-- **Every page** must export `metadata: Metadata` with: title, description, keywords, openGraph (url, title, description), twitter (title, description), alternates.canonical
-- **Legal pages** (`/privacy`, `/terms`) use `robots: { index: false, follow: true }` — not indexed but links are followed
+- **Every page** must export `metadata: Metadata` with: title, description, keywords, openGraph (url, title, description), twitter (card, title, description), alternates.canonical
+- **Legal/doc pages** (`/privacy`, `/terms`, `/security`, `/conduct`) use `robots: { index: false, follow: true }` — not indexed but links are followed
 - **404 page** uses `robots: { index: false, follow: false }`
-- **Sitemap** (`app/sitemap.ts`) includes only indexable routes — legal pages and error pages are excluded
-- **JSON-LD** structured data (`WebApplication` schema) is in `app/layout.tsx` `<head>`
+- **Sitemap** (`app/sitemap.ts`) includes only indexable routes — legal/doc pages and error pages are excluded
+- **JSON-LD** structured data in `app/layout.tsx`: `WebApplication` with `featureList`, `screenshot`, `installUrl`, `releaseNotes`, `softwareHelp`
+- **BreadcrumbList** JSON-LD on all subpages (`/how`, `/project`, `/device`, `/install`, `/install/guide`, `/conduct`, `/security`)
+- **FAQPage** JSON-LD on `/how` with 5 structured questions
 - **OG/Twitter images** are generated at build time via `opengraph-image.tsx` and `twitter-image.tsx` (Satori/ImageResponse)
 - **PWA** manifest includes `screenshots`, `scope`, all required icons (SVG, 192, 512, 512-maskable), and `display: standalone`
+- **robots.ts** disallows `/api/`, `/_next/`, `/sw.js` and declares `host`
+- **Security headers**: HSTS (preload), X-DNS-Prefetch-Control, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy
+- **Author attribution**: use "José Carrillo" as plain text, never "José Carrillo (GitHub: @carrilloapps)" or inline URLs. Links to GitHub go in `<a>` elements, not in translation strings
 
 ## Conventions
 
@@ -223,6 +233,9 @@ When releasing a new version, ALL of these must be updated together:
 - Expand/collapse controls: must have `aria-expanded` and descriptive `aria-label`
 - Headings: strict descending hierarchy (h1 → h2 → h3). Footer labels use `<p>`, not heading tags
 - Responsive: mobile-first, `min-[Xpx]:` for custom breakpoints
+- Mobile drawer: full-screen slide-up with iOS-style grouped rows (`drawer-group`), safe-area padding, body scroll lock
+- Mobile footer: compact single-line (legal links + copyright), desktop gets full 4-column grid
+- Mobile navbar: logo + hamburger only; theme toggle and language selector live inside the drawer
 - Popovers: `fixed` on mobile, `absolute` on desktop
 - Inputs: 16px minimum font-size on mobile (prevents iOS zoom)
 - Animations: all respect `prefers-reduced-motion: reduce`

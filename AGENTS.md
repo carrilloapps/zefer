@@ -38,11 +38,12 @@ When releasing a new version, ALL of these must be updated together:
 
 ## SEO Rules
 
-- Every `page.tsx` must export `metadata` with: title, description, keywords, openGraph (url, title, description), twitter (title, description), alternates.canonical
-- Legal pages (`/privacy`, `/terms`): `robots: { index: false, follow: true }` — excluded from sitemap
+- Every `page.tsx` must export `metadata` with: title, description, keywords, openGraph (url, title, description), twitter (card, title, description), alternates.canonical
+- Legal/doc pages (`/privacy`, `/terms`, `/security`, `/conduct`): `robots: { index: false, follow: true }` — excluded from sitemap
 - 404 page: `robots: { index: false, follow: false }`
 - Only indexable routes go in `app/sitemap.ts`
-- JSON-LD `WebApplication` schema lives in `app/layout.tsx`
+- JSON-LD `WebApplication` schema lives in `app/layout.tsx`; `BreadcrumbList` on subpages; `FAQPage` on `/how`
+- Author attribution: use "José Carrillo" as plain text, never "GitHub: @carrilloapps" or inline URLs in translations
 
 ## How to Use Zefer (for AI agents)
 
@@ -103,7 +104,7 @@ Sensitive params (p, p2, r, a) are auto-cleared from the URL after reading.
 - Next.js 16.2.3 (React 19), TypeScript 6, Tailwind CSS v4
 - Web Crypto API, CompressionStream API
 - Vitest (125 tests, 100% line coverage)
-- i18n: es, en, pt
+- i18n: es, en, pt (~500 translation keys)
 
 ## For AI Tool Integration
 
