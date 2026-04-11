@@ -10,7 +10,24 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#050a0e",
     theme_color: "#22c55e",
     orientation: "portrait-primary",
+    scope: "/",
     categories: ["security", "utilities", "productivity"],
+    screenshots: [
+      {
+        src: "/opengraph-image",
+        sizes: "1200x630",
+        type: "image/png",
+        form_factor: "wide",
+        label: "Zefer — Encrypt text and files with AES-256-GCM",
+      },
+      {
+        src: "/twitter-image",
+        sizes: "1200x630",
+        type: "image/png",
+        form_factor: "narrow",
+        label: "Zefer — End-to-end encrypted secret sharing",
+      },
+    ] as unknown as MetadataRoute.Manifest["screenshots"],
     icons: [
       {
         src: "/icon.svg",

@@ -9,7 +9,7 @@ Client-side encryption tool that converts text and files into password-protected
 
 ## Stack
 
-- Next.js 16.2.3 (React 19), TypeScript 5, Tailwind CSS v4
+- Next.js 16.2.3 (React 19), TypeScript 6, Tailwind CSS v4
 - Web Crypto API (AES-256-GCM, PBKDF2-SHA256), CompressionStream API
 - Lucide React icons, Sonner (toast notifications)
 - Vitest + @vitest/coverage-v8 (125 tests, 100% line coverage)

@@ -12,7 +12,7 @@ Client-side encryption tool that converts text and files into password-protected
 [![License](https://img.shields.io/github/license/carrilloapps/zefer?style=flat-square&color=22c55e)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-125%20passed-22c55e?style=flat-square)](https://github.com/carrilloapps/zefer)
 [![Coverage](https://img.shields.io/badge/coverage-100%25-22c55e?style=flat-square)](https://github.com/carrilloapps/zefer)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6-3178c6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.3-000?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react&logoColor=000)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-06b6d4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
@@ -189,7 +189,7 @@ npm run build         # Production build
 | Layer | Technology |
 |---|---|
 | Framework | [Next.js 16.2.3](https://nextjs.org/) (React 19) |
-| Language | [TypeScript 5](https://www.typescriptlang.org/) |
+| Language | [TypeScript 6](https://www.typescriptlang.org/) |
 | Styling | [Tailwind CSS v4](https://tailwindcss.com/) |
 | Encryption | Web Crypto API (AES-256-GCM) |
 | Key Derivation | PBKDF2-SHA256 (300k-1M iterations) |

@@ -117,7 +117,7 @@ Pre-configure encrypt/decrypt forms via URL. Every param has a long name and sho
 
 ## Tech Stack
 
-- Next.js 16.2.3 (React 19), TypeScript 5, Tailwind CSS v4
+- Next.js 16.2.3 (React 19), TypeScript 6, Tailwind CSS v4
 - Web Crypto API (SubtleCrypto), CompressionStream API
 - Lucide React, Sonner (toasts)
 - Vitest (125 tests, 100% line coverage, 7 test files)
