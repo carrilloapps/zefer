@@ -13,38 +13,51 @@ export default function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(145deg, #071210, #050a0e, #080a14)",
+          background: "linear-gradient(135deg, #060d0b 0%, #050a0e 50%, #070a12 100%)",
           borderRadius: 40,
           position: "relative",
           overflow: "hidden",
         }}
       >
-        {/* Subtle inner glow */}
+        {/* Green glow */}
         <div
           style={{
             position: "absolute",
-            width: 140,
-            height: 140,
+            width: 120,
+            height: 120,
             borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 70%)",
-            top: 10,
-            left: 10,
+            background: "radial-gradient(circle, rgba(34,197,94,0.2) 0%, transparent 70%)",
+            top: 20,
+            left: 20,
+            filter: "blur(30px)",
+          }}
+        />
+        {/* Cyan accent glow */}
+        <div
+          style={{
+            position: "absolute",
+            width: 80,
+            height: 80,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(6,182,212,0.1) 0%, transparent 70%)",
+            bottom: 15,
+            right: 15,
             filter: "blur(20px)",
           }}
         />
+        {/* Shield */}
         <svg
-          width="110"
-          height="110"
+          width="100"
+          height="100"
           viewBox="0 0 32 32"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
             d="M16 2L4 8v8c0 7.18 5.1 13.88 12 15.4C22.9 29.88 28 23.18 28 16V8L16 2z"
-            fill="rgba(34,197,94,0.08)"
+            fill="rgba(34,197,94,0.1)"
             stroke="#22c55e"
-            strokeWidth="2.2"
+            strokeWidth="2"
             strokeLinejoin="round"
           />
           <path
