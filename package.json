@@ -1,14 +1,55 @@
 {
   "name": "zefer",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.2.0",
+  "description": "Client-side encryption tool that converts text and files into password-protected .zefer files using AES-256-GCM. 100% browser-based, zero-knowledge, open source.",
+  "keywords": [
+    "encryption",
+    "aes-256-gcm",
+    "pbkdf2",
+    "zero-knowledge",
+    "client-side",
+    "secret-sharing",
+    "file-encryption",
+    "password-protected",
+    "web-crypto-api",
+    "nextjs",
+    "react",
+    "typescript"
+  ],
+  "homepage": "https://zefer.carrillo.app",
+  "bugs": {
+    "url": "https://github.com/carrilloapps/zefer/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carrilloapps/zefer.git"
+  },
+  "funding": [
+    {
+      "type": "buymeacoffee",
+      "url": "https://www.buymeacoffee.com/carrilloapps"
+    },
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/carrilloapps"
+    }
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Jose Carrillo",
+    "email": "m@carrillo.app",
+    "url": "https://carrillo.app"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "validate": "npm run typecheck && npm run lint && npm run test && npm run build"
   },
   "dependencies": {
     "lucide-react": "~1.8.0",
@@ -28,5 +69,10 @@
     "tailwindcss": "~4.2.2",
     "typescript": "~6.0.2",
     "vitest": "~4.1.4"
-  }
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "private": true
 }
