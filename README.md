@@ -24,11 +24,11 @@ Client-side encryption tool that converts text and files into password-protected
 
 <br />
 
-[Live Demo](https://zefer.carrillo.app) · [Report Bug](https://github.com/carrilloapps/zefer/issues) · [Request Feature](https://github.com/carrilloapps/zefer/issues) · [Documentation](docs/)
+[Live Demo](https://zefer.carrillo.app) · [Report Bug](https://github.com/carrilloapps/zefer/issues/new?template=bug_report.md) · [Request Feature](https://github.com/carrilloapps/zefer/issues/new?template=feature_request.md) · [Security Report](https://github.com/carrilloapps/zefer/issues/new?template=security_vulnerability.md) · [Documentation](docs/)
 
 </div>
 
-<br />
+---
 
 ## Table of Contents
 
@@ -44,9 +44,10 @@ Client-side encryption tool that converts text and files into password-protected
 - [Testing](#testing)
 - [Security Model](#security-model)
 - [Legal Compliance](#legal-compliance)
+- [Deployment](#deployment)
 - [AI Integration](#ai-integration)
-- [Documentation](#documentation)
 - [Contributing](#contributing)
+- [Documentation](#documentation)
 - [Author](#author)
 - [Support](#support)
 - [License](#license)
@@ -58,6 +59,7 @@ Zefer encrypts your secrets into password-protected `.zefer` files using AES-256
 - **Zero-knowledge** — the server never sees plaintext, passphrases, or encryption keys
 - **No cookies, no analytics, no trackers** — zero data collection
 - **Open source** — MIT license, fully auditable
+- **Standards-based** — Web Crypto API, CompressionStream API, no third-party crypto dependencies
 
 ## Features
 
@@ -125,6 +127,8 @@ Browser (client-side only)
   No server involved
 ```
 
+For detailed data flow diagrams, component tree, and theming system, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 ## Binary File Format
 
 ### ZEFB3 — Single key (primary format)
@@ -156,6 +160,13 @@ reveal_salt + reveal_iv + reveal_chunks ← encrypted with reveal key
 
 ## Quick Start
 
+### Prerequisites
+
+- Node.js 20+
+- npm 10+
+
+### Installation
+
 ```bash
 git clone https://github.com/carrilloapps/zefer.git
 cd zefer
@@ -165,10 +176,13 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-### Prerequisites
+### Verify
 
-- Node.js 20+
-- npm 10+
+```bash
+npm test              # 125 tests
+npx tsc --noEmit      # Type check
+npm run build         # Production build
+```
 
 ## Tech Stack
 
@@ -308,7 +322,7 @@ npm run test:watch    # Watch mode
 | Answer hashing | PBKDF2-SHA256 | 100,000 iterations |
 | Random generation | `crypto.getRandomValues` | OS-level CSPRNG |
 
-For full details, see [docs/SECURITY.md](docs/SECURITY.md).
+For the full threat model, known limitations, and security guarantees, see [docs/SECURITY.md](docs/SECURITY.md).
 
 ## Legal Compliance
 
@@ -319,6 +333,17 @@ For full details, see [docs/SECURITY.md](docs/SECURITY.md).
 | LGPD (Brazil) | Compliant — Art. 5, 18 |
 | Law 1581 (Colombia) | Compliant — Art. 4, 9 |
 | ePrivacy Directive | Compliant — no cookies, trackers, or analytics |
+
+## Deployment
+
+| Method | Command | Notes |
+|---|---|---|
+| **Vercel** | Push to GitHub + Import in Vercel | Recommended, zero-config |
+| **Docker** | `docker build -t zefer . && docker run -p 3000:3000 zefer` | Production-ready Dockerfile in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
+| **Static export** | `npm run build` with `output: "export"` | Disables `/api/author` route |
+| **Self-hosted** | `npm run build && npm start` | Requires Node.js 20+, HTTPS |
+
+HTTPS is required — Web Crypto API is only available in secure contexts. See the full [Deployment Guide](docs/DEPLOYMENT.md).
 
 ## AI Integration
 
@@ -331,23 +356,25 @@ Zefer publishes [`/llms.txt`](https://zefer.carrillo.app/llms.txt) following the
 | Cursor / Windsurf / Augment | Add `llms.txt` as context file |
 | Any LLM | Pass `https://zefer.carrillo.app/llms.txt` as context URL |
 
-## Documentation
-
-| Document | Description |
-|---|---|
-| [Architecture](docs/ARCHITECTURE.md) | System design, data flow, and component relationships |
-| [Security](docs/SECURITY.md) | Threat model, cryptographic primitives, and known limitations |
-| [Deployment](docs/DEPLOYMENT.md) | Vercel, self-hosting, and environment configuration |
-| [Contributing](docs/CONTRIBUTING.md) | Setup, conventions, and pull request process |
-
 ## Contributing
 
-Contributions are welcome! Please read the [contributing guide](docs/CONTRIBUTING.md) before submitting a pull request.
+Contributions are welcome! Please read the [Contributing Guide](docs/CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before submitting a pull request.
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/your-feature`)
 3. Run tests (`npm test`) and verify types (`npx tsc --noEmit`)
 4. Submit a pull request
+
+## Documentation
+
+| Document | Description |
+|---|---|
+| [Architecture](docs/ARCHITECTURE.md) | Data flow, binary format, component tree, theming |
+| [Security](docs/SECURITY.md) | Threat model, cryptographic primitives, guarantees, limitations |
+| [Deployment](docs/DEPLOYMENT.md) | Vercel, Docker, static export, self-hosting |
+| [Contributing](docs/CONTRIBUTING.md) | Setup, conventions, PR workflow |
+| [Code of Conduct](CODE_OF_CONDUCT.md) | Community standards |
+| [Changelog](CHANGELOG.md) | Version history and release notes |
 
 ## Author
 
@@ -357,15 +384,27 @@ Contributions are welcome! Please read the [contributing guide](docs/CONTRIBUTIN
 
 **Jose Carrillo** — Senior Fullstack Developer & Tech Lead
 
-[![GitHub](https://img.shields.io/badge/@carrilloapps-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/carrilloapps)
-[![Website](https://img.shields.io/badge/carrillo.app-22c55e?style=flat-square&logo=googlechrome&logoColor=white)](https://carrillo.app)
+10+ years building scalable, efficient, and secure software. Based in Colombia.
+
+<p>
+<a href="https://github.com/carrilloapps"><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub" /></a>
+<a href="https://carrillo.app"><img src="https://img.shields.io/badge/Website-carrillo.app-22c55e?style=flat-square&logo=googlechrome&logoColor=white" alt="Website" /></a>
+<a href="https://linkedin.com/in/carrilloapps"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
+<a href="https://x.com/carrilloapps"><img src="https://img.shields.io/badge/X-000000?style=flat-square&logo=x&logoColor=white" alt="X" /></a>
+<a href="https://dev.to/carrilloapps"><img src="https://img.shields.io/badge/Dev.to-0A0A0A?style=flat-square&logo=devdotto&logoColor=white" alt="Dev.to" /></a>
+<a href="https://medium.com/@carrilloapps"><img src="https://img.shields.io/badge/Medium-000000?style=flat-square&logo=medium&logoColor=white" alt="Medium" /></a>
+<a href="https://stackoverflow.com/users/14580648"><img src="https://img.shields.io/badge/Stack%20Overflow-F58025?style=flat-square&logo=stackoverflow&logoColor=white" alt="Stack Overflow" /></a>
+</p>
 
 ## Support
 
 If you find Zefer useful, consider supporting the project:
 
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=flat-square&logo=buymeacoffee&logoColor=000)](https://www.buymeacoffee.com/carrilloapps)
-[![Star on GitHub](https://img.shields.io/github/stars/carrilloapps/zefer?style=social)](https://github.com/carrilloapps/zefer)
+<p>
+<a href="https://www.buymeacoffee.com/carrilloapps"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=flat-square&logo=buymeacoffee&logoColor=000" alt="Buy Me a Coffee" /></a>
+<a href="https://github.com/sponsors/carrilloapps"><img src="https://img.shields.io/badge/GitHub%20Sponsors-EA4AAA?style=flat-square&logo=githubsponsors&logoColor=white" alt="GitHub Sponsors" /></a>
+<a href="https://github.com/carrilloapps/zefer/stargazers"><img src="https://img.shields.io/github/stars/carrilloapps/zefer?style=social" alt="Star on GitHub" /></a>
+</p>
 
 ## License
 
