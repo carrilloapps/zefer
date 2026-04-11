@@ -99,6 +99,35 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: `if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js"))` }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "Zefer",
+              url: "https://zefer.carrillo.app",
+              description: "Client-side encryption tool that converts text and files into password-protected .zefer files using AES-256-GCM.",
+              applicationCategory: "SecurityApplication",
+              operatingSystem: "Any",
+              browserRequirements: "Requires a modern browser with Web Crypto API support",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+              author: {
+                "@type": "Person",
+                name: "José Carrillo",
+                url: "https://carrillo.app",
+                sameAs: [
+                  "https://github.com/carrilloapps",
+                  "https://linkedin.com/in/carrilloapps",
+                  "https://x.com/carrilloapps",
+                ],
+              },
+              license: "https://opensource.org/licenses/MIT",
+              softwareVersion: "0.2.0",
+              inLanguage: ["en", "es", "pt"],
+            }),
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col bg-grid">
         <div className="ambient-glow" aria-hidden="true" />
