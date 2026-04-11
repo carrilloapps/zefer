@@ -360,11 +360,11 @@ export default function EncryptForm() {
       tracker.done();
       await new Promise((r) => setTimeout(r, 500));
 
-      // Generate share link with passphrase for short-lived files (TTL <= 30 min)
+      // Generate share link with passphrase for short-lived files (TTL <= 7 days)
       if (ttl > 0 && ttl <= 10080) {
-        const params = new URLSearchParams({ t: "decrypt", p: passphrase });
-        if (dualKey && secondPassphrase) params.set("p2", secondPassphrase);
-        if (revealKey) params.set("r", revealKey);
+        const linkPass = revealKey || passphrase;
+        const params = new URLSearchParams({ t: "decrypt", p: linkPass });
+        if (!revealKey && dualKey && secondPassphrase) params.set("p2", secondPassphrase);
         setShareLink(`${window.location.origin}/?${params.toString()}`);
       } else {
         setShareLink(null);
