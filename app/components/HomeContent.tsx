@@ -21,7 +21,8 @@ const ROTATE_KEYS: TranslationKey[] = [
 ];
 
 function useTypewriter(phrases: string[], enabled: boolean) {
-  const [display, setDisplay] = useState(phrases[0] ?? "");
+  const langKey = phrases[0] ?? "";
+  const [display, setDisplay] = useState(langKey);
   const [showCursor, setShowCursor] = useState(true);
   const phrasesRef = useRef(phrases);
   phrasesRef.current = phrases;
@@ -74,7 +75,7 @@ function useTypewriter(phrases: string[], enabled: boolean) {
 
     run();
     return () => { cancelled = true; clearTimeout(timer); };
-  }, [enabled]);
+  }, [enabled, langKey]);
 
   // Cursor blink
   useEffect(() => {
