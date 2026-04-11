@@ -182,7 +182,7 @@ RootLayout
                     +-- Footer
 ```
 
-22 client components total.
+24 client components total.
 
 ## Theming
 

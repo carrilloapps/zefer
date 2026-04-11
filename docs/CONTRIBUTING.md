@@ -23,7 +23,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ```
 app/
   api/           # Server-side API routes (/api/author only)
-  components/    # 22 React client components
+  components/    # 24 React client components
   lib/           # 10 core logic modules (crypto, compression, device, i18n, etc.)
   [page]/        # Next.js file-based routing
   globals.css    # Design system (CSS variables, glass effects, animations)

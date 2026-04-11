@@ -85,17 +85,17 @@ passphrase
 ```
 app/
   api/author/route.ts      -- GitHub profile cache (1h TTL)
-  components/              -- 22 client components
+  components/              -- 24 client components
   lib/
     crypto.ts              -- AES-256-GCM, PBKDF2, benchmark, dual key
     zefer.ts               -- ZEFB3/ZEFR3 encode/decode, all security checks
     chunked-crypto.ts      -- Chunked encryption (16MB per chunk, unique IVs)
     compression.ts         -- Gzip/Deflate via CompressionStream
     device.ts              -- RAM/CPU/GPU detection, dynamic file limits
-    i18n.ts                -- ~250 translation keys x 3 languages
+    i18n.ts                -- ~415 translation keys x 3 languages
     ip.ts                  -- IP detection + allowlist check
     notify.ts              -- Toast notification helpers
-    preferences.ts         -- Persisted user preferences (ttl, iterations, compression, inputMode, tab)
+    preferences.ts         -- Persisted user preferences (ttl, iterations, compression, inputMode, tab, keygenMode, keygenLength)
     progress.ts            -- Encryption/decryption progress tracking
   globals.css              -- Design system (liquid glass, 2 themes, animations)
 ```
@@ -111,7 +111,9 @@ app/
 | `/project` | Static | Repo, stack, creator (GitHub API), donate |
 | `/device` | Static | Live device detection + optimization guide |
 | `/install` | Static | Usage guide, self-hosting, PWA, native apps (coming soon) |
+| `/install/guide` | Static | Step-by-step usage guide for AI assistants |
 | `/api/author` | Dynamic | Returns GitHub profile data (cached 1h) |
+| `/llms.txt` | Static | LLM context file (llmstxt.org standard) |
 
 ## URL Parameters
 

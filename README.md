@@ -205,20 +205,20 @@ npm run build         # Production build
 app/
   api/
     author/route.ts       # GitHub profile API (cached 1h)
-  components/             # 22 client components
+  components/             # 24 client components
     EncryptForm.tsx        # Encrypt text/files
     DecryptForm.tsx        # Decrypt .zefer files
     HomeContent.tsx        # Home page with tabs
     KeyGenerator.tsx       # Secure key generator popover
     CryptoProgress.tsx     # Encryption/decryption progress bar
-    ...                    # 17 more components
+    ...                    # 19 more components
   lib/
     crypto.ts             # AES-256-GCM + PBKDF2 + benchmarking
     zefer.ts              # .zefer format encode/decode (ZEFB3/ZEFR3)
     chunked-crypto.ts     # Chunked encryption (16MB per chunk)
     compression.ts        # Gzip/Deflate via CompressionStream
     device.ts             # RAM/CPU/GPU detection + file limits
-    i18n.ts               # Translations (es/en/pt, ~250 keys)
+    i18n.ts               # Translations (es/en/pt, ~415 keys)
     ip.ts                 # IP detection and restriction
     notify.ts             # Toast notification helpers
     preferences.ts        # Persisted user preferences
@@ -243,6 +243,7 @@ public/
 | `/project` | Static | Project info, tech stack, creator, donate |
 | `/device` | Static | Device detection details + optimization guide |
 | `/install` | Static | Usage guide, self-hosting, PWA, native apps |
+| `/install/guide` | Static | Step-by-step usage guide for AI assistants |
 | `/api/author` | Dynamic | GitHub profile data (cached 1h) |
 | `/llms.txt` | Static | LLM context file |
 
@@ -373,7 +374,8 @@ Contributions are welcome! Please read the [Contributing Guide](docs/CONTRIBUTIN
 | [Security](docs/SECURITY.md) | Threat model, cryptographic primitives, guarantees, limitations |
 | [Deployment](docs/DEPLOYMENT.md) | Vercel, Docker, static export, self-hosting |
 | [Contributing](docs/CONTRIBUTING.md) | Setup, conventions, PR workflow |
-| [Code of Conduct](CODE_OF_CONDUCT.md) | Community standards |
+| [Security Policy](SECURITY.md) | Vulnerability reporting, response timeline, scope |
+| [Code of Conduct](CODE_OF_CONDUCT.md) | Contributor Covenant community standards |
 | [Changelog](CHANGELOG.md) | Version history and release notes |
 
 ## Author

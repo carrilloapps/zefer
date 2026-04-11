@@ -20,7 +20,21 @@ export default function OGImage() {
           overflow: "hidden",
         }}
       >
-        {/* Ambient blobs */}
+        {/* Ambient glow — green top-left */}
+        <div
+          style={{
+            position: "absolute",
+            width: 600,
+            height: 600,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle, rgba(34,197,94,0.18) 0%, transparent 70%)",
+            top: -150,
+            left: -100,
+            filter: "blur(100px)",
+          }}
+        />
+        {/* Ambient glow — cyan bottom-right */}
         <div
           style={{
             position: "absolute",
@@ -28,39 +42,37 @@ export default function OGImage() {
             height: 500,
             borderRadius: "50%",
             background:
-              "radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 70%)",
-            top: -100,
-            left: -50,
-            filter: "blur(80px)",
+              "radial-gradient(circle, rgba(6,182,212,0.12) 0%, transparent 70%)",
+            bottom: -120,
+            right: -80,
+            filter: "blur(100px)",
           }}
         />
+        {/* Subtle grid overlay */}
         <div
           style={{
             position: "absolute",
-            width: 400,
-            height: 400,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(14,165,233,0.1) 0%, transparent 70%)",
-            bottom: -80,
-            right: -30,
-            filter: "blur(80px)",
+            inset: 0,
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
           }}
         />
 
         {/* Shield icon */}
         <svg
-          width="80"
-          height="80"
+          width="88"
+          height="88"
           viewBox="0 0 32 32"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          style={{ marginBottom: 32 }}
+          style={{ marginBottom: 28 }}
         >
           <path
             d="M16 2L4 8v8c0 7.18 5.1 13.88 12 15.4C22.9 29.88 28 23.18 28 16V8L16 2z"
+            fill="rgba(34,197,94,0.08)"
             stroke="#22c55e"
-            strokeWidth="2"
+            strokeWidth="1.8"
             strokeLinejoin="round"
           />
           <path
@@ -78,62 +90,98 @@ export default function OGImage() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: 12,
+            gap: 10,
           }}
         >
           <div
             style={{
-              fontSize: 56,
+              fontSize: 64,
               fontWeight: 700,
               color: "#ffffff",
-              letterSpacing: "-0.02em",
+              letterSpacing: "-0.03em",
             }}
           >
             Zefer
           </div>
           <div
             style={{
-              fontSize: 22,
+              fontSize: 24,
               color: "rgba(255,255,255,0.5)",
-              maxWidth: 600,
+              maxWidth: 650,
               textAlign: "center",
-              lineHeight: 1.5,
+              lineHeight: 1.4,
+              letterSpacing: "-0.01em",
             }}
           >
             Share secrets, not risks
           </div>
         </div>
 
-        {/* Badge */}
+        {/* Feature pills */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
+            gap: 12,
+            marginTop: 36,
+          }}
+        >
+          {["AES-256-GCM", "Zero-Knowledge", "100% Client-Side"].map(
+            (label) => (
+              <div
+                key={label}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "8px 18px",
+                  borderRadius: 100,
+                  background: "rgba(34,197,94,0.08)",
+                  border: "1px solid rgba(34,197,94,0.18)",
+                }}
+              >
+                <div
+                  style={{
+                    width: 5,
+                    height: 5,
+                    borderRadius: "50%",
+                    background: "#22c55e",
+                  }}
+                />
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: "rgba(34,197,94,0.9)",
+                    fontFamily: "monospace",
+                    letterSpacing: "0.03em",
+                  }}
+                >
+                  {label}
+                </div>
+              </div>
+            )
+          )}
+        </div>
+
+        {/* Bottom URL bar */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 28,
+            display: "flex",
+            alignItems: "center",
             gap: 8,
-            marginTop: 32,
-            padding: "8px 20px",
-            borderRadius: 100,
-            background: "rgba(34,197,94,0.1)",
-            border: "1px solid rgba(34,197,94,0.2)",
           }}
         >
           <div
             style={{
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
-              background: "#22c55e",
-            }}
-          />
-          <div
-            style={{
-              fontSize: 13,
-              color: "#22c55e",
+              fontSize: 14,
+              color: "rgba(255,255,255,0.25)",
               fontFamily: "monospace",
-              letterSpacing: "0.05em",
+              letterSpacing: "0.04em",
             }}
           >
-            E2E ENCRYPTED &bull; ZERO-KNOWLEDGE &bull; AES-256-GCM
+            zefer.carrillo.app
           </div>
         </div>
       </div>
