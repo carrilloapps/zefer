@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://zefer.carrillo.app";
-  const lastModified = new Date("2026-04-11T23:59:00Z");
+  const lastModified = new Date("2026-04-12T00:00:00Z");
 
   return [
     { url: baseUrl, lastModified, changeFrequency: "weekly", priority: 1 },

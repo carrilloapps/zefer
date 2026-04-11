@@ -7,12 +7,12 @@ const siteUrl = "https://zefer.carrillo.app";
 export const metadata: Metadata = {
   title: "Project",
   description:
-    "Zefer is an open-source, client-side encryption tool built with Next.js and Web Crypto API. MIT Licensed. Created by José Carrillo (@carrilloapps).",
+    "Zefer is an open-source, client-side encryption tool built with Next.js and Web Crypto API. MIT Licensed. Created by José Carrillo.",
   keywords: [
     "open source encryption",
     "MIT license",
     "José Carrillo",
-    "carrilloapps",
+    "encryption tool open source",
     "zefer project",
     "client-side encryption tool",
     "AES-256-GCM open source",

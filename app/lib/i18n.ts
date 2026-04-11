@@ -1631,9 +1631,9 @@ const translations = {
     pt: "Conformidade com o RGPD (União Europeia)",
   },
   "terms.gdpr.desc": {
-    es: "Zefer cumple con el Reglamento General de Protección de Datos (RGPD) de la Unión Europea. Dado que Zefer no recopila, procesa ni almacena datos personales, no se requiere base legal para el tratamiento de datos conforme a los artículos 6 y 7 del RGPD. No se utilizan cookies, rastreadores ni analíticas. No se realizan transferencias internacionales de datos. En cumplimiento de los artículos 13 y 14 del RGPD, informamos que el responsable del tratamiento es José Carrillo (GitHub: @carrilloapps). No se designa un Delegado de Protección de Datos (DPO) dado que no se procesan datos personales.",
-    en: "Zefer complies with the General Data Protection Regulation (GDPR) of the European Union. Since Zefer does not collect, process, or store personal data, no legal basis for data processing is required under Articles 6 and 7 of the GDPR. No cookies, trackers, or analytics are used. No international data transfers are made. In compliance with Articles 13 and 14 of the GDPR, we inform that the data controller is José Carrillo (GitHub: @carrilloapps). No Data Protection Officer (DPO) is designated since no personal data is processed.",
-    pt: "O Zefer cumpre o Regulamento Geral de Proteção de Dados (RGPD) da União Europeia. Como o Zefer não coleta, processa nem armazena dados pessoais, não é necessária base legal para o tratamento de dados conforme os artigos 6 e 7 do RGPD. Não são utilizados cookies, rastreadores nem analíticas. Não são realizadas transferências internacionais de dados. Em conformidade com os artigos 13 e 14 do RGPD, informamos que o responsável pelo tratamento é José Carrillo (GitHub: @carrilloapps). Não é designado um Encarregado de Proteção de Dados (DPO), pois não são processados dados pessoais.",
+    es: "Zefer cumple con el Reglamento General de Protección de Datos (RGPD) de la Unión Europea. Dado que Zefer no recopila, procesa ni almacena datos personales, no se requiere base legal para el tratamiento de datos conforme a los artículos 6 y 7 del RGPD. No se utilizan cookies, rastreadores ni analíticas. No se realizan transferencias internacionales de datos. En cumplimiento de los artículos 13 y 14 del RGPD, informamos que el responsable del tratamiento es José Carrillo. No se designa un Delegado de Protección de Datos (DPO) dado que no se procesan datos personales.",
+    en: "Zefer complies with the General Data Protection Regulation (GDPR) of the European Union. Since Zefer does not collect, process, or store personal data, no legal basis for data processing is required under Articles 6 and 7 of the GDPR. No cookies, trackers, or analytics are used. No international data transfers are made. In compliance with Articles 13 and 14 of the GDPR, we inform that the data controller is José Carrillo. No Data Protection Officer (DPO) is designated since no personal data is processed.",
+    pt: "O Zefer cumpre o Regulamento Geral de Proteção de Dados (RGPD) da União Europeia. Como o Zefer não coleta, processa nem armazena dados pessoais, não é necessária base legal para o tratamento de dados conforme os artigos 6 e 7 do RGPD. Não são utilizados cookies, rastreadores nem analíticas. Não são realizadas transferências internacionais de dados. Em conformidade com os artigos 13 e 14 do RGPD, informamos que o responsável pelo tratamento é José Carrillo. Não é designado um Encarregado de Proteção de Dados (DPO), pois não são processados dados pessoais.",
   },
   "terms.ccpa.title": {
     es: "Cumplimiento de la CCPA (California, EE. UU.)",
@@ -1651,9 +1651,9 @@ const translations = {
     pt: "Conformidade com a LGPD (Brasil)",
   },
   "terms.lgpd.desc": {
-    es: "Zefer cumple con la Ley General de Protección de Datos (LGPD) de Brasil. No se realiza tratamiento de datos personales. No se recopilan datos sensibles según la definición del artículo 5 de la LGPD. Los titulares de datos en Brasil pueden ejercer sus derechos conforme al artículo 18 de la LGPD a través de https://github.com/carrilloapps.",
-    en: "Zefer complies with Brazil's General Data Protection Law (LGPD). No processing of personal data takes place. No sensitive data is collected as defined by Article 5 of the LGPD. Data subjects in Brazil may exercise their rights under Article 18 of the LGPD through https://github.com/carrilloapps.",
-    pt: "O Zefer cumpre a Lei Geral de Proteção de Dados (LGPD) do Brasil. Não é realizado tratamento de dados pessoais. Não são coletados dados sensíveis conforme definido pelo artigo 5 da LGPD. Os titulares de dados no Brasil podem exercer seus direitos conforme o artigo 18 da LGPD através de https://github.com/carrilloapps.",
+    es: "Zefer cumple con la Ley General de Protección de Datos (LGPD) de Brasil. No se realiza tratamiento de datos personales. No se recopilan datos sensibles según la definición del artículo 5 de la LGPD. Los titulares de datos en Brasil pueden ejercer sus derechos conforme al artículo 18 de la LGPD contactando a José Carrillo a través de la página del proyecto.",
+    en: "Zefer complies with Brazil's General Data Protection Law (LGPD). No processing of personal data takes place. No sensitive data is collected as defined by Article 5 of the LGPD. Data subjects in Brazil may exercise their rights under Article 18 of the LGPD by contacting José Carrillo through the project page.",
+    pt: "O Zefer cumpre a Lei Geral de Proteção de Dados (LGPD) do Brasil. Não é realizado tratamento de dados pessoais. Não são coletados dados sensíveis conforme definido pelo artigo 5 da LGPD. Os titulares de dados no Brasil podem exercer seus direitos conforme o artigo 18 da LGPD contactando José Carrillo através da página do projeto.",
   },
   "terms.colombia.title": {
     es: "Cumplimiento de la Ley 1581 (Colombia)",
@@ -1661,9 +1661,9 @@ const translations = {
     pt: "Conformidade com a Lei 1581 (Colômbia)",
   },
   "terms.colombia.desc": {
-    es: "Zefer cumple con la Ley Estatutaria 1581 de 2012 de la República de Colombia y su Decreto Reglamentario 1377 de 2013, que regulan la protección de datos personales. Dado que Zefer no recopila, almacena ni trata datos personales en ningún momento, no se requiere autorización del titular conforme al artículo 9 de la Ley 1581, ni registro ante la Superintendencia de Industria y Comercio (SIC). Zefer opera bajo el principio de minimización de datos contemplado en el literal d) del artículo 4 de dicha ley. Para consultas, el responsable del tratamiento es José Carrillo (https://github.com/carrilloapps).",
-    en: "Zefer complies with Statutory Law 1581 of 2012 of the Republic of Colombia and its Regulatory Decree 1377 of 2013, which govern the protection of personal data. Since Zefer does not collect, store, or process personal data at any time, no authorization from the data subject is required under Article 9 of Law 1581, nor registration with the Superintendence of Industry and Commerce (SIC). Zefer operates under the principle of data minimization contemplated in paragraph d) of Article 4 of said law. For inquiries, the data controller is José Carrillo (https://github.com/carrilloapps).",
-    pt: "O Zefer cumpre a Lei Estatutária 1581 de 2012 da República da Colômbia e seu Decreto Regulamentário 1377 de 2013, que regulam a proteção de dados pessoais. Como o Zefer não coleta, armazena nem trata dados pessoais em nenhum momento, não é necessária autorização do titular conforme o artigo 9 da Lei 1581, nem registro perante a Superintendência de Indústria e Comércio (SIC). O Zefer opera sob o princípio de minimização de dados contemplado na alínea d) do artigo 4 da referida lei. Para consultas, o responsável pelo tratamento é José Carrillo (https://github.com/carrilloapps).",
+    es: "Zefer cumple con la Ley Estatutaria 1581 de 2012 de la República de Colombia y su Decreto Reglamentario 1377 de 2013, que regulan la protección de datos personales. Dado que Zefer no recopila, almacena ni trata datos personales en ningún momento, no se requiere autorización del titular conforme al artículo 9 de la Ley 1581, ni registro ante la Superintendencia de Industria y Comercio (SIC). Zefer opera bajo el principio de minimización de datos contemplado en el literal d) del artículo 4 de dicha ley. Para consultas, el responsable del tratamiento es José Carrillo, contactable a través de la página del proyecto.",
+    en: "Zefer complies with Statutory Law 1581 of 2012 of the Republic of Colombia and its Regulatory Decree 1377 of 2013, which govern the protection of personal data. Since Zefer does not collect, store, or process personal data at any time, no authorization from the data subject is required under Article 9 of Law 1581, nor registration with the Superintendence of Industry and Commerce (SIC). Zefer operates under the principle of data minimization contemplated in paragraph d) of Article 4 of said law. For inquiries, the data controller is José Carrillo, reachable through the project page.",
+    pt: "O Zefer cumpre a Lei Estatutária 1581 de 2012 da República da Colômbia e seu Decreto Regulamentário 1377 de 2013, que regulam a proteção de dados pessoais. Como o Zefer não coleta, armazena nem trata dados pessoais em nenhum momento, não é necessária autorização do titular conforme o artigo 9 da Lei 1581, nem registro perante a Superintendência de Indústria e Comércio (SIC). O Zefer opera sob o princípio de minimização de dados contemplado na alínea d) do artigo 4 da referida lei. Para consultas, o responsável pelo tratamento é José Carrillo, contactável através da página do projeto.",
   },
   "terms.license.title": {
     es: "Licencia MIT",
@@ -1681,9 +1681,9 @@ const translations = {
     pt: "Atribuição e criador",
   },
   "terms.creator.desc": {
-    es: "Zefer fue creado y es mantenido por José Carrillo (https://carrillo.app), desarrollador senior fullstack y Tech Lead con más de 10 años de experiencia. GitHub: @carrilloapps. Al utilizar Zefer, reconoces que este proyecto es una contribución al ecosistema de código abierto bajo los términos de la Licencia MIT.",
-    en: "Zefer was created and is maintained by José Carrillo (https://carrillo.app), a senior fullstack developer and Tech Lead with over 10 years of experience. GitHub: @carrilloapps. By using Zefer, you acknowledge that this project is a contribution to the open-source ecosystem under the terms of the MIT License.",
-    pt: "O Zefer foi criado e é mantido por José Carrillo (https://carrillo.app), desenvolvedor senior fullstack e Tech Lead com mais de 10 anos de experiência. GitHub: @carrilloapps. Ao usar o Zefer, você reconhece que este projeto é uma contribuição ao ecossistema de código aberto sob os termos da Licença MIT.",
+    es: "Zefer fue creado y es mantenido por José Carrillo, desarrollador senior fullstack y Tech Lead con más de 10 años de experiencia. Al utilizar Zefer, reconoces que este proyecto es una contribución al ecosistema de código abierto bajo los términos de la Licencia MIT.",
+    en: "Zefer was created and is maintained by José Carrillo, a senior fullstack developer and Tech Lead with over 10 years of experience. By using Zefer, you acknowledge that this project is a contribution to the open-source ecosystem under the terms of the MIT License.",
+    pt: "O Zefer foi criado e é mantido por José Carrillo, desenvolvedor senior fullstack e Tech Lead com mais de 10 anos de experiência. Ao usar o Zefer, você reconhece que este projeto é uma contribuição ao ecossistema de código aberto sob os termos da Licença MIT.",
   },
   "terms.changes.title": {
     es: "Modificaciones a los términos",
@@ -1831,9 +1831,9 @@ const translations = {
     pt: "Siga-nos no GitHub para ser notificado quando os aplicativos nativos estiverem disponíveis.",
   },
   "install.author.title": {
-    es: "Jose Carrillo — @carrilloapps",
-    en: "Jose Carrillo — @carrilloapps",
-    pt: "Jose Carrillo — @carrilloapps",
+    es: "José Carrillo",
+    en: "José Carrillo",
+    pt: "José Carrillo",
   },
   "install.author.desc": {
     es: "Senior Fullstack Developer & Tech Lead. Creador de Zefer.",

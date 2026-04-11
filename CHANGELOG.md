@@ -5,6 +5,42 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-04-11
+
+### New
+
+- **Native mobile drawer** — Full-screen navigation menu with iOS-style grouped rows, drag handle, solid background, safe-area support, and active-state touch feedback
+- **Telegram-style theme toggle** — Theme changes now reveal with an expanding circle animation from the toggle button using the View Transitions API
+- **Typewriter hero** — The homepage headline cycles through rotating phrases ("securely", "with no servers", "in your browser", "without a trace", "with zero knowledge") with a blinking cursor, translated in all 3 languages
+- **Security Policy page** (`/security`) — Vulnerability reporting, response timeline, in-scope/out-of-scope, and full cryptographic architecture table
+- **Code of Conduct page** (`/conduct`) — Community standards, enforcement levels, and reporting channels
+- **FAQ schema** — 5 structured FAQ entries on the How It Works page for Google rich results
+- **BreadcrumbList schema** — JSON-LD breadcrumbs on all subpages for enhanced SERP display
+
+### Improved
+
+- **Mobile navbar** — Simplified to logo + hamburger only; theme toggle and language selector moved inside the drawer
+- **Mobile footer** — Compact single-line layout with key legal links instead of the full 4-column grid
+- **Hero heading** — "Zefer" now renders in white with animated green/cyan text-shadow glow; tagline uses fluid `clamp()` sizing
+- **Dark mode atmosphere** — Increased blob intensity, stronger grid visibility, and a radial glow behind the hero section
+- **SEO metadata** — Expanded keywords, explicit `twitter.card` on all pages, longer Twitter descriptions, richer OpenGraph descriptions
+- **WebApplication schema** — Added `featureList` (11 features), `screenshot`, `installUrl`, `releaseNotes`, `softwareHelp`, and `sourceOrganization`
+- **Robots.txt** — Now disallows `/api/`, `/_next/`, and `/sw.js`; includes `host` directive
+- **Security headers** — Added `Strict-Transport-Security` (HSTS with preload) and `X-DNS-Prefetch-Control`
+- **Privacy page** — Renamed from "Privacy & Security" to "Privacy Policy" to eliminate overlap with the new Security Policy page
+- **Footer restructured** — Security section now links to `/how` (encryption), `/privacy` (zero-knowledge), and `/security` (policy); no duplicate links
+- **Internal linking** — Homepage now links to `/how`, `/project`, `/device` in a Resources section with proper H2 headings
+- **Typewriter language sync** — Changing the language now instantly restarts the animation with the new phrases
+
+### Fixed
+
+- **Typewriter memory leak** — Replaced recursive setTimeout pattern with async/await loop and proper cancellation flag
+- **View transition accessibility** — `prefers-reduced-motion: reduce` disables both the theme circle animation and the hero glow animation
+
+### Removed
+
+- **Changelog page** — Removed `/changelog` route, component, and all 38 translation keys; changelog remains on GitHub only
+
 ## [0.2.0] - 2026-04-11
 
 ### New
@@ -70,5 +106,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Legacy support** — ZEFER3 and ZEFER2 formats supported for backward-compatible decryption
 - **GitHub templates** — Issue templates for bugs, features, and security reports
 
+[0.3.0]: https://github.com/carrilloapps/zefer/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/carrilloapps/zefer/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/carrilloapps/zefer/releases/tag/v0.1.0

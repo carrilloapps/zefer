@@ -31,7 +31,7 @@ export default function TwitterImage() {
 
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ fontSize: 52, fontWeight: 700, color: "#ffffff", letterSpacing: "-0.03em" }}>Zefer</div>
-          <div style={{ padding: "4px 12px", borderRadius: 100, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)", fontSize: 14, color: "#22c55e", fontFamily: "monospace" }}>v0.2.0</div>
+          <div style={{ padding: "4px 12px", borderRadius: 100, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)", fontSize: 14, color: "#22c55e", fontFamily: "monospace" }}>v0.3.0</div>
         </div>
 
         <div style={{ fontSize: 22, color: "rgba(255,255,255,0.45)", marginTop: 12, textAlign: "center", lineHeight: 1.4 }}>End-to-end encrypted secret sharing. No servers, no traces.</div>
