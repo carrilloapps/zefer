@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, Lock, Flame, Eye } from "lucide-react";
+import { Shield, Lock, Eye } from "lucide-react";
 import { useLanguage } from "@/app/components/LanguageProvider";
 
 export default function Footer() {
@@ -55,7 +55,7 @@ export default function Footer() {
             </p>
             <ul className="space-y-2.5">
               <li>
-                <a href="/privacy" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer flex items-center gap-1.5">
+                <a href="/how" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer flex items-center gap-1.5">
                   <Lock className="w-3 h-3" />
                   {t("footer.security.encryption")}
                 </a>
@@ -67,15 +67,15 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/privacy" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer flex items-center gap-1.5">
-                  <Flame className="w-3 h-3" />
-                  {t("form.burn")}
+                <a href="/security" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer flex items-center gap-1.5">
+                  <Shield className="w-3 h-3" />
+                  {t("footer.securitypolicy")}
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Legal & Open Source */}
           <div>
             <p className="text-[11px] font-mono theme-muted uppercase tracking-wider mb-4">
               {t("footer.legal")}
@@ -89,6 +89,11 @@ export default function Footer() {
               <li>
                 <a href="/terms" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">
                   {t("footer.terms")}
+                </a>
+              </li>
+              <li>
+                <a href="/conduct" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">
+                  {t("footer.conduct")}
                 </a>
               </li>
             </ul>
