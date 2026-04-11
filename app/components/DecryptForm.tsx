@@ -57,6 +57,8 @@ export default function DecryptForm() {
   useEffect(() => {
     if (paramsApplied.current) return;
     paramsApplied.current = true;
+    const urlTab = searchParams.get("tab") || searchParams.get("t");
+    if (urlTab === "encrypt") return;
     const g = (long: string, short: string) => searchParams.get(long) ?? searchParams.get(short) ?? null;
     let hasSensitive = false;
 

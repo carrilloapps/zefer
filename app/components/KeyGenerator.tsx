@@ -58,6 +58,10 @@ const LENGTHS = [64, 128, 256, 512, 1024];
 
 interface Props {
   onSelect: (value: string) => void;
+  savedMode?: Mode;
+  savedLength?: number;
+  onModeChange?: (mode: Mode) => void;
+  onLengthChange?: (length: number) => void;
 }
 
 function generateValue(mode: Mode, length: number): string {
@@ -100,14 +104,17 @@ const MODES: { key: Mode; labelKey: string }[] = [
   { key: "uuid", labelKey: "keygen.uuid" },
 ];
 
-export default function KeyGenerator({ onSelect }: Props) {
+export default function KeyGenerator({ onSelect, savedMode, savedLength, onModeChange, onLengthChange }: Props) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<Mode>("secure");
-  const [length, setLength] = useState(64);
+  const [mode, setModeLocal] = useState<Mode>(savedMode ?? "secure");
+  const [length, setLengthLocal] = useState(savedLength ?? 64);
   const [value, setValue] = useState("");
   const [copied, setCopied] = useState(false);
   const [regenKey, setRegenKey] = useState(0);
+
+  const setMode = (v: Mode) => { setModeLocal(v); onModeChange?.(v); };
+  const setLength = (v: number) => { setLengthLocal(v); onLengthChange?.(v); };
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

@@ -77,6 +77,8 @@ export default function EncryptForm() {
     iterations, setIterations,
     compression, setCompression,
     inputMode, setInputMode,
+    keygenMode, keygenLength,
+    setKeygenMode, setKeygenLength,
   } = usePreferences();
 
   // Text mode
@@ -109,6 +111,8 @@ export default function EncryptForm() {
   useEffect(() => {
     if (paramsApplied.current) return;
     paramsApplied.current = true;
+    const urlTab = searchParams.get("tab") || searchParams.get("t");
+    if (urlTab === "decrypt") return;
     const g = (long: string, short: string) => searchParams.get(long) ?? searchParams.get(short) ?? null;
     let adv = false;
     let hasSensitive = false;
@@ -548,7 +552,7 @@ export default function EncryptForm() {
                   {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              <KeyGenerator onSelect={setPassphrase} />
+              <KeyGenerator onSelect={setPassphrase} savedMode={keygenMode} savedLength={keygenLength} onModeChange={setKeygenMode} onLengthChange={setKeygenLength} />
             </div>
           </div>
           <GlassSelect
@@ -670,7 +674,7 @@ export default function EncryptForm() {
                     {showRevealKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <KeyGenerator onSelect={setRevealKey} />
+                <KeyGenerator onSelect={setRevealKey} savedMode={keygenMode} savedLength={keygenLength} onModeChange={setKeygenMode} onLengthChange={setKeygenLength} />
               </div>
               <p className="text-[10px] theme-faint mt-1">{t("advanced.revealkey.help")}</p>
             </div>

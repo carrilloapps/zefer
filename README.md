@@ -1,81 +1,158 @@
+<div align="center">
+
+<img src="app/icon.svg" alt="Zefer" width="80" height="80" />
+
 # Zefer
 
-**Client-side encryption tool for text and files. No servers, no traces, no cookies.**
+**Share secrets, not risks.**
 
-Zefer encrypts your secrets into password-protected `.zefer` files using AES-256-GCM, entirely in your browser. Nothing ever leaves your device unencrypted.
+Client-side encryption tool that converts text and files into password-protected `.zefer` files using AES-256-GCM. 100% browser-based — no servers, no traces, no cookies.
 
-**Live:** [zefer.carrillo.app](https://zefer.carrillo.app)
+[![Live](https://img.shields.io/badge/Live-zefer.carrillo.app-22c55e?style=flat-square)](https://zefer.carrillo.app)
+[![License](https://img.shields.io/github/license/carrilloapps/zefer?style=flat-square&color=22c55e)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-125%20passed-22c55e?style=flat-square)](https://github.com/carrilloapps/zefer)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-22c55e?style=flat-square)](https://github.com/carrilloapps/zefer)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.2.2-000?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react&logoColor=000)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-06b6d4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![WCAG 2.1 AA](https://img.shields.io/badge/WCAG%202.1-AA-22c55e?style=flat-square)](https://www.w3.org/WAI/WCAG21/quickref/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-22c55e?style=flat-square)](docs/CONTRIBUTING.md)
+[![GitHub stars](https://img.shields.io/github/stars/carrilloapps/zefer?style=flat-square&color=22c55e)](https://github.com/carrilloapps/zefer/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/carrilloapps/zefer?style=flat-square)](https://github.com/carrilloapps/zefer/issues)
+[![GitHub last commit](https://img.shields.io/github/last-commit/carrilloapps/zefer?style=flat-square)](https://github.com/carrilloapps/zefer/commits/main)
 
----
+<br />
+
+[Live Demo](https://zefer.carrillo.app) · [Report Bug](https://github.com/carrilloapps/zefer/issues) · [Request Feature](https://github.com/carrilloapps/zefer/issues) · [Documentation](docs/)
+
+</div>
+
+<br />
+
+## Table of Contents
+
+- [About](#about)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Binary File Format](#binary-file-format)
+- [Quick Start](#quick-start)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Routes](#routes)
+- [URL Parameters](#url-parameters)
+- [Testing](#testing)
+- [Security Model](#security-model)
+- [Legal Compliance](#legal-compliance)
+- [AI Integration](#ai-integration)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Author](#author)
+- [Support](#support)
+- [License](#license)
+
+## About
+
+Zefer encrypts your secrets into password-protected `.zefer` files using AES-256-GCM with PBKDF2-SHA256 key derivation, entirely in your browser. Nothing ever leaves your device unencrypted.
+
+- **Zero-knowledge** — the server never sees plaintext, passphrases, or encryption keys
+- **No cookies, no analytics, no trackers** — zero data collection
+- **Open source** — MIT license, fully auditable
 
 ## Features
 
-- **AES-256-GCM encryption** with PBKDF2-SHA256 key derivation (300k to 1M iterations)
-- **Text and file mode** — encrypt plain text or any file type (images, ZIPs, PDFs, etc.)
-- **Chunked encryption** — files over 16MB are split into chunks with unique IVs per chunk
-- **Dynamic file limits** — auto-detects RAM, CPU, GPU, and platform at 80% capacity
-- **Reveal key** — share a secondary key without exposing your main passphrase
-- **Dual passphrase** — require two keys from different people to decrypt
-- **Secret question** — additional authentication layer with PBKDF2-hashed answer (100k iterations)
-- **IP restriction** — limit decryption to specific IPv4/IPv6 addresses
-- **Built-in expiration** — 30min to 2 weeks, or no expiration (inside the encrypted payload)
-- **Max attempts** — client-side decryption attempt limiting
-- **Compression** — Gzip or Deflate via CompressionStream API
-- **Drag and drop** — file upload supports drag-and-drop in both encrypt and decrypt
-- **URL parameters** — pre-configure forms via URL for workflow automation
-- **Secure key generator** — Unicode, alphanumeric, hex, or UUID v7 (64 to 1024 chars)
-- **i18n** — Spanish, English, Portuguese
-- **Light/dark mode** — auto-detects OS preference, persists user choice
-- **WCAG 2.1 AA** — all text passes 4.5:1 contrast ratio
-- **Responsive** — mobile-first, safe-area-inset support, 100dvh
-- **Progress bar** — real-time encryption/decryption progress with device benchmarking
-- **Legal compliance** — GDPR, CCPA, LGPD, Colombia Law 1581
-- **MIT License**
+<table>
+<tr>
+<td width="50%">
+
+**Encryption**
+- AES-256-GCM with PBKDF2-SHA256 (300k-1M iterations)
+- Text and file mode (images, ZIPs, PDFs, etc.)
+- Chunked encryption (16MB per chunk, unique IVs)
+- Gzip/Deflate compression via CompressionStream API
+- Dynamic file limits (auto-detects RAM, CPU, GPU)
+
+</td>
+<td width="50%">
+
+**Security Layers**
+- Reveal key — share without exposing the main passphrase
+- Dual passphrase — two-person authorization
+- Secret question with PBKDF2-hashed answer (100k iterations)
+- IP restriction (IPv4/IPv6 allowlist)
+- Built-in expiration (30min to 2 weeks)
+- Max decryption attempts
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+**Developer Experience**
+- URL parameters for workflow automation
+- Secure key generator (Unicode, alpha, hex, UUID v7)
+- Real-time progress bar with device benchmarking
+- Drag-and-drop file upload
+- 125 tests, 100% line coverage
+
+</td>
+<td width="50%">
+
+**Accessibility & i18n**
+- WCAG 2.1 AA (4.5:1 contrast ratio)
+- Light/dark mode (auto-detects OS preference)
+- 3 languages: Spanish, English, Portuguese
+- Mobile-first responsive design
+- Respects `prefers-reduced-motion`
+
+</td>
+</tr>
+</table>
 
 ## Architecture
 
 ```
 Browser (client-side only)
-  |
-  |-- Text / File input (click or drag-and-drop)
-  |-- Passphrase + options
-  |-- PBKDF2 key derivation (Web Crypto API)
-  |-- AES-256-GCM chunked encryption (Web Crypto API)
-  |-- Optional: Gzip/Deflate compression (CompressionStream API)
-  |-- Optional: Reveal key (second encrypted block)
-  |-- .zefer file download (ZEFB3 or ZEFR3 binary format)
-  |
+  │
+  ├── Text / File input (click or drag-and-drop)
+  ├── Passphrase + options
+  ├── PBKDF2 key derivation (Web Crypto API)
+  ├── AES-256-GCM chunked encryption (Web Crypto API)
+  ├── Optional: Gzip/Deflate compression (CompressionStream API)
+  ├── Optional: Reveal key (second encrypted block)
+  └── .zefer file download (ZEFB3 or ZEFR3 binary format)
+
   No server involved
 ```
 
-### .zefer binary format (ZEFB3 — single key)
+## Binary File Format
+
+### ZEFB3 — Single key (primary format)
 
 ```
 ZEFB3 (5 bytes magic)
 header_length (4 bytes, big-endian)
-header_json                         <- public header (minimal)
+header_json                         ← public header (minimal)
 salt (32 bytes) + iv (12 bytes)
-encrypted_chunks                    <- 16MB per chunk, unique IV per chunk
+encrypted_chunks                    ← 16MB per chunk, unique IV per chunk
 ```
 
-### .zefer binary format (ZEFR3 — with reveal key)
+### ZEFR3 — With reveal key
 
 ```
 ZEFR3 (5 bytes magic)
 header_length (4 bytes, big-endian)
-header_json                         <- public header (minimal)
+header_json                         ← public header (minimal)
 main_block_size (4 bytes)
-main_salt + main_iv + main_chunks   <- encrypted with main passphrase
-reveal_salt + reveal_iv + reveal_chunks <- encrypted with reveal key
+main_salt + main_iv + main_chunks   ← encrypted with main passphrase
+reveal_salt + reveal_iv + reveal_chunks ← encrypted with reveal key
 ```
 
-**Public header** (visible without decryption):
-- `iterations`, `compression`, `hint` (optional), `note` (optional), `mode` (text/file)
+**Public header** (visible without decryption): `iterations`, `compression`, `hint`, `note`, `mode`
 
-**Encrypted payload** (invisible without the key):
-- Content, file metadata, expiration, secret question, IP list, max attempts
+**Encrypted payload** (invisible without the key): content, file metadata, expiration, secret question, IP list, max attempts
 
-Legacy text formats (ZEFER3, ZEFER2) are supported for backward-compatible decryption only.
+> Legacy text formats (ZEFER3, ZEFER2) are supported for backward-compatible decryption only.
 
 ## Quick Start
 
@@ -88,20 +165,25 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### Prerequisites
+
+- Node.js 20+
+- npm 10+
+
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 16.2.2 (React 19) |
-| Language | TypeScript 5 |
-| Styling | Tailwind CSS v4 |
+| Framework | [Next.js 16.2.2](https://nextjs.org/) (React 19) |
+| Language | [TypeScript 5](https://www.typescriptlang.org/) |
+| Styling | [Tailwind CSS v4](https://tailwindcss.com/) |
 | Encryption | Web Crypto API (AES-256-GCM) |
 | Key Derivation | PBKDF2-SHA256 (300k-1M iterations) |
 | Compression | CompressionStream API (Gzip/Deflate) |
-| Icons | Lucide React |
-| Notifications | Sonner |
-| Testing | Vitest + @vitest/coverage-v8 |
-| Hosting | Vercel / Any static host |
+| Icons | [Lucide React](https://lucide.dev/) |
+| Notifications | [Sonner](https://sonner.emilkowal.dev/) |
+| Testing | [Vitest](https://vitest.dev/) + @vitest/coverage-v8 |
+| Hosting | [Vercel](https://vercel.com/) / Any static host |
 
 ## Project Structure
 
@@ -131,7 +213,7 @@ app/
   globals.css             # Design system (liquid glass, theming)
   layout.tsx              # Root layout + providers
   page.tsx                # Home page
-docs/                     # ARCHITECTURE, SECURITY, DEPLOYMENT, CONTRIBUTING
+docs/                     # Architecture, Security, Deployment, Contributing
 public/
   llms.txt                # LLM context file (llmstxt.org standard)
 ```
@@ -146,13 +228,13 @@ public/
 | `/terms` | Static | Terms, conditions, MIT license, legal compliance |
 | `/project` | Static | Project info, tech stack, creator, donate |
 | `/device` | Static | Device detection details + optimization guide |
-| `/install` | Static | Usage guide, self-hosting, PWA, native apps (coming soon) |
+| `/install` | Static | Usage guide, self-hosting, PWA, native apps |
 | `/api/author` | Dynamic | GitHub profile data (cached 1h) |
 | `/llms.txt` | Static | LLM context file |
 
 ## URL Parameters
 
-Pre-configure forms via URL for workflow automation. Every parameter has a long name and short alias.
+Pre-configure forms via URL for workflow automation. Every parameter has a long name and short alias. Sensitive params are auto-cleared from the URL after reading.
 
 ### Tab: `tab` / `t` — `encrypt` or `decrypt`
 
@@ -185,7 +267,7 @@ Pre-configure forms via URL for workflow automation. Every parameter has a long 
 | `dual` | `d` | flag |
 | `answer` | `a` | string |
 
-Sensitive params (`passphrase`, `passphrase2`, `reveal`, `answer`) are auto-cleared from the URL after reading.
+### Examples
 
 ```bash
 /?t=decrypt&p=mySecret123
@@ -200,17 +282,33 @@ npm test              # Run 125 tests
 npm run test:watch    # Watch mode
 ```
 
-Coverage: 100% statements, 100% functions, 100% lines, 99.47% branches.
+| Metric | Value |
+|---|---|
+| Test files | 7 |
+| Total tests | 125 |
+| Statements | 100% |
+| Functions | 100% |
+| Lines | 100% |
+| Branches | 99.47% |
 
 ## Security Model
 
 1. All encryption/decryption happens in the browser via Web Crypto API
 2. The server never sees plaintext, passphrases, or encryption keys
-3. The `.zefer` file header contains only minimal technical data (iterations, compression)
+3. The `.zefer` file header contains only minimal technical data
 4. All security metadata (expiration, IPs, question) is inside the encrypted payload
 5. An attacker with the file cannot determine what security features are enabled
 6. Each file has unique encryption (random salt + IV per block)
 7. Reveal key is independently encrypted with its own salt, IV, and derived key
+
+| Primitive | Algorithm | Parameters |
+|---|---|---|
+| Symmetric encryption | AES-256-GCM | 256-bit key, 96-bit IV, 128-bit auth tag |
+| Key derivation | PBKDF2-SHA256 | 300k/600k/1M iterations, 256-bit salt |
+| Answer hashing | PBKDF2-SHA256 | 100,000 iterations |
+| Random generation | `crypto.getRandomValues` | OS-level CSPRNG |
+
+For full details, see [docs/SECURITY.md](docs/SECURITY.md).
 
 ## Legal Compliance
 
@@ -222,21 +320,59 @@ Coverage: 100% statements, 100% functions, 100% lines, 99.47% branches.
 | Law 1581 (Colombia) | Compliant — Art. 4, 9 |
 | ePrivacy Directive | Compliant — no cookies, trackers, or analytics |
 
+## AI Integration
+
+Zefer publishes [`/llms.txt`](https://zefer.carrillo.app/llms.txt) following the [llmstxt.org](https://llmstxt.org/) standard. Any AI tool can use it as context:
+
+| Tool | Usage |
+|---|---|
+| Claude Code | Reads `CLAUDE.md` and `AGENTS.md` automatically when cloned |
+| GitHub Copilot | `@workspace /explain #file:llms.txt` |
+| Cursor / Windsurf / Augment | Add `llms.txt` as context file |
+| Any LLM | Pass `https://zefer.carrillo.app/llms.txt` as context URL |
+
 ## Documentation
 
-- [Architecture](docs/ARCHITECTURE.md)
-- [Security](docs/SECURITY.md)
-- [Deployment](docs/DEPLOYMENT.md)
-- [Contributing](docs/CONTRIBUTING.md)
+| Document | Description |
+|---|---|
+| [Architecture](docs/ARCHITECTURE.md) | System design, data flow, and component relationships |
+| [Security](docs/SECURITY.md) | Threat model, cryptographic primitives, and known limitations |
+| [Deployment](docs/DEPLOYMENT.md) | Vercel, self-hosting, and environment configuration |
+| [Contributing](docs/CONTRIBUTING.md) | Setup, conventions, and pull request process |
+
+## Contributing
+
+Contributions are welcome! Please read the [contributing guide](docs/CONTRIBUTING.md) before submitting a pull request.
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Run tests (`npm test`) and verify types (`npx tsc --noEmit`)
+4. Submit a pull request
 
 ## Author
 
+<a href="https://github.com/carrilloapps">
+<img src="https://github.com/carrilloapps.png" width="80" height="80" alt="Jose Carrillo" style="border-radius: 50%;" />
+</a>
+
 **Jose Carrillo** — Senior Fullstack Developer & Tech Lead
 
-- GitHub: [@carrilloapps](https://github.com/carrilloapps)
-- Website: [carrillo.app](https://carrillo.app)
-- Donate: [Buy Me a Coffee](https://www.buymeacoffee.com/carrilloapps)
+[![GitHub](https://img.shields.io/badge/@carrilloapps-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/carrilloapps)
+[![Website](https://img.shields.io/badge/carrillo.app-22c55e?style=flat-square&logo=googlechrome&logoColor=white)](https://carrillo.app)
+
+## Support
+
+If you find Zefer useful, consider supporting the project:
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=flat-square&logo=buymeacoffee&logoColor=000)](https://www.buymeacoffee.com/carrilloapps)
+[![Star on GitHub](https://img.shields.io/github/stars/carrilloapps/zefer?style=social)](https://github.com/carrilloapps/zefer)
 
 ## License
 
-[MIT](LICENSE) - Copyright (c) 2026 Jose Carrillo
+[MIT](LICENSE) &copy; 2026 [Jose Carrillo](https://carrillo.app)
+
+---
+
+<div align="center">
+<sub>Built with security in mind, from Colombia to the world.</sub>
+</div>

@@ -6,12 +6,16 @@ const STORAGE_KEY = "zefer-prefs";
 type InputMode = "text" | "file";
 type Tab = "encrypt" | "decrypt";
 
+type KeygenMode = "unicode" | "secure" | "alpha" | "hex" | "uuid";
+
 interface Preferences {
   ttl: number;
   iterations: number;
   compression: CompressionMethod;
   inputMode: InputMode;
   tab: Tab;
+  keygenMode: KeygenMode;
+  keygenLength: number;
 }
 
 const DEFAULTS: Preferences = {
@@ -20,6 +24,8 @@ const DEFAULTS: Preferences = {
   compression: "none",
   inputMode: "text",
   tab: "encrypt",
+  keygenMode: "secure",
+  keygenLength: 64,
 };
 
 function load(): Preferences {
@@ -62,5 +68,9 @@ export function usePreferences() {
     setCompression: (v: CompressionMethod) => update({ compression: v }),
     setInputMode: (v: InputMode) => update({ inputMode: v }),
     setTab: (v: Tab) => update({ tab: v }),
+    keygenMode: prefs.keygenMode,
+    keygenLength: prefs.keygenLength,
+    setKeygenMode: (v: KeygenMode) => update({ keygenMode: v }),
+    setKeygenLength: (v: number) => update({ keygenLength: v }),
   };
 }
