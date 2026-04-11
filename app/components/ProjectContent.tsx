@@ -136,7 +136,7 @@ export default function ProjectContent() {
               <table className="w-full">
                 <tbody className="divide-y divide-[var(--glass-border)]">
                   {([
-                    ["Framework", "Next.js 16.2.2 (React 19)"],
+                    ["Framework", "Next.js 16.2.3 (React 19)"],
                     ["Language", "TypeScript 5"],
                     ["Styling", "Tailwind CSS v4"],
                     ["Encryption", "Web Crypto API (AES-256-GCM)"],
