@@ -11,6 +11,11 @@
       "sourceType": "github",
       "computedHash": "f84bcb773a67ade28878d63103e3d4dc1f5031d6103be5107ff99c15b8d4a992"
     },
+    "competitor-alternatives": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "d763652f36568b03d8daec3e1e98ac2cc730dcab663d87e2560acee3b9af1a3c"
+    },
     "devils-advocate": {
       "source": "carrilloapps/skills",
       "sourceType": "github",
@@ -25,6 +30,11 @@
       "source": "carrilloapps/skills",
       "sourceType": "github",
       "computedHash": "a2c5524b3039799f6b72b4ed84ddb0611ed9dede56fd872db3b8d28818911bc3"
+    },
+    "seo-audit": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "2e91c1a968d435712d1deb3845a35021842c168f132f81027c071ad43f78cb0a"
     },
     "tailwind-design-system": {
       "source": "wshobson/agents",
