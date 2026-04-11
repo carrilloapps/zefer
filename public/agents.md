@@ -25,6 +25,25 @@ LLM context: https://zefer.carrillo.app/llms.txt
 8. **Run `npm test` before any commit** — 125 tests must pass
 9. **URL params: every new option needs a long + short alias** in both EncryptForm and DecryptForm
 
+## Accessibility Rules
+
+- Icon-only buttons: minimum 36x36px (`w-9 h-9`) with `aria-label` (dynamic when state changes, e.g. "Show/Hide passphrase")
+- Headings: strict descending order (h1 → h2 → h3). Footer labels use `<p>`, not heading tags
+- Expand/collapse controls: must have `aria-expanded` and descriptive `aria-label`
+
+## Versioning
+
+When releasing a new version, ALL of these must be updated together:
+- `CHANGELOG.md`, `package.json`, `app/layout.tsx` (JSON-LD `softwareVersion`), `app/opengraph-image.tsx` (badge), `app/twitter-image.tsx` (badge), `app/sitemap.ts` (`lastModified`)
+
+## SEO Rules
+
+- Every `page.tsx` must export `metadata` with: title, description, keywords, openGraph (url, title, description), twitter (title, description), alternates.canonical
+- Legal pages (`/privacy`, `/terms`): `robots: { index: false, follow: true }` — excluded from sitemap
+- 404 page: `robots: { index: false, follow: false }`
+- Only indexable routes go in `app/sitemap.ts`
+- JSON-LD `WebApplication` schema lives in `app/layout.tsx`
+
 ## How to Use Zefer (for AI agents)
 
 ### Encrypt text

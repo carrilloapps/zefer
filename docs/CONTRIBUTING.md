@@ -140,6 +140,33 @@ There are currently ~415 translation keys across 3 languages.
 
 Current persisted preferences: `tab`, `inputMode`, `ttl`, `iterations`, `compression`, `keygenMode`, `keygenLength`.
 
+## Releasing a New Version
+
+When bumping the version, update ALL of these files together:
+
+1. `CHANGELOG.md` — add new version entry with date
+2. `package.json` — update `"version"` field
+3. `app/layout.tsx` — update `softwareVersion` in JSON-LD schema
+4. `app/opengraph-image.tsx` — update version badge text
+5. `app/twitter-image.tsx` — update version badge text
+6. `app/sitemap.ts` — update `lastModified` date
+
+## Adding a New Route
+
+1. Create `app/[route]/page.tsx` with a `metadata` export
+2. Include: `title`, `description`, `keywords`, `openGraph` (url, title, description), `twitter` (title, description), `alternates.canonical`
+3. For legal/utility pages: add `robots: { index: false, follow: true }`
+4. For indexable pages: add the route to `app/sitemap.ts` with appropriate priority
+5. Add i18n keys for the page content
+6. Update route tables in CLAUDE.md and README.md
+
+## Accessibility Rules
+
+- All icon-only buttons must have `aria-label` (dynamic when state changes)
+- All touch targets must be at least 36x36px (`w-9 h-9`)
+- Headings must follow strict descending order (h1 → h2 → h3) — footer labels use `<p>`, not headings
+- Expand/collapse controls need `aria-expanded` and descriptive `aria-label`
+
 ## Security Considerations
 
 - Never store secrets, passphrases, or plaintext in `localStorage`, cookies, or server logs

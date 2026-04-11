@@ -14,17 +14,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Passphrase visibility toggle** — Show/hide buttons on all passphrase input fields
 - **Character requirements** — Clear minimum length indicators on passphrase fields
 - **Author section** — Social links and profile information on the install page
-- **Professional documentation** — Security policy, Code of Conduct, Changelog, enhanced Contributing guide, issue template chooser
-- **Redesigned social previews** — New OpenGraph, Twitter/X, and Apple touch icon images matching the project's visual identity
+- **Professional documentation** — Security policy, Code of Conduct, Changelog, Contributing guide, issue template chooser
+- **JSON-LD structured data** — WebApplication schema with author, version, and language information for search engines
+- **Per-page SEO metadata** — Every route now has its own title, description, keywords, OpenGraph, Twitter card, and canonical URL
+- **PWA screenshots** — Manifest now includes screenshots for the install prompt on mobile devices
 
 ### Improved
 
 - **Share links are now safer** — When a reveal key is set, the share link uses only the reveal key instead of exposing the main passphrase
 - **URL parameters respect target tab** — Encrypt params are ignored when `t=decrypt` and vice versa, preventing the wrong form from consuming and clearing params
+- **Touch targets** — All icon-only buttons now meet 36x36px minimum (theme toggle, language selector, copy, close, file remove, passphrase toggle)
+- **Heading hierarchy** — Footer section labels changed from `<h4>` to `<p>` to avoid skipping heading levels
+- **Aria labels** — All toggle buttons now have dynamic aria-labels ("Show/Hide passphrase"), expand/collapse buttons have `aria-expanded`
+- **Social preview images** — Redesigned OpenGraph, Twitter/X, and Apple touch icon with ambient glows, grid overlay, version badge, and tech pills
+- **Search engine indexing** — Legal pages (`/privacy`, `/terms`) now have `noindex, follow` robots directive and are excluded from the sitemap
 - **Input styles** — Better focus states and accessibility across encrypt and decrypt forms
-- **HomeContent layout** — Improved spacing and visual consistency
-- **Documentation** — All docs now have cross-navigation, corrected component count (24), translation count (~415 keys), and new preferences documented
-- **Dependencies** — All packages updated to latest stable versions with `~` (patch-only) ranges
+- **Documentation** — All docs have cross-navigation, corrected counts (24 components, ~415 translations), SEO rules, accessibility rules, and new route guide
+- **Dependencies** — All packages updated to latest stable versions with `~` (patch-only) ranges; TypeScript updated from 5 to 6
 
 ### Fixed
 

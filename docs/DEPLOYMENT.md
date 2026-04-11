@@ -118,6 +118,24 @@ All routes are static (prerendered at build time) except:
 
 Typical Lighthouse scores: 95+ Performance, 100 Accessibility, 100 Best Practices, 100 SEO.
 
+## SEO Configuration
+
+Zefer implements comprehensive SEO across all routes:
+
+| Feature | Implementation |
+|---------|---------------|
+| **Per-page metadata** | Every `page.tsx` exports `metadata` with title, description, keywords, OG, Twitter, and canonical URL |
+| **JSON-LD** | `WebApplication` schema in `layout.tsx` (name, author, version, languages, license) |
+| **OG/Twitter images** | Generated at build time via Satori (`opengraph-image.tsx`, `twitter-image.tsx`) |
+| **Sitemap** | `app/sitemap.ts` — only indexable routes, updated `lastModified`, correct priorities |
+| **Robots** | `app/robots.ts` — allows all crawlers, points to sitemap |
+| **Noindex pages** | `/privacy`, `/terms` use `robots: { index: false, follow: true }` — legal pages not indexed but links followed |
+| **404 page** | `robots: { index: false, follow: false }` — never indexed |
+| **PWA manifest** | `app/manifest.ts` — screenshots, all icon sizes, scope, standalone display |
+| **Canonical URLs** | Set per-page via `alternates.canonical` to prevent duplicate content |
+
+When self-hosting, ensure the `siteUrl` in `app/layout.tsx` and the `baseUrl` in `app/sitemap.ts` match your domain.
+
 ## Troubleshooting
 
 | Problem | Solution |

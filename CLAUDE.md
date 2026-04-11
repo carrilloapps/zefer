@@ -102,18 +102,19 @@ app/
 
 ## Routes
 
-| Route | Type | Purpose |
-|---|---|---|
-| `/` | Static | Home — encrypt/decrypt tabs |
-| `/how` | Static | 7 steps + 5 features + 12 specs |
-| `/privacy` | Static | 9 sections + GDPR/CCPA/LGPD compliance |
-| `/terms` | Static | 12 sections + MIT + Colombia Law 1581 |
-| `/project` | Static | Repo, stack, creator (GitHub API), donate |
-| `/device` | Static | Live device detection + optimization guide |
-| `/install` | Static | Usage guide, self-hosting, PWA, native apps (coming soon) |
-| `/install/guide` | Static | Step-by-step usage guide for AI assistants |
-| `/api/author` | Dynamic | Returns GitHub profile data (cached 1h) |
-| `/llms.txt` | Static | LLM context file (llmstxt.org standard) |
+| Route | Type | Robots | Purpose |
+|---|---|---|---|
+| `/` | Static | index, follow | Home — encrypt/decrypt tabs |
+| `/how` | Static | index, follow | 7 steps + 5 features + 12 specs |
+| `/privacy` | Static | noindex, follow | 9 sections + GDPR/CCPA/LGPD compliance |
+| `/terms` | Static | noindex, follow | 12 sections + MIT + Colombia Law 1581 |
+| `/project` | Static | index, follow | Repo, stack, creator (GitHub API), donate |
+| `/device` | Static | index, follow | Live device detection + optimization guide |
+| `/install` | Static | index, follow | Usage guide, self-hosting, PWA, native apps (coming soon) |
+| `/install/guide` | Static | index, follow | Step-by-step usage guide for AI assistants |
+| `/api/author` | Dynamic | — | Returns GitHub profile data (cached 1h) |
+| `/llms.txt` | Static | index, follow | LLM context file (llmstxt.org standard) |
+| `/_not-found` | Static | noindex, nofollow | 404 error page |
 
 ## URL Parameters
 
@@ -192,11 +193,35 @@ Animations: `animate-in`, `animate-in-down`, `animate-scale-in`, `reveal-content
 - Coverage: 100% statements, 100% functions, 100% lines, 99.47% branches
 - Scripts: `npm test` (single run), `npm run test:watch` (dev mode)
 
+## Versioning
+
+When releasing a new version, ALL of these must be updated together:
+
+1. `CHANGELOG.md` — add new version entry
+2. `package.json` — update `"version"`
+3. `app/layout.tsx` — update `softwareVersion` in JSON-LD schema
+4. `app/opengraph-image.tsx` — update version badge text
+5. `app/twitter-image.tsx` — update version badge text
+6. `app/sitemap.ts` — update `lastModified` date
+
+## SEO & Metadata
+
+- **Every page** must export `metadata: Metadata` with: title, description, keywords, openGraph (url, title, description), twitter (title, description), alternates.canonical
+- **Legal pages** (`/privacy`, `/terms`) use `robots: { index: false, follow: true }` — not indexed but links are followed
+- **404 page** uses `robots: { index: false, follow: false }`
+- **Sitemap** (`app/sitemap.ts`) includes only indexable routes — legal pages and error pages are excluded
+- **JSON-LD** structured data (`WebApplication` schema) is in `app/layout.tsx` `<head>`
+- **OG/Twitter images** are generated at build time via `opengraph-image.tsx` and `twitter-image.tsx` (Satori/ImageResponse)
+- **PWA** manifest includes `screenshots`, `scope`, all required icons (SVG, 192, 512, 512-maskable), and `display: standalone`
+
 ## Conventions
 
 - Components: `"use client"`, PascalCase filenames
 - All interactive elements: `cursor-pointer`
-- All icon buttons: `aria-label`
+- All icon-only buttons: `aria-label` (dynamic when state changes, e.g. "Show/Hide passphrase")
+- All touch targets: minimum 36x36px (`w-9 h-9`) for icon-only buttons
+- Expand/collapse controls: must have `aria-expanded` and descriptive `aria-label`
+- Headings: strict descending hierarchy (h1 → h2 → h3). Footer labels use `<p>`, not heading tags
 - Responsive: mobile-first, `min-[Xpx]:` for custom breakpoints
 - Popovers: `fixed` on mobile, `absolute` on desktop
 - Inputs: 16px minimum font-size on mobile (prevents iOS zoom)

@@ -234,18 +234,18 @@ public/
 
 ## Routes
 
-| Route | Type | Description |
-|---|---|---|
-| `/` | Static | Home — encrypt/decrypt forms |
-| `/how` | Static | How it works — 7 steps + features + specs |
-| `/privacy` | Static | Privacy policy + GDPR/CCPA/LGPD compliance |
-| `/terms` | Static | Terms, conditions, MIT license, legal compliance |
-| `/project` | Static | Project info, tech stack, creator, donate |
-| `/device` | Static | Device detection details + optimization guide |
-| `/install` | Static | Usage guide, self-hosting, PWA, native apps |
-| `/install/guide` | Static | Step-by-step usage guide for AI assistants |
-| `/api/author` | Dynamic | GitHub profile data (cached 1h) |
-| `/llms.txt` | Static | LLM context file |
+| Route | Type | Indexed | Description |
+|---|---|---|---|
+| `/` | Static | Yes | Home — encrypt/decrypt forms |
+| `/how` | Static | Yes | How it works — 7 steps + features + specs |
+| `/project` | Static | Yes | Project info, tech stack, creator, donate |
+| `/device` | Static | Yes | Device detection details + optimization guide |
+| `/install` | Static | Yes | Usage guide, self-hosting, PWA, native apps |
+| `/install/guide` | Static | Yes | Step-by-step usage guide for AI assistants |
+| `/privacy` | Static | No | Privacy policy + GDPR/CCPA/LGPD compliance |
+| `/terms` | Static | No | Terms, conditions, MIT license, legal compliance |
+| `/api/author` | Dynamic | — | GitHub profile data (cached 1h) |
+| `/llms.txt` | Static | Yes | LLM context file |
 
 ## URL Parameters
 
