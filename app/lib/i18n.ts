@@ -33,6 +33,46 @@ const translations = {
     en: "Install",
     pt: "Instalar",
   },
+  "nav.menu": {
+    es: "Menú",
+    en: "Menu",
+    pt: "Menu",
+  },
+  "nav.close": {
+    es: "Cerrar menú",
+    en: "Close menu",
+    pt: "Fechar menu",
+  },
+  "nav.home": {
+    es: "Inicio",
+    en: "Home",
+    pt: "Início",
+  },
+  "nav.how": {
+    es: "¿Cómo funciona?",
+    en: "How it works",
+    pt: "Como funciona?",
+  },
+  "nav.device": {
+    es: "Rendimiento",
+    en: "Performance",
+    pt: "Desempenho",
+  },
+  "nav.guide": {
+    es: "Guía de uso",
+    en: "Usage Guide",
+    pt: "Guia de uso",
+  },
+  "nav.security": {
+    es: "Seguridad",
+    en: "Security",
+    pt: "Segurança",
+  },
+  "nav.conduct": {
+    es: "Código de conducta",
+    en: "Code of Conduct",
+    pt: "Código de conduta",
+  },
   "nav.privacy": {
     es: "Privacidad",
     en: "Privacy",

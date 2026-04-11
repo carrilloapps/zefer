@@ -260,6 +260,27 @@ body {
   transition: background 0.3s ease, border-color 0.3s ease;
 }
 
+/* ── Mobile drawer (native app feel) ── */
+
+.drawer-bg {
+  background: var(--background);
+}
+
+.drawer-group {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.875rem;
+  overflow: hidden;
+}
+
+.drawer-row + .drawer-row {
+  border-top: 1px solid var(--glass-border);
+}
+
+.drawer-row:active {
+  opacity: 0.7;
+}
+
 /* Banner (cookie/legal) — strongest blur */
 .glass-banner {
   background: var(--nav-bg);

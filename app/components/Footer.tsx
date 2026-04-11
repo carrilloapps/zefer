@@ -9,10 +9,10 @@ export default function Footer() {
   return (
     <footer className="border-t theme-border mt-auto">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
-        {/* Main footer */}
-        <div className="py-12 grid grid-cols-2 sm:grid-cols-4 gap-8">
+        {/* Desktop footer — hidden on mobile */}
+        <div className="hidden sm:grid py-12 grid-cols-4 gap-8">
           {/* Brand */}
-          <div className="col-span-2 sm:col-span-1">
+          <div>
             <a href="/" className="flex items-center gap-2 mb-4 cursor-pointer">
               <div className="w-7 h-7 rounded-lg theme-primary-faint theme-primary-border border flex items-center justify-center">
                 <Shield className="w-3.5 h-3.5 text-primary" />
@@ -30,21 +30,9 @@ export default function Footer() {
               {t("footer.product")}
             </p>
             <ul className="space-y-2.5">
-              <li>
-                <a href="/" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">
-                  {t("footer.product.home")}
-                </a>
-              </li>
-              <li>
-                <a href="/how" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">
-                  {t("footer.product.how")}
-                </a>
-              </li>
-              <li>
-                <a href="/device" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">
-                  {t("footer.product.device")}
-                </a>
-              </li>
+              <li><a href="/" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("footer.product.home")}</a></li>
+              <li><a href="/how" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("footer.product.how")}</a></li>
+              <li><a href="/device" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("footer.product.device")}</a></li>
             </ul>
           </div>
 
@@ -56,52 +44,56 @@ export default function Footer() {
             <ul className="space-y-2.5">
               <li>
                 <a href="/how" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer flex items-center gap-1.5">
-                  <Lock className="w-3 h-3" />
-                  {t("footer.security.encryption")}
+                  <Lock className="w-3 h-3" />{t("footer.security.encryption")}
                 </a>
               </li>
               <li>
                 <a href="/privacy" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer flex items-center gap-1.5">
-                  <Eye className="w-3 h-3" />
-                  {t("footer.security.zeroknowledge")}
+                  <Eye className="w-3 h-3" />{t("footer.security.zeroknowledge")}
                 </a>
               </li>
               <li>
                 <a href="/security" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer flex items-center gap-1.5">
-                  <Shield className="w-3 h-3" />
-                  {t("footer.securitypolicy")}
+                  <Shield className="w-3 h-3" />{t("footer.securitypolicy")}
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Legal & Open Source */}
+          {/* Legal */}
           <div>
             <p className="text-[11px] font-mono theme-muted uppercase tracking-wider mb-4">
               {t("footer.legal")}
             </p>
             <ul className="space-y-2.5">
-              <li>
-                <a href="/privacy" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">
-                  {t("footer.privacy")}
-                </a>
-              </li>
-              <li>
-                <a href="/terms" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">
-                  {t("footer.terms")}
-                </a>
-              </li>
-              <li>
-                <a href="/conduct" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">
-                  {t("footer.conduct")}
-                </a>
-              </li>
+              <li><a href="/privacy" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("footer.privacy")}</a></li>
+              <li><a href="/terms" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("footer.terms")}</a></li>
+              <li><a href="/conduct" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("footer.conduct")}</a></li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="border-t theme-border py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+        {/* Mobile footer — compact, app-like */}
+        <div className="sm:hidden py-6">
+          <div className="flex items-center justify-center gap-4 mb-4 flex-wrap">
+            <a href="/privacy" className="text-[11px] theme-faint hover:theme-muted transition-colors cursor-pointer">{t("footer.privacy")}</a>
+            <span className="text-[10px] theme-faint">·</span>
+            <a href="/terms" className="text-[11px] theme-faint hover:theme-muted transition-colors cursor-pointer">{t("footer.terms")}</a>
+            <span className="text-[10px] theme-faint">·</span>
+            <a href="/security" className="text-[11px] theme-faint hover:theme-muted transition-colors cursor-pointer">{t("footer.securitypolicy")}</a>
+          </div>
+          <div className="text-center">
+            <p className="text-[10px] theme-faint">
+              &copy; {new Date().getFullYear()} Zefer · MIT ·{" "}
+              <a href="https://carrillo.app" target="_blank" rel="noopener noreferrer" className="theme-muted hover:text-primary transition-colors cursor-pointer">
+                José Carrillo
+              </a>
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom bar — desktop only */}
+        <div className="hidden sm:flex border-t theme-border py-5 items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <p className="text-[11px] theme-faint">
               &copy; {new Date().getFullYear()} Zefer. {t("footer.rights")}
