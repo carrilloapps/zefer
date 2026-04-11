@@ -18,17 +18,21 @@ export const metadata: Metadata = {
     "secure file transfer",
     "PBKDF2",
     "zefer",
+    "encrypt passwords",
+    "share API keys securely",
+    "browser encryption tool",
   ],
   openGraph: {
     url: siteUrl,
     title: "Zefer — Share Secrets Securely",
     description:
-      "Encrypt text and files into password-protected .zefer files. AES-256-GCM, 100% client-side, zero-knowledge.",
+      "Encrypt text and files into password-protected .zefer files. AES-256-GCM, 100% client-side, zero-knowledge. No servers, no traces.",
   },
   twitter: {
+    card: "summary_large_image",
     title: "Zefer — Share Secrets Securely",
     description:
-      "Encrypt text and files into .zefer files. AES-256-GCM, no servers, no traces.",
+      "Encrypt text and files into password-protected .zefer files. AES-256-GCM encryption, 100% client-side, zero-knowledge.",
   },
   alternates: {
     canonical: siteUrl,

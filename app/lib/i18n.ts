@@ -63,14 +63,39 @@ const translations = {
     pt: "CRIPTOGRAFIA ZERO-KNOWLEDGE",
   },
   "hero.title": {
-    es: "Comparte secretos,",
-    en: "Share secrets,",
-    pt: "Compartilhe segredos,",
+    es: "Comparte secretos",
+    en: "Share secrets",
+    pt: "Compartilhe segredos",
   },
   "hero.title.highlight": {
-    es: "sin riesgos",
-    en: "not risks",
-    pt: "sem riscos",
+    es: "de forma segura",
+    en: "securely",
+    pt: "com segurança",
+  },
+  "hero.rotate.1": {
+    es: "de forma segura",
+    en: "securely",
+    pt: "com segurança",
+  },
+  "hero.rotate.2": {
+    es: "sin servidores",
+    en: "with no servers",
+    pt: "sem servidores",
+  },
+  "hero.rotate.3": {
+    es: "en tu navegador",
+    en: "in your browser",
+    pt: "no seu navegador",
+  },
+  "hero.rotate.4": {
+    es: "sin rastros",
+    en: "without a trace",
+    pt: "sem rastros",
+  },
+  "hero.rotate.5": {
+    es: "con zero-knowledge",
+    en: "with zero knowledge",
+    pt: "com zero-knowledge",
   },
   "hero.subtitle": {
     es: "Cifra contraseñas, claves de API y datos sensibles en archivos .zefer protegidos con contraseña. Sin servidores, sin rastros.",
@@ -137,6 +162,41 @@ const translations = {
     es: "Contexto para asistentes de IA",
     en: "Context for AI assistants",
     pt: "Contexto para assistentes de IA",
+  },
+  "home.resources": {
+    es: "Recursos y documentación",
+    en: "Resources & documentation",
+    pt: "Recursos e documentação",
+  },
+  "home.how": {
+    es: "Cómo funciona",
+    en: "How it works",
+    pt: "Como funciona",
+  },
+  "home.how.desc": {
+    es: "7 pasos del cifrado explicados",
+    en: "7 encryption steps explained",
+    pt: "7 etapas da criptografia explicadas",
+  },
+  "home.project": {
+    es: "Proyecto",
+    en: "Project",
+    pt: "Projeto",
+  },
+  "home.project.desc": {
+    es: "Código abierto, licencia MIT",
+    en: "Open source, MIT license",
+    pt: "Código aberto, licença MIT",
+  },
+  "home.device": {
+    es: "Tu dispositivo",
+    en: "Your device",
+    pt: "Seu dispositivo",
+  },
+  "home.device.desc": {
+    es: "Rendimiento y límites de cifrado",
+    en: "Encryption performance & limits",
+    pt: "Desempenho e limites de criptografia",
   },
 
   // ─── Encrypt form ───

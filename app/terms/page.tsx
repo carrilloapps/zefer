@@ -14,8 +14,10 @@ export const metadata: Metadata = {
     description: "Zefer terms of service, conditions of use, and liability limitations.",
   },
   twitter: {
+    card: "summary_large_image",
     title: "Terms & Conditions | Zefer",
-    description: "Zefer terms of service and acceptable use policy.",
+    description:
+      "Zefer terms of service, acceptable use policy, and liability limitations. MIT Licensed, open-source encryption tool.",
   },
   alternates: { canonical: url },
   robots: { index: false, follow: true },

@@ -14,8 +14,10 @@ export const metadata: Metadata = {
     description: "Zefer privacy policy. Zero-knowledge architecture, no data collection, GDPR/CCPA/LGPD compliant.",
   },
   twitter: {
+    card: "summary_large_image",
     title: "Privacy & Security | Zefer",
-    description: "Zefer privacy policy. Zero-knowledge, no cookies, no trackers.",
+    description:
+      "Zefer privacy policy. Zero-knowledge architecture, no cookies, no trackers. GDPR, CCPA, and LGPD compliant.",
   },
   alternates: { canonical: url },
   robots: { index: false, follow: true },

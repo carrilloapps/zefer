@@ -1,6 +1,45 @@
 @import "tailwindcss";
 
 /* ============================================
+   VIEW TRANSITION — Theme toggle (Telegram-style)
+   ============================================ */
+
+::view-transition-group(root) {
+  animation-duration: 0.7s;
+  animation-timing-function: var(--expo-out);
+}
+
+::view-transition-old(root) {
+  animation: none;
+  z-index: -1;
+}
+
+::view-transition-new(root) {
+  animation: theme-circle-reveal 0.7s var(--expo-out) both;
+}
+
+@keyframes theme-circle-reveal {
+  from {
+    clip-path: circle(0% at var(--toggle-x, 50%) var(--toggle-y, 50%));
+  }
+  to {
+    clip-path: circle(200vmax at var(--toggle-x, 50%) var(--toggle-y, 50%));
+  }
+}
+
+:root {
+  --expo-out: linear(
+    0 0%, 0.1684 2.66%, 0.3165 5.49%,
+    0.446 8.52%, 0.5581 11.78%,
+    0.6535 15.29%, 0.7341 19.11%,
+    0.8011 23.3%, 0.8557 27.93%,
+    0.8962 32.68%, 0.9283 38.01%,
+    0.9529 44.08%, 0.9711 51.14%,
+    0.9833 59.06%, 0.9915 68.74%, 1 100%
+  );
+}
+
+/* ============================================
    THEME VARIABLES — DARK (default)
    ============================================ */
 
@@ -54,13 +93,13 @@
   --input-border-focus: rgba(34, 197, 94, 0.5);
 
   /* Grid */
-  --grid-color: rgba(255, 255, 255, 0.015);
+  --grid-color: rgba(255, 255, 255, 0.025);
 
   /* Blobs */
-  --blob-green: rgba(34, 197, 94, 0.2);
-  --blob-blue: rgba(14, 165, 233, 0.15);
-  --blob-purple: rgba(168, 85, 247, 0.1);
-  --blob-opacity: 0.35;
+  --blob-green: rgba(34, 197, 94, 0.25);
+  --blob-blue: rgba(14, 165, 233, 0.18);
+  --blob-purple: rgba(168, 85, 247, 0.12);
+  --blob-opacity: 0.45;
 
   /* Glow */
   --glow-lg: rgba(34, 197, 94, 0.08);
@@ -492,6 +531,59 @@ select option {
 /* Warning */
 .theme-warning { color: var(--warning-text); }
 .theme-warning-faint { background: var(--warning-faint); }
+
+/* Hero brand */
+.hero-brand-text {
+  color: var(--heading);
+  text-shadow: 0 0 40px rgba(34, 197, 94, 0.3), 0 0 80px rgba(6, 182, 212, 0.15);
+}
+
+[data-theme="light"] .hero-brand-text {
+  text-shadow: 0 0 30px rgba(21, 128, 61, 0.2), 0 0 60px rgba(14, 116, 144, 0.1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-brand-text {
+    animation: heroBrandGlow 4s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes heroBrandGlow {
+  from { text-shadow: 0 0 40px rgba(34, 197, 94, 0.3), 0 0 80px rgba(6, 182, 212, 0.15); }
+  to   { text-shadow: 0 0 60px rgba(34, 197, 94, 0.4), 0 0 100px rgba(6, 182, 212, 0.2); }
+}
+
+[data-theme="light"] .hero-brand-text {
+  animation: none;
+}
+
+/* Hero radial glow (dark mode) */
+.hero-glow {
+  position: relative;
+}
+
+.hero-glow::before {
+  content: "";
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 500px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(34, 197, 94, 0.08) 0%,
+    rgba(6, 182, 212, 0.05) 35%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(40px);
+}
+
+[data-theme="light"] .hero-glow::before {
+  display: none;
+}
 
 /* Gradient */
 .theme-gradient-text {
