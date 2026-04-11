@@ -120,8 +120,8 @@ Pre-configure encrypt/decrypt forms via URL. Every param has a long name and sho
 - Next.js 16.2.2 (React 19), TypeScript 5, Tailwind CSS v4
 - Web Crypto API (SubtleCrypto), CompressionStream API
 - Lucide React, Sonner (toasts)
-- Vitest (125 tests, 100% line coverage)
-- i18n: Spanish, English, Portuguese
+- Vitest (125 tests, 100% line coverage, 7 test files)
+- i18n: Spanish, English, Portuguese (~415 translation keys)
 - WCAG 2.1 AA compliant, responsive, dark/light themes
 
 ## What Zefer Does NOT Do

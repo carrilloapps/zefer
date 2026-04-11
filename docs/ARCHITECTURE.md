@@ -1,8 +1,12 @@
 # Architecture
 
+> [README](../README.md) · **Architecture** · [Security](SECURITY.md) · [Deployment](DEPLOYMENT.md) · [Contributing](CONTRIBUTING.md)
+
 ## Overview
 
-Zefer is a 100% client-side encryption tool. The only server-side component is one lightweight API route (`/api/author`) that caches the creator's GitHub profile data.
+Zefer is a 100% client-side encryption tool. All cryptographic operations happen in the browser via the Web Crypto API. The only server-side component is one lightweight API route (`/api/author`) that caches the creator's GitHub profile data.
+
+No plaintext, passphrases, or encryption keys ever leave the user's device.
 
 ## Data Flow
 
@@ -118,7 +122,7 @@ Only contains what's necessary before decryption, plus user-chosen public fields
 
 ### Encrypted Metadata
 
-Everything security-sensitive is inside the AES-256-GCM payload:
+Everything sensitive is inside the AES-256-GCM payload:
 
 ```json
 {
@@ -150,6 +154,22 @@ passphrase
     v
 PBKDF2-SHA256(combined, salt, iterations) -> 256-bit AES key
 ```
+
+## Persisted User Preferences
+
+The following settings are saved to `localStorage` so they persist between sessions:
+
+| Preference | Key | Default | Values |
+|------------|-----|---------|--------|
+| Active tab | `tab` | `encrypt` | `encrypt`, `decrypt` |
+| Input mode | `inputMode` | `text` | `text`, `file` |
+| Expiration | `ttl` | `1440` | Minutes (0 = never) |
+| PBKDF2 iterations | `iterations` | `600000` | 300000-1000000 |
+| Compression | `compression` | `none` | `none`, `gzip`, `deflate` |
+| Key generator mode | `keygenMode` | `secure` | `unicode`, `secure`, `alpha`, `hex`, `uuid` |
+| Key generator length | `keygenLength` | `64` | 64, 128, 256, 512, 1024 |
+
+Stored under the `zefer-prefs` key as a single JSON object.
 
 ## Device Detection
 
@@ -192,3 +212,5 @@ All colors use CSS custom properties on `[data-theme="dark"]` and `[data-theme="
 - `--glass-bg`, `--glass-border` for glass morphism
 - `--primary`, `--danger`, `--warning` for semantic colors
 - All combinations pass WCAG 2.1 AA (4.5:1 minimum contrast ratio)
+
+Brand colors: `#22c55e` (dark mode primary), `#15803d` (light mode primary), `#050a0e` (dark background), `#f8fafb` (light background).

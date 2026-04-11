@@ -1,6 +1,10 @@
 # Contributing
 
+> [README](../README.md) · [Architecture](ARCHITECTURE.md) · [Security](SECURITY.md) · [Deployment](DEPLOYMENT.md) · **Contributing**
+
 Thank you for your interest in contributing to Zefer. This document explains how to set up the development environment, the project conventions, and the contribution process.
+
+Please read the [Code of Conduct](../CODE_OF_CONDUCT.md) before participating.
 
 ## Prerequisites
 
@@ -82,6 +86,8 @@ All user-facing text MUST be in `app/lib/i18n.ts` with translations in all three
 },
 ```
 
+There are currently ~415 translation keys across 3 languages.
+
 ### Accessibility
 
 - All text must pass WCAG 2.1 AA (4.5:1 contrast ratio)
@@ -125,6 +131,15 @@ All user-facing text MUST be in `app/lib/i18n.ts` with translations in all three
 8. Add tests for the new feature
 9. Update documentation (CLAUDE.md, README.md, llms.txt)
 
+## Adding a New Persisted Preference
+
+1. Add the field to the `Preferences` interface in `app/lib/preferences.ts`
+2. Add a default value to the `DEFAULTS` object
+3. Add a getter and setter in the `usePreferences()` return object
+4. Use the preference in the relevant component
+
+Current persisted preferences: `tab`, `inputMode`, `ttl`, `iterations`, `compression`, `keygenMode`, `keygenLength`.
+
 ## Security Considerations
 
 - Never store secrets, passphrases, or plaintext in `localStorage`, cookies, or server logs
@@ -134,4 +149,4 @@ All user-facing text MUST be in `app/lib/i18n.ts` with translations in all three
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your contributions will be licensed under the [MIT License](../LICENSE).

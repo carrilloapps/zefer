@@ -1,13 +1,30 @@
 # Security
 
-## Threat Model
+> [README](../README.md) · [Architecture](ARCHITECTURE.md) · **Security** · [Deployment](DEPLOYMENT.md) · [Contributing](CONTRIBUTING.md)
 
-Zefer protects secrets shared between two parties who communicate the passphrase out-of-band. The primary threats addressed:
+> To report a vulnerability, see [SECURITY.md](../SECURITY.md) in the project root.
 
-1. **Interception** — A third party intercepts the `.zefer` file in transit
-2. **Server compromise** — An attacker gains access to the hosting server
-3. **Brute force** — An attacker tries to guess the passphrase
-4. **Metadata leakage** — An attacker learns something from the file without decrypting
+## How Zefer Protects Your Data
+
+Zefer encrypts your secrets entirely in the browser. No data, passphrases, or keys ever leave your device. The server only delivers the static web app — it never sees or processes your content.
+
+## What an Attacker Can See
+
+If someone intercepts a `.zefer` file, here's what they can and cannot learn:
+
+| Visible (public header) | Not visible (encrypted) |
+|---|---|
+| PBKDF2 iteration count | Passphrase |
+| Compression method | Content (text or file) |
+| Hint text (if user chose to add one) | File name, type, and size |
+| Note text (if user chose to add one) | Expiration date |
+| Text vs file mode | Whether IP restriction exists |
+| Whether a reveal key exists (ZEFR3 format) | Whether a secret question exists |
+| Salt and IV per encrypted block | Whether dual key is required |
+| | Allowed IP addresses |
+| | Max attempt count |
+
+**Salt and IV exposure is by design** — AES-GCM requires unique nonces and PBKDF2 requires salt. These are not secret. Security relies entirely on passphrase strength + PBKDF2 stretching.
 
 ## Cryptographic Primitives
 
@@ -18,140 +35,85 @@ Zefer protects secrets shared between two parties who communicate the passphrase
 | Answer hashing | PBKDF2-SHA256 | 100,000 iterations, deterministic salt derived via SHA-256 |
 | Random generation | `crypto.getRandomValues` | OS-level CSPRNG |
 
-All cryptographic operations use the browser's native **Web Crypto API** (`SubtleCrypto`), which is:
-- Hardware-accelerated (AES-NI for AES, native C++ for PBKDF2)
-- FIPS 140-2 compliant implementations in most browsers
-- Not susceptible to JavaScript-level side-channel attacks
+All operations use the browser's native **Web Crypto API** (`SubtleCrypto`), which is hardware-accelerated and not susceptible to JavaScript-level side-channel attacks.
 
-## What an Attacker Sees
+## How Strong Is My Passphrase?
 
-Given only the `.zefer` file, an attacker can determine:
+With 600,000 PBKDF2 iterations on a modern GPU (~1M hashes/sec):
 
-| Visible | Not Visible |
+| Passphrase type | Time to brute force |
 |---|---|
-| File format magic (ZEFB3 or ZEFR3) | Passphrase |
-| PBKDF2 iteration count | Content |
-| Compression method | File name, type, size |
-| Hint text (if set by user) | Expiration date |
-| Note text (if set by user) | Whether IP restriction exists |
-| Text vs file mode | Whether a secret question exists |
-| ZEFR3 magic reveals a reveal key exists | Whether dual key is required |
-| Salt and IV per encrypted block | Allowed IP addresses |
-| | Max attempt count |
+| Weak 8-character password (~40 bits) | ~12 days |
+| Strong 12-character password (~60 bits) | ~36,000 years |
+| Generated 16-character key (~80 bits) | ~38 billion years |
+| Generated 22+ character key (~128 bits) | Heat death of universe |
 
-**Salt and IV exposure is by design** — AES-GCM requires unique nonces, and PBKDF2 requires salt. These are not secret. The security relies entirely on the passphrase entropy + PBKDF2 stretching.
+Use the built-in key generator (64-1024 characters) for maximum security.
 
 ## Security Features
 
-### Passphrase Requirements
-
-- Minimum 6 characters enforced in the UI
-- Key generator offers 64-1024 character random keys
-- Unicode support (Latin, Arabic, Japanese, Chinese, Korean, Greek, Cyrillic, emojis)
-
-### PBKDF2 Protection
-
-With 600,000 iterations on a modern GPU (~1M hashes/sec for PBKDF2-SHA256):
-
-| Passphrase Entropy | Time to Brute Force |
-|---|---|
-| 40 bits (weak 8-char) | ~12 days |
-| 60 bits (strong 12-char) | ~36,000 years |
-| 80 bits (generated 16-char) | ~38 billion years |
-| 128 bits (generated 22-char) | Heat death of universe |
-
-### AES-256-GCM
-
-- 256-bit keys: 2^256 possible keys (~1.2 x 10^77)
-- GCM provides authenticated encryption: tampering is detected
-- Unique IV per encryption prevents nonce reuse attacks
-- Auth tag prevents ciphertext modification
-- Chunked encryption: files >16MB are split into chunks, each with a unique IV derived from `base_iv XOR chunk_index`
-
 ### Reveal Key
 
-- Encrypts the same payload with a second passphrase (independent salt, IV, and key)
-- Stored as a second encrypted block in ZEFR3 binary format
-- User shares the reveal key; main passphrase stays private
-- Both produce identical decrypted output
-- Cannot be the same as the main passphrase (validated in UI)
+Share a secondary key without exposing your main passphrase. The reveal key independently encrypts the same content with its own salt, IV, and derived key. Either key works for decryption.
 
 ### Dual Passphrase
 
-- Two passphrases combined with `\x00ZEFER_DUAL\x00` separator
-- Derived key requires both passphrases
-- Useful for corporate scenarios (two-person authorization)
+Require two separate keys to decrypt — useful when two people need to authorize access. Both passphrases are combined with a `\x00ZEFER_DUAL\x00` separator before key derivation.
+
+### Secret Question
+
+Add an extra authentication step. The answer is hashed with PBKDF2-SHA256 (100k iterations, deterministic salt). The original answer is never stored.
 
 ### IP Restriction
 
-- Allowed IPs stored inside the encrypted payload (not visible without key)
-- Verified by fetching client's public IP from `api64.ipify.org`
-- Supports IPv4 and IPv6, comma-separated
-- Checked after successful decryption
-
-### Max Attempts
-
-- Tracked per file in `localStorage` (keyed by first 40 chars of ciphertext)
-- Not cryptographically enforced (user can clear localStorage)
-- Adds friction for casual unauthorized attempts
-- Cleared on successful decryption
+Limit decryption to specific IPv4/IPv6 addresses. The allowed IP list is stored inside the encrypted payload — invisible without the key.
 
 ### Expiration
 
-- Timestamp stored inside the encrypted payload
-- Cannot be modified without the key (AES-GCM auth prevents tampering)
-- Uses UTC milliseconds (`Date.now()`) — timezone-independent
-- Checked after decryption, before content display
+Set a time limit (30 minutes to 2 weeks). The UTC timestamp is embedded inside the encrypted payload — it cannot be modified without the passphrase (AES-GCM authentication prevents tampering).
 
-## Security Mitigations Applied
+### Max Attempts
 
-### XSS Prevention
-- Hint and note fields are sanitized on encryption (HTML special characters stripped)
-- React JSX auto-escapes all rendered text content
-- No `dangerouslySetInnerHTML` used anywhere in the project
+Limit failed decryption attempts. Tracked per file in `localStorage`. This adds friction for casual unauthorized access, but is not cryptographically enforced.
 
-### Answer Hash Strengthening
-- Secret question answers are hashed using PBKDF2-SHA256 with 100,000 iterations
-- Deterministic salt derived from the answer via SHA-256 (reproducible but resistant to rainbow tables)
-- Input normalized (lowercase, trimmed) before hashing
+### Compression
 
-### Timing Attack Mitigation
-- Decryption responses include a minimum delay floor (100ms) to normalize response times
-- PBKDF2 derivation dominates timing (~600ms), making side-channel detection impractical
+Gzip or Deflate via CompressionStream API. Reduces file size before encryption. Decompression is capped at 512 MB to prevent decompression bombs.
 
-### Decompression Bomb Protection
-- Maximum decompressed output capped at 512 MB
-- Stream reader aborts and throws if limit exceeded
+## Security Protections
 
-### Passphrase Memory Handling
-- Passphrases, reveal keys, and question answers are cleared from React state immediately after successful encryption/decryption
-- JavaScript does not guarantee immediate memory freeing (GC-dependent), but references are removed
-
-### Key Generation
-- Uses rejection sampling to eliminate modulo bias in charset selection
-- Produces cryptographically uniform distribution across all character pools
+| Protection | Implementation |
+|---|---|
+| XSS prevention | Hint/note fields sanitized on encryption; React auto-escapes all rendered text; no `dangerouslySetInnerHTML` |
+| Timing attack mitigation | Minimum 100ms response floor; PBKDF2 dominates timing (~600ms) |
+| Decompression bomb protection | Maximum 512 MB decompressed output |
+| Passphrase memory cleanup | Passphrases cleared from React state after encryption/decryption |
+| Key generation bias | Rejection sampling eliminates modulo bias for uniform distribution |
+| Nonce reuse prevention | Unique IV per chunk (`base_iv XOR chunk_index`) |
 
 ## Known Limitations
 
-These are inherent to 100% client-side architecture:
+These are inherent to 100% client-side architecture and are documented transparently:
 
-1. **Max attempts**: Enforced via `localStorage`. A determined attacker can clear storage or use incognito mode. This is friction, not a guarantee.
-2. **Expiration**: Checked against `Date.now()` which trusts the client system clock. An attacker can set their clock backward.
-3. **IP restriction**: Checked client-side after successful decryption. An attacker can modify the JavaScript to skip the check, or use a VPN to match the allowed IP.
-4. **No forward secrecy**: If the passphrase is compromised, all files encrypted with it can be decrypted. Use unique passphrases per file for maximum security.
-5. **Browser memory**: Passphrases exist in browser memory during encryption/decryption. Close the browser tab after use.
-6. **Compression oracle**: If compression is enabled, the compressed ciphertext size can reveal whether plaintext is repetitive. For maximum security, use no compression.
+| Limitation | Explanation |
+|---|---|
+| Max attempts bypass | `localStorage` can be cleared or bypassed in incognito. This is friction, not a guarantee. |
+| Expiration bypass | Checked against `Date.now()` which trusts the client clock. An attacker could set their clock backward. |
+| IP restriction bypass | Checked client-side after decryption. An attacker could modify JavaScript or use a VPN. |
+| No forward secrecy | If a passphrase is compromised, all files encrypted with it are decryptable. Use unique passphrases per file. |
+| Browser memory | Passphrases exist in browser memory during operations. Close the tab after use. |
+| Compression oracle | Compressed ciphertext size can reveal whether plaintext is repetitive. Use no compression for maximum security. |
 
 ## What IS Guaranteed
 
-Even with all the above limitations, the following guarantees hold:
+Regardless of the above limitations:
 
-1. **Without the passphrase, the content is unrecoverable.** AES-256-GCM with a 256-bit key derived from PBKDF2 is computationally infeasible to brute-force.
-2. **The ciphertext cannot be modified.** GCM's authentication tag detects any tampering.
-3. **Each file has unique encryption.** Random salt + random IV per encryption means identical plaintext produces different ciphertext.
+1. **Without the passphrase, the content is unrecoverable.** AES-256-GCM with PBKDF2-stretched keys is computationally infeasible to brute-force.
+2. **The ciphertext cannot be modified.** GCM authentication detects any tampering.
+3. **Each file has unique encryption.** Random salt + random IV means identical plaintext produces different ciphertext.
 4. **The reveal key is independently encrypted.** Separate salt, IV, and derived key. Compromising one does not compromise the other.
-5. **Security metadata is invisible.** Expiration, IP list, question, max attempts are all inside the encrypted payload.
+5. **Security metadata is invisible.** Expiration, IP list, question, max attempts — all inside the encrypted payload.
 
 ## Responsible Disclosure
 
-If you discover a security vulnerability, please report it via GitHub Issues at [github.com/carrilloapps/zefer](https://github.com/carrilloapps/zefer) or contact [@carrilloapps](https://github.com/carrilloapps).
+If you discover a security vulnerability, please report it responsibly via [GitHub Security Advisories](https://github.com/carrilloapps/zefer/security/advisories/new) or contact [@carrilloapps](https://github.com/carrilloapps). See [SECURITY.md](../SECURITY.md) for the full reporting process.
