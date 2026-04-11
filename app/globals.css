@@ -405,6 +405,14 @@ select:focus {
   border-color: var(--input-border-focus);
   background: var(--input-bg-focus);
   outline: none;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.08), 0 0 20px rgba(34, 197, 94, 0.04);
+}
+
+[data-theme="light"] textarea:focus,
+[data-theme="light"] input[type="text"]:focus,
+[data-theme="light"] input[type="password"]:focus,
+[data-theme="light"] select:focus {
+  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.08), 0 0 12px rgba(21, 128, 61, 0.03);
 }
 
 textarea::placeholder,
@@ -815,15 +823,61 @@ select:focus {
   transform: scale(0.95);
 }
 
-/* ── File upload drop zone pulse ── */
+/* ── File upload drop zone ── */
 
-.dropzone-pulse:hover {
-  animation: dropzonePulse 1.5s ease-in-out infinite;
+.dropzone-pulse {
+  border: 2px dashed var(--glass-border);
+  transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
 }
 
-@keyframes dropzonePulse {
-  0%, 100% { border-color: var(--glass-border); }
-  50% { border-color: var(--primary-border); }
+.dropzone-pulse:hover {
+  border-color: var(--primary-border);
+  box-shadow: inset 0 0 40px rgba(34, 197, 94, 0.03);
+}
+
+.dropzone-pulse.dropzone-active {
+  border-color: var(--primary);
+  background: rgba(34, 197, 94, 0.04);
+  box-shadow: inset 0 0 60px rgba(34, 197, 94, 0.06), 0 0 20px rgba(34, 197, 94, 0.06);
+}
+
+/* ── Passphrase strength meter ── */
+
+.strength-meter {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--glass-border);
+  overflow: hidden;
+  transition: opacity 0.3s ease;
+}
+
+.strength-meter-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease;
+}
+
+.strength-weak { background: var(--danger); width: 25%; }
+.strength-fair { background: var(--warning-text); width: 50%; }
+.strength-good { background: #3b82f6; width: 75%; }
+.strength-strong { background: var(--primary); width: 100%; }
+
+/* ── Advanced section transition ── */
+
+.advanced-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  opacity: 0;
+}
+
+.advanced-panel.advanced-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.advanced-panel > div {
+  overflow: hidden;
 }
 
 /* ── Success checkmark ── */

@@ -502,7 +502,7 @@ export default function EncryptForm() {
         {inputMode === "file" && (
           <div className="mb-4 animate-in">
             <label className="text-xs font-medium theme-text mb-2 block">{t("mode.file.label")}</label>
-            <div role="button" tabIndex={0} onClick={() => fileRef.current?.click()} onKeyDown={(e) => { if (e.key === "Enter") fileRef.current?.click(); }} onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }} onDragEnter={(e) => { e.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)} onDrop={handleDrop} className={`w-full glass !rounded-xl p-5 flex flex-col items-center gap-2 cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors duration-200 dropzone-pulse ${isDragging ? "ring-2 ring-[var(--primary)] bg-[var(--glass-bg-hover)]" : ""}`}>
+            <div role="button" tabIndex={0} onClick={() => fileRef.current?.click()} onKeyDown={(e) => { if (e.key === "Enter") fileRef.current?.click(); }} onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }} onDragEnter={(e) => { e.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)} onDrop={handleDrop} className={`w-full !rounded-xl p-8 sm:p-10 flex flex-col items-center gap-3 cursor-pointer transition-all duration-300 dropzone-pulse ${isDragging ? "dropzone-active" : ""}`}>
               {fileName ? (
                 <div className="flex items-center gap-3">
                   <FileText className="w-5 h-5 text-primary" />
@@ -554,6 +554,16 @@ export default function EncryptForm() {
               </div>
               <KeyGenerator onSelect={setPassphrase} savedMode={keygenMode} savedLength={keygenLength} onModeChange={setKeygenMode} onLengthChange={setKeygenLength} />
             </div>
+            {passphrase.length > 0 && (
+              <div className="mt-2">
+                <div className="strength-meter">
+                  <div className={`strength-meter-fill ${passphrase.length < 6 ? "strength-weak" : passphrase.length < 10 ? "strength-fair" : passphrase.length < 16 ? "strength-good" : "strength-strong"}`} />
+                </div>
+                <p className={`text-[10px] mt-1 ${passphrase.length < 6 ? "theme-danger" : passphrase.length < 10 ? "theme-warning" : "text-primary"}`}>
+                  {passphrase.length < 6 ? t("strength.weak") : passphrase.length < 10 ? t("strength.fair") : passphrase.length < 16 ? t("strength.good") : t("strength.strong")}
+                </p>
+              </div>
+            )}
           </div>
           <GlassSelect
             value={ttl}
@@ -588,8 +598,9 @@ export default function EncryptForm() {
         </button>
 
         {/* Advanced options */}
-        {showAdvanced && (
-          <div className="glass !rounded-xl p-5 mb-4 space-y-4">
+        <div className={`advanced-panel ${showAdvanced ? "advanced-open" : ""} mb-4`}>
+          <div>
+          <div className="glass !rounded-xl p-5 space-y-4">
             {/* Security level */}
             <div>
               <label className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
@@ -770,7 +781,8 @@ export default function EncryptForm() {
               )}
             </div>
           </div>
-        )}
+          </div>
+        </div>
 
         {/* Error */}
         {error && (

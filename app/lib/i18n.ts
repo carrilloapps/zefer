@@ -615,6 +615,10 @@ const translations = {
     en: "Minimum 6 characters",
     pt: "Mínimo de 6 caracteres",
   },
+  "strength.weak": { es: "Débil — mínimo 6 caracteres", en: "Weak — minimum 6 characters", pt: "Fraca — mínimo 6 caracteres" },
+  "strength.fair": { es: "Aceptable", en: "Fair", pt: "Aceitável" },
+  "strength.good": { es: "Buena", en: "Good", pt: "Boa" },
+  "strength.strong": { es: "Fuerte", en: "Strong", pt: "Forte" },
   "form.expires": {
     es: "Expira en:",
     en: "Expires in:",
