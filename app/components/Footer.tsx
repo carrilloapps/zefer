@@ -26,9 +26,9 @@ export default function Footer() {
 
           {/* Product */}
           <div>
-            <h4 className="text-[11px] font-mono theme-muted uppercase tracking-wider mb-4">
+            <p className="text-[11px] font-mono theme-muted uppercase tracking-wider mb-4" role="heading" aria-level={2}>
               {t("footer.product")}
-            </h4>
+            </p>
             <ul className="space-y-2.5">
               <li>
                 <a href="/" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">
@@ -50,9 +50,9 @@ export default function Footer() {
 
           {/* Security */}
           <div>
-            <h4 className="text-[11px] font-mono theme-muted uppercase tracking-wider mb-4">
+            <p className="text-[11px] font-mono theme-muted uppercase tracking-wider mb-4" role="heading" aria-level={2}>
               {t("footer.security")}
-            </h4>
+            </p>
             <ul className="space-y-2.5">
               <li>
                 <a href="/privacy" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer flex items-center gap-1.5">
@@ -77,9 +77,9 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="text-[11px] font-mono theme-muted uppercase tracking-wider mb-4">
+            <p className="text-[11px] font-mono theme-muted uppercase tracking-wider mb-4" role="heading" aria-level={2}>
               {t("footer.legal")}
-            </h4>
+            </p>
             <ul className="space-y-2.5">
               <li>
                 <a href="/privacy" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">
