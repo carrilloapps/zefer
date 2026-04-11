@@ -485,7 +485,7 @@ export default function EncryptForm() {
                 {textFileName && (
                   <span className="flex items-center gap-1 text-[11px] text-primary theme-primary-faint theme-primary-border border px-2 py-0.5 rounded-md">
                     <FileText className="w-3 h-3" />{textFileName}
-                    <button type="button" onClick={clearTextFile} className="hover:theme-heading cursor-pointer ml-0.5" aria-label="Remove file"><X className="w-3 h-3" /></button>
+                    <button type="button" onClick={clearTextFile} className="w-6 h-6 flex items-center justify-center hover:theme-heading cursor-pointer rounded" aria-label="Remove file"><X className="w-3 h-3" /></button>
                   </span>
                 )}
                 <button type="button" onClick={() => textFileRef.current?.click()} className="flex items-center gap-1 text-[11px] theme-faint hover:text-primary transition-colors duration-200 cursor-pointer px-2 py-1 rounded-md hover:bg-[var(--glass-bg)]">
@@ -510,7 +510,7 @@ export default function EncryptForm() {
                     <p className="text-sm font-medium text-primary">{fileName}</p>
                     <p className="text-[10px] theme-muted">{fileType} &middot; {formatBytes(fileSize)}</p>
                   </div>
-                  <button type="button" onClick={(e) => { e.stopPropagation(); clearFile(); }} className="theme-faint hover:theme-danger transition-colors cursor-pointer ml-2" aria-label="Remove file">
+                  <button type="button" onClick={(e) => { e.stopPropagation(); clearFile(); }} className="w-9 h-9 flex items-center justify-center rounded-lg theme-faint hover:theme-danger transition-colors cursor-pointer ml-2" aria-label="Remove file">
                     <X className="w-4 h-4" />
                   </button>
                 </div>

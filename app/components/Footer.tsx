@@ -26,7 +26,7 @@ export default function Footer() {
 
           {/* Product */}
           <div>
-            <p className="text-[11px] font-mono theme-muted uppercase tracking-wider mb-4" role="heading" aria-level={2}>
+            <p className="text-[11px] font-mono theme-muted uppercase tracking-wider mb-4">
               {t("footer.product")}
             </p>
             <ul className="space-y-2.5">
@@ -50,7 +50,7 @@ export default function Footer() {
 
           {/* Security */}
           <div>
-            <p className="text-[11px] font-mono theme-muted uppercase tracking-wider mb-4" role="heading" aria-level={2}>
+            <p className="text-[11px] font-mono theme-muted uppercase tracking-wider mb-4">
               {t("footer.security")}
             </p>
             <ul className="space-y-2.5">
@@ -77,7 +77,7 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <p className="text-[11px] font-mono theme-muted uppercase tracking-wider mb-4" role="heading" aria-level={2}>
+            <p className="text-[11px] font-mono theme-muted uppercase tracking-wider mb-4">
               {t("footer.legal")}
             </p>
             <ul className="space-y-2.5">

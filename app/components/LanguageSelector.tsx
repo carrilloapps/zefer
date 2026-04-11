@@ -55,7 +55,7 @@ export default function LanguageSelector() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 w-8 h-8 justify-center rounded-lg text-xs font-medium theme-muted hover:theme-heading hover:bg-[var(--glass-bg-hover)] transition-colors duration-200 cursor-pointer"
+        className="flex items-center gap-1.5 w-9 h-9 justify-center rounded-lg text-xs font-medium theme-muted hover:theme-heading hover:bg-[var(--glass-bg-hover)] transition-colors duration-200 cursor-pointer"
         aria-label="Select language"
       >
         {FLAGS[locale]}

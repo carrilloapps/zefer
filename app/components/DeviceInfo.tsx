@@ -32,6 +32,8 @@ export default function DeviceInfo({ limits }: Props) {
         type="button"
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors duration-200"
+        aria-label={expanded ? "Hide device details" : "Show device details"}
+        aria-expanded={expanded}
       >
         <div className="flex items-center gap-2">
           <Cpu className="w-3.5 h-3.5 theme-faint" />

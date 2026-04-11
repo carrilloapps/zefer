@@ -223,7 +223,7 @@ export default function KeyGenerator({ onSelect, savedMode, savedLength, onModeC
               }`}>
                 {value}
               </p>
-              <button type="button" onClick={handleCopy} className="theme-faint hover:theme-muted transition-colors cursor-pointer shrink-0 mt-0.5" title="Copy">
+              <button type="button" onClick={handleCopy} className="w-8 h-8 flex items-center justify-center rounded-md theme-faint hover:theme-muted transition-colors cursor-pointer shrink-0" aria-label="Copy generated value" title="Copy">
                 {copied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
             </div>

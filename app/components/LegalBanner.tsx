@@ -44,7 +44,7 @@ export default function LegalBanner() {
           </button>
           <button
             onClick={accept}
-            className="p-2 rounded-lg theme-faint hover:theme-muted transition-colors cursor-pointer"
+            className="w-9 h-9 flex items-center justify-center rounded-lg theme-faint hover:theme-muted transition-colors cursor-pointer"
             aria-label="Close"
           >
             <X className="w-3.5 h-3.5" />
