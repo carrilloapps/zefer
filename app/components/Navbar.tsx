@@ -35,59 +35,67 @@ export default function Navbar() {
   }, [open]);
 
   return (
-    <nav className="fixed top-4 left-4 right-4 z-50">
-      <div className="max-w-5xl mx-auto glass-nav px-4 sm:px-5 py-2.5 flex items-center justify-between">
-        {/* Logo */}
-        <a href="/" className="flex items-center gap-2 cursor-pointer group">
-          <div className="w-7 h-7 rounded-lg theme-primary-faint theme-primary-border border flex items-center justify-center group-hover:opacity-80 transition-opacity duration-200">
-            <Shield className="w-3.5 h-3.5 text-primary" />
-          </div>
-          <span className="font-semibold theme-heading tracking-tight text-sm">Zefer</span>
-        </a>
-
-        {/* Center: Desktop nav links */}
-        <div className="hidden sm:flex items-center gap-1">
-          <a href="/how" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)]">
-            {t("steps.title")}
+    <>
+      {/* ─── Mobile header (app-native, flush to top) ─── */}
+      <nav className="sm:hidden fixed top-0 left-0 right-0 z-50 nav-mobile-header">
+        <div className="flex items-center justify-between px-4 py-2 nav-mobile-safe-top">
+          <a href="/" className="flex items-center gap-2 cursor-pointer">
+            <div className="w-7 h-7 rounded-lg theme-primary-faint theme-primary-border border flex items-center justify-center">
+              <Shield className="w-3.5 h-3.5 text-primary" />
+            </div>
+            <span className="font-semibold theme-heading tracking-tight text-sm">Zefer</span>
           </a>
-          <a href="/project" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1">
-            <Code className="w-3 h-3" />{t("nav.project")}
-          </a>
-          <a href="https://www.buymeacoffee.com/carrilloapps" target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1">
-            <Heart className="w-3 h-3" />{t("nav.donate")}
-          </a>
-          <a href="https://github.com/carrilloapps" target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1">
-            <User className="w-3 h-3" />{t("nav.author")}
-          </a>
-          <a href="/install" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1.5">
-            <Download className="w-3 h-3" />{t("nav.install")}
-            <span className="text-[8px] font-mono font-bold theme-warning px-1 py-0.5 rounded theme-warning-faint leading-none">{t("install.coming")}</span>
-          </a>
-        </div>
-
-        {/* Right */}
-        <div className="flex items-center gap-1.5">
-          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full theme-primary-faint theme-primary-border border">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-[10px] text-primary font-mono tracking-wide">{t("nav.encrypted")}</span>
-          </div>
-          {/* Desktop only controls */}
-          <div className="hidden sm:flex items-center gap-1.5">
-            <ThemeToggle />
-            <LanguageSelector />
-          </div>
-          {/* Mobile hamburger */}
           <button
             onClick={() => setOpen(true)}
-            className="flex sm:hidden items-center justify-center w-9 h-9 rounded-lg theme-muted hover:theme-heading transition-colors duration-200 cursor-pointer hover:bg-[var(--glass-bg-hover)]"
+            className="flex items-center justify-center w-9 h-9 rounded-lg theme-muted hover:theme-heading transition-colors duration-200 cursor-pointer"
             aria-label={t("nav.menu")}
           >
             <Menu className="w-4 h-4" />
           </button>
         </div>
-      </div>
+      </nav>
 
-      {/* ── Mobile full-screen drawer ── */}
+      {/* ─── Desktop header (floating glass pill) ─── */}
+      <nav className="hidden sm:block fixed top-4 left-4 right-4 z-50">
+        <div className="max-w-5xl mx-auto glass-nav px-5 py-2.5 flex items-center justify-between">
+          <a href="/" className="flex items-center gap-2 cursor-pointer group">
+            <div className="w-7 h-7 rounded-lg theme-primary-faint theme-primary-border border flex items-center justify-center group-hover:opacity-80 transition-opacity duration-200">
+              <Shield className="w-3.5 h-3.5 text-primary" />
+            </div>
+            <span className="font-semibold theme-heading tracking-tight text-sm">Zefer</span>
+          </a>
+
+          <div className="flex items-center gap-1">
+            <a href="/how" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)]">
+              {t("steps.title")}
+            </a>
+            <a href="/project" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1">
+              <Code className="w-3 h-3" />{t("nav.project")}
+            </a>
+            <a href="https://www.buymeacoffee.com/carrilloapps" target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1">
+              <Heart className="w-3 h-3" />{t("nav.donate")}
+            </a>
+            <a href="https://github.com/carrilloapps" target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1">
+              <User className="w-3 h-3" />{t("nav.author")}
+            </a>
+            <a href="/install" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1.5">
+              <Download className="w-3 h-3" />{t("nav.install")}
+              <span className="text-[8px] font-mono font-bold theme-warning px-1 py-0.5 rounded theme-warning-faint leading-none">{t("install.coming")}</span>
+            </a>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full theme-primary-faint theme-primary-border border">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="text-[10px] text-primary font-mono tracking-wide">{t("nav.encrypted")}</span>
+            </div>
+            <ThemeToggle />
+            <LanguageSelector />
+          </div>
+        </div>
+      </nav>
+
+      {/* ─── Mobile drawer (full-screen, native feel) ─── */}
       <div
         className={`fixed inset-0 z-[60] bg-black/40 transition-opacity duration-300 sm:hidden ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         onClick={close}
@@ -99,10 +107,9 @@ export default function Navbar() {
         role="dialog"
         aria-modal="true"
         aria-label={t("nav.menu")}
-        style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        {/* Native-style handle + header */}
-        <div className="flex flex-col items-center pt-3 pb-2 px-5">
+        {/* Safe area top spacer + handle */}
+        <div className="nav-mobile-safe-top flex flex-col items-center pt-3 pb-2 px-5">
           <div className="w-10 h-1 rounded-full bg-[var(--glass-border)] mb-4" />
           <div className="w-full flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -124,9 +131,8 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Scrollable links */}
-        <div className="flex-1 overflow-y-auto px-4 pt-4 pb-2">
-          {/* Product group */}
+        {/* Scrollable links with iOS momentum */}
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-4 pb-2" style={{ WebkitOverflowScrolling: "touch" }}>
           <div className="drawer-group mb-3">
             <DrawerLink href="/" icon={Shield} label={t("nav.home")} onClick={close} />
             <DrawerLink href="/how" icon={Lock} label={t("nav.how")} onClick={close} />
@@ -134,13 +140,11 @@ export default function Navbar() {
             <DrawerLink href="/project" icon={Code} label={t("nav.project")} onClick={close} />
           </div>
 
-          {/* Install group */}
           <div className="drawer-group mb-3">
             <DrawerLink href="/install" icon={Download} label={t("nav.install")} badge={t("install.coming")} onClick={close} />
             <DrawerLink href="/install/guide" icon={BookOpen} label={t("nav.guide")} onClick={close} />
           </div>
 
-          {/* Legal & Security group */}
           <p className="text-[10px] font-mono theme-muted uppercase tracking-wider px-4 mb-1.5 mt-2">{t("footer.legal")}</p>
           <div className="drawer-group mb-3">
             <DrawerLink href="/privacy" icon={Scale} label={t("nav.privacy")} onClick={close} />
@@ -148,15 +152,14 @@ export default function Navbar() {
             <DrawerLink href="/conduct" icon={Users} label={t("nav.conduct")} onClick={close} />
           </div>
 
-          {/* External group */}
           <div className="drawer-group">
             <DrawerLink href="https://www.buymeacoffee.com/carrilloapps" icon={Heart} label={t("nav.donate")} external onClick={close} />
             <DrawerLink href="https://github.com/carrilloapps" icon={User} label={t("nav.author")} external onClick={close} />
           </div>
         </div>
 
-        {/* Bottom bar — native style */}
-        <div className="px-5 py-4 border-t border-[var(--glass-border)] flex items-center justify-between gap-3">
+        {/* Bottom bar with safe area */}
+        <div className="px-5 py-3 border-t border-[var(--glass-border)] flex items-center justify-between gap-3 nav-mobile-safe-bottom">
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <LanguageSelector />
@@ -166,11 +169,10 @@ export default function Navbar() {
           </p>
         </div>
       </div>
-    </nav>
+    </>
   );
 }
 
-/* ── Drawer link (iOS-style grouped row) ── */
 function DrawerLink({
   href,
   icon: Icon,
