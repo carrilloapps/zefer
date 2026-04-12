@@ -1,18 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { Sun, Moon } from "lucide-react";
 import { useTheme } from "@/app/components/ThemeProvider";
 
 export default function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
+  const [transitioning, setTransitioning] = useState(false);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const root = document.documentElement;
-    const x = e.clientX;
-    const y = e.clientY;
+    if (transitioning) return;
 
-    root.style.setProperty("--toggle-x", `${x}px`);
-    root.style.setProperty("--toggle-y", `${y}px`);
+    const root = document.documentElement;
+    root.style.setProperty("--toggle-x", `${e.clientX}px`);
+    root.style.setProperty("--toggle-y", `${e.clientY}px`);
 
     const newTheme = theme === "dark" ? "light" : "dark";
 
@@ -26,7 +27,9 @@ export default function ThemeToggle() {
       "startViewTransition" in document &&
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
-      (document as unknown as { startViewTransition: (cb: () => void) => void }).startViewTransition(apply);
+      setTransitioning(true);
+      const transition = (document as unknown as { startViewTransition: (cb: () => void) => { finished: Promise<void> } }).startViewTransition(apply);
+      transition.finished.then(() => setTransitioning(false)).catch(() => setTransitioning(false));
     } else {
       apply();
     }
@@ -35,7 +38,8 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={handleClick}
-      className="flex items-center justify-center w-9 h-9 rounded-lg theme-muted hover:theme-heading transition-colors duration-200 cursor-pointer hover:bg-[var(--glass-bg-hover)]"
+      disabled={transitioning}
+      className={`flex items-center justify-center w-9 h-9 rounded-lg theme-muted hover:theme-heading transition-colors duration-200 cursor-pointer hover:bg-[var(--glass-bg-hover)] ${transitioning ? "pointer-events-none" : ""}`}
       aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
     >
       {theme === "dark" ? (

@@ -600,7 +600,7 @@ export default function EncryptForm() {
         {/* Advanced options */}
         <div className={`advanced-panel ${showAdvanced ? "advanced-open" : ""} mb-4`}>
           <div>
-          <div className="glass !rounded-xl p-5 space-y-4">
+          <div className="border-t border-[var(--border-subtle)] pt-4 space-y-4">
             {/* Security level */}
             <div>
               <label className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">

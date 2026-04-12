@@ -42,7 +42,9 @@ export default function ProjectContent() {
   const [author, setAuthor] = useState<AuthorData | null>(null);
 
   useEffect(() => {
-    fetch("/api/author").then((r) => r.json()).then(setAuthor).catch(() => {});
+    fetch("/api/author").then((r) => r.json()).then(setAuthor).catch(() =>
+      setAuthor({ login: "carrilloapps", name: "José Carrillo", avatar: "https://github.com/carrilloapps.png", bio: "Senior Fullstack Developer & Tech Lead", company: null, location: null, blog: "https://carrillo.app", twitter: "carrilloapps", publicRepos: 0, followers: 0, following: 0, profileUrl: "https://github.com/carrilloapps", createdAt: null })
+    );
   }, []);
 
   const features = [

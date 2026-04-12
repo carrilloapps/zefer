@@ -129,13 +129,13 @@ export default function HomeContent() {
               <span className={`inline-block w-[2px] h-[1.1em] bg-[var(--gradient-from)] align-middle ml-0.5 ${showCursor ? "opacity-100" : "opacity-0"}`} />
             </span>
           </h1>
-          <p className="text-base sm:text-lg theme-muted max-w-lg mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg theme-muted max-w-2xl mx-auto leading-relaxed">
             {t("hero.subtitle")}
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="max-w-2xl mx-auto px-4 mb-6">
+        <div className="max-w-3xl mx-auto px-4 mb-6">
           <div className="glass !rounded-xl p-1 flex">
             <button
               onClick={() => setTab("encrypt")}
@@ -163,14 +163,14 @@ export default function HomeContent() {
         </div>
 
         {/* Form */}
-        <div className="max-w-2xl mx-auto px-4">
+        <div className="max-w-3xl mx-auto px-4">
           {tab === "encrypt" ? <EncryptForm /> : <DecryptForm />}
         </div>
       </section>
 
       {/* Quick steps */}
       <section className="py-12 px-4 sm:px-6 below-fold">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <h2 className="text-sm font-semibold theme-heading text-center mb-4">{t("steps.title")}</h2>
           <div className="grid grid-cols-1 min-[480px]:grid-cols-3 gap-3">
             {[
@@ -189,7 +189,7 @@ export default function HomeContent() {
 
       {/* Resources */}
       <section className="pb-12 px-4 sm:px-6 below-fold">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <h2 className="text-sm font-semibold theme-heading text-center mb-4">{t("home.resources")}</h2>
           <div className="flex flex-wrap items-center justify-center gap-2">
             <Link href="/how" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">

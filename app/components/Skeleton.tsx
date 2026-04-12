@@ -45,7 +45,7 @@ export default function PageSkeleton() {
 
       {/* Content skeleton */}
       <div className="pt-28 sm:pt-32 pb-6 px-4 sm:px-6">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           {/* Badge */}
           <div className="flex justify-center mb-6">
             <SkeletonLine className="w-48 h-7 !rounded-full" />
