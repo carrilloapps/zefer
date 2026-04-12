@@ -42,7 +42,8 @@ When releasing a new version, ALL of these must be updated together:
 - Legal/doc pages (`/privacy`, `/terms`, `/security`, `/conduct`): `robots: { index: false, follow: true }` — excluded from sitemap
 - 404 page: `robots: { index: false, follow: false }`
 - Only indexable routes go in `app/sitemap.ts`
-- JSON-LD `WebApplication` schema lives in `app/layout.tsx`; `BreadcrumbList` on subpages; `FAQPage` on `/how`
+- JSON-LD `WebApplication` schema lives in `app/layout.tsx`; `BreadcrumbList` on subpages; `FAQPage` on `/how` and all `/vs/*` pages
+- OG/Twitter images must be explicit with `images` field; title 40-60 chars; description 120-160 chars
 - Author attribution: use "José Carrillo" as plain text, never "GitHub: @carrilloapps" or inline URLs in translations
 
 ## How to Use Zefer (for AI agents)
@@ -104,7 +105,7 @@ Sensitive params (p, p2, r, a) are auto-cleared from the URL after reading.
 - Next.js 16.2.3 (React 19), TypeScript 6, Tailwind CSS v4
 - Web Crypto API, CompressionStream API
 - Vitest (125 tests, 100% line coverage)
-- i18n: es, en, pt (~500 translation keys)
+- i18n: es, en, pt (~600 translation keys)
 
 ## For AI Tool Integration
 

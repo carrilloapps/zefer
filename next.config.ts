@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  trailingSlash: false,
+  async redirects() {
+    return [
+      { source: "/:path+/", destination: "/:path+", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {
@@ -25,6 +31,12 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/:path*.svg",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/_next/static/(.*)",
         headers: [
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
         ],

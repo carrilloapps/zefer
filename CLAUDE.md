@@ -85,14 +85,14 @@ passphrase
 ```
 app/
   api/author/route.ts      -- GitHub profile cache (1h TTL)
-  components/              -- 27 client components
+  components/              -- 30 client components (incl. VsContent, HatShContent, ConductContent, SecurityPolicyContent)
   lib/
     crypto.ts              -- AES-256-GCM, PBKDF2, benchmark, dual key
     zefer.ts               -- ZEFB3/ZEFR3 encode/decode, all security checks
     chunked-crypto.ts      -- Chunked encryption (16MB per chunk, unique IVs)
     compression.ts         -- Gzip/Deflate via CompressionStream
     device.ts              -- RAM/CPU/GPU detection, dynamic file limits
-    i18n.ts                -- ~500 translation keys x 3 languages
+    i18n.ts                -- ~600 translation keys x 3 languages
     ip.ts                  -- IP detection + allowlist check
     notify.ts              -- Toast notification helpers
     preferences.ts         -- Persisted user preferences (ttl, iterations, compression, inputMode, tab, keygenMode, keygenLength)
@@ -114,6 +114,11 @@ app/
 | `/install/guide` | Static | index, follow | Step-by-step usage guide for AI assistants |
 | `/security` | Static | noindex, follow | Security policy — vulnerability reporting + crypto architecture |
 | `/conduct` | Static | noindex, follow | Code of Conduct — Contributor Covenant 2.1 |
+| `/vs/hat-sh` | Static | index, follow | Zefer vs Hat.sh comparison |
+| `/vs/picocrypt` | Static | index, follow | Zefer vs Picocrypt comparison |
+| `/vs/bitwarden-send` | Static | index, follow | Zefer vs Bitwarden Send comparison |
+| `/vs/cryptomator` | Static | index, follow | Zefer vs Cryptomator comparison |
+| `/vs/veracrypt` | Static | index, follow | Zefer vs VeraCrypt comparison |
 | `/api/author` | Dynamic | — | Returns GitHub profile data (cached 1h) |
 | `/llms.txt` | Static | index, follow | LLM context file (llmstxt.org standard) |
 | `/_not-found` | Static | noindex, nofollow | 404 error page |
@@ -216,12 +221,14 @@ When releasing a new version, ALL of these must be updated together:
 - **404 page** uses `robots: { index: false, follow: false }`
 - **Sitemap** (`app/sitemap.ts`) includes only indexable routes — legal/doc pages and error pages are excluded
 - **JSON-LD** structured data in `app/layout.tsx`: `WebApplication` with `featureList`, `screenshot`, `installUrl`, `releaseNotes`, `softwareHelp`
-- **BreadcrumbList** JSON-LD on all subpages (`/how`, `/project`, `/device`, `/install`, `/install/guide`, `/conduct`, `/security`)
-- **FAQPage** JSON-LD on `/how` with 5 structured questions
+- **BreadcrumbList** JSON-LD on all subpages (`/how`, `/project`, `/device`, `/install`, `/install/guide`, `/conduct`, `/security`, all `/vs/*`)
+- **FAQPage** JSON-LD on `/how` (5 questions) and all `/vs/*` pages (2-3 questions each)
+- **OG/Twitter images** must be explicitly declared with `images` field in openGraph and twitter metadata on every page
+- **Title tags** must be 40-60 characters; **meta descriptions** must be 120-160 characters
 - **OG/Twitter images** are generated at build time via `opengraph-image.tsx` and `twitter-image.tsx` (Satori/ImageResponse)
 - **PWA** manifest includes `screenshots`, `scope`, all required icons (SVG, 192, 512, 512-maskable), and `display: standalone`
 - **robots.ts** disallows `/api/`, `/_next/`, `/sw.js` and declares `host`
-- **Security headers**: HSTS (preload), X-DNS-Prefetch-Control, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy
+- **Security headers**: HSTS (preload), X-DNS-Prefetch-Control, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, X-Permitted-Cross-Domain-Policies
 - **Author attribution**: use "José Carrillo" as plain text, never "José Carrillo (GitHub: @carrilloapps)" or inline URLs. Links to GitHub go in `<a>` elements, not in translation strings
 
 ## Conventions
@@ -240,5 +247,9 @@ When releasing a new version, ALL of these must be updated together:
 - Inputs: 16px minimum font-size on mobile (prevents iOS zoom)
 - Animations: all respect `prefers-reduced-motion: reduce`
 - File uploads: support both click and drag-and-drop
+- Performance: `will-change: transform` on animated blobs, `content-visibility: auto` on below-fold sections, `display: "swap"` on fonts, `useMemo` for derived arrays
+- Scroll lock: body overflow hidden + scrollbar width compensation to prevent CLS
+- Passphrase strength: visual meter bar (weak/fair/good/strong) with 4-level color scale
+- Advanced panel: CSS `grid-template-rows` transition (not conditional render) for smooth expand/collapse
 
 @AGENTS.md

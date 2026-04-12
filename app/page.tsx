@@ -6,7 +6,7 @@ const siteUrl = "https://zefer.carrillo.app";
 export const metadata: Metadata = {
   title: "Zefer — Share Secrets Securely",
   description:
-    "Encrypt text and files into password-protected .zefer files using AES-256-GCM. 100% client-side, zero-knowledge. No servers, no traces, no cookies.",
+    "Encrypt text and files into password-protected .zefer files using AES-256-GCM encryption. 100% client-side, zero-knowledge architecture. No servers, no traces, no cookies. Free and open source.",
   keywords: [
     "file encryption",
     "secret sharing",

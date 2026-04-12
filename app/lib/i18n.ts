@@ -138,9 +138,9 @@ const translations = {
     pt: "com zero-knowledge",
   },
   "hero.subtitle": {
-    es: "Cifra contraseñas, claves de API y datos sensibles en archivos .zefer protegidos con contraseña. Sin servidores, sin rastros.",
-    en: "Encrypt passwords, API keys, and sensitive data into password-protected .zefer files. No servers, no traces.",
-    pt: "Criptografe senhas, chaves de API e dados sensíveis em arquivos .zefer protegidos por senha. Sem servidores, sem rastros.",
+    es: "Cifra contraseñas, claves de API y datos sensibles en archivos .zefer con AES-256-GCM. 100% en tu navegador, sin servidores.",
+    en: "Encrypt passwords, API keys, and sensitive data into password-protected .zefer files with AES-256-GCM. 100% client-side, no servers.",
+    pt: "Criptografe senhas, chaves de API e dados sensíveis em arquivos .zefer com AES-256-GCM. 100% no navegador, sem servidores.",
   },
 
   // ─── Tabs ───

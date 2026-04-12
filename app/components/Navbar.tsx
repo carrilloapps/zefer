@@ -69,7 +69,7 @@ export default function Navbar() {
         <div className="flex items-center gap-1.5">
           <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full theme-primary-faint theme-primary-border border">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-[10px] text-primary/70 font-mono tracking-wide">{t("nav.encrypted")}</span>
+            <span className="text-[10px] text-primary font-mono tracking-wide">{t("nav.encrypted")}</span>
           </div>
           {/* Desktop only controls */}
           <div className="hidden sm:flex items-center gap-1.5">
@@ -111,7 +111,7 @@ export default function Navbar() {
               </div>
               <div>
                 <span className="font-semibold theme-heading text-base block leading-tight">Zefer</span>
-                <span className="text-[10px] text-primary/60 font-mono">{t("nav.encrypted")}</span>
+                <span className="text-[10px] text-primary font-mono">{t("nav.encrypted")}</span>
               </div>
             </div>
             <button
@@ -141,7 +141,7 @@ export default function Navbar() {
           </div>
 
           {/* Legal & Security group */}
-          <p className="text-[10px] font-mono theme-faint uppercase tracking-wider px-4 mb-1.5 mt-2">{t("footer.legal")}</p>
+          <p className="text-[10px] font-mono theme-muted uppercase tracking-wider px-4 mb-1.5 mt-2">{t("footer.legal")}</p>
           <div className="drawer-group mb-3">
             <DrawerLink href="/privacy" icon={Scale} label={t("nav.privacy")} onClick={close} />
             <DrawerLink href="/security" icon={ShieldAlert} label={t("footer.securitypolicy")} onClick={close} />

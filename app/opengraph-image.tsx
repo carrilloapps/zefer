@@ -30,7 +30,7 @@ export default function OGImage() {
             <path d="M11 16l4 4 6-7" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <div style={{ fontSize: 32, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: "-0.02em" }}>Zefer</div>
-          <div style={{ padding: "3px 10px", borderRadius: 100, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)", fontSize: 12, color: "#22c55e", fontFamily: "monospace" }}>v0.3.0</div>
+          <div style={{ padding: "3px 10px", borderRadius: 100, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)", fontSize: 12, color: "#22c55e", fontFamily: "monospace" }}>v0.4.0</div>
         </div>
 
         <div style={{ fontSize: 60, fontWeight: 700, color: "#ffffff", letterSpacing: "-0.035em", lineHeight: 1.1, textAlign: "center", marginTop: 8 }}>Share secrets, not risks.</div>

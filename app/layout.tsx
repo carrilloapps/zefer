@@ -100,6 +100,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://api.github.com" />
         <script dangerouslySetInnerHTML={{ __html: `if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js"))` }} />
         <script
           type="application/ld+json"
@@ -149,7 +152,7 @@ export default function RootLayout({
                 url: "https://carrillo.app",
               },
               license: "https://opensource.org/licenses/MIT",
-              softwareVersion: "0.3.0",
+              softwareVersion: "0.4.0",
               inLanguage: ["en", "es", "pt"],
               isAccessibleForFree: true,
               installUrl: "https://zefer.carrillo.app/install",

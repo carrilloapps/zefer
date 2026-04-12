@@ -123,7 +123,8 @@ Pre-configure encrypt/decrypt forms via URL. Every param has a long name and sho
 - Web Crypto API (SubtleCrypto), CompressionStream API
 - Lucide React, Sonner (toasts)
 - Vitest (125 tests, 100% line coverage, 7 test files)
-- i18n: Spanish, English, Portuguese (~500 translation keys)
+- i18n: Spanish, English, Portuguese (~600 translation keys)
+- Competitor comparisons: [Zefer vs Hat.sh](/vs/hat-sh), [vs Picocrypt](/vs/picocrypt), [vs Bitwarden Send](/vs/bitwarden-send), [vs Cryptomator](/vs/cryptomator), [vs VeraCrypt](/vs/veracrypt)
 - WCAG 2.1 AA compliant, responsive, dark/light themes
 
 ## Accessibility Rules

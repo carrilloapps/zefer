@@ -5,6 +5,43 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-04-11
+
+### New
+
+- **Competitor comparison pages** — 5 new `/vs/` pages: Hat.sh, Picocrypt, Bitwarden Send, Cryptomator, and VeraCrypt with reusable `VsContent` component, FAQPage schema, and BreadcrumbList on each
+- **Hat.sh dedicated page** (`/vs/hat-sh`) — Full comparison with feature table, detailed encryption analysis, and "Who should use what" section
+- **Passphrase strength meter** — Visual indicator below passphrase input with 4 levels (weak/fair/good/strong) and color-coded bar animation
+- **PWA installation guide** — Detailed accordion with step-by-step instructions for Chrome/Edge, Safari (iOS/macOS), and Firefox (Android), including command-path code blocks
+- **Install page redesign** — App Store-style layout with hero CTA, feature trust strip, PWA accordion, documentation nav links, and competitor comparison links
+
+### Improved
+
+- **Color contrast (WCAG 2.1 AA)** — Fixed `text-primary/60` and `text-primary/70` opacity badges in navbar and drawer; replaced `theme-faint` with `theme-muted` on drawer section labels
+- **CLS prevention** — Body scroll lock now compensates scrollbar width when drawer opens, preventing layout shift
+- **LCP optimization** — Added `content-visibility: auto` on below-fold home sections (quick steps, resources) so browser skips rendering until scroll
+- **GPU compositing** — Added `will-change: transform` to ambient blobs and blob-accent for hardware-accelerated animation
+- **Font loading** — Added `display: "swap"` to Geist Sans and Geist Mono to eliminate FOIT (Flash of Invisible Text)
+- **Render performance** — Memoized `phrases` array in HomeContent with `useMemo` to prevent recalculation on every render
+- **SEO titles** — Expanded short titles: "How It Works" → "How Zefer Encrypts Files with AES-256-GCM", "Project" → "Open-Source Client-Side Encryption Tool", "Device & Performance" → "Device Detection and Encryption Performance"
+- **SEO descriptions** — Trimmed over-length descriptions on `/how`, `/install`, and `/install/guide` to 120-160 character range
+- **OG/Twitter images** — Explicit `images` field added to home page and all 5 `/vs/*` pages for reliable social media previews
+- **Security headers** — Added `X-Permitted-Cross-Domain-Policies: none`
+- **Default TTL** — Changed from 24 hours to 30 minutes for safer sharing defaults
+- **Advanced panel animation** — Replaced conditional render with CSS `grid-template-rows` transition for smooth expand/collapse without CLS
+- **Dropzone UX** — Larger padding, dashed border, green glow on drag-active state
+- **Input focus glow** — Added green box-shadow ring on input focus (dark and light mode variants)
+- **Documentation** — Updated CLAUDE.md, AGENTS.md, and llms.txt with all new routes, components, translation counts, and performance rules
+
+### Fixed
+
+- **Unused useRef in ThemeToggle** — Removed `btnRef` that was declared but never used
+- **Drawer contrast** — "E2E ENCRYPTED" badge and "LEGAL" section label now pass WCAG 2.1 AA contrast ratio
+
+### Removed
+
+- **Comparison table component** — Replaced heavyweight grid table with simple link cards to `/vs/` pages (reduced InstallContent from 377 to 167 lines)
+
 ## [0.3.0] - 2026-04-11
 
 ### New
@@ -106,6 +143,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Legacy support** — ZEFER3 and ZEFER2 formats supported for backward-compatible decryption
 - **GitHub templates** — Issue templates for bugs, features, and security reports
 
+[0.4.0]: https://github.com/carrilloapps/zefer/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/carrilloapps/zefer/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/carrilloapps/zefer/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/carrilloapps/zefer/releases/tag/v0.1.0
