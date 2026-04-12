@@ -19,7 +19,7 @@ interface Preferences {
 }
 
 const DEFAULTS: Preferences = {
-  ttl: 1440,
+  ttl: 30,
   iterations: 600_000,
   compression: "none",
   inputMode: "text",

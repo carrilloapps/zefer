@@ -1,26 +1,33 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
-  Monitor, Smartphone, Download, Globe, ArrowRight,
-  BookOpen, Server, Link2,
+  Monitor, Smartphone, Download, Globe, ArrowRight, Shield,
+  BookOpen, Server, Link2, Lock, Key, Clock, Zap, ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 import { PageLayout, PageHeader, GlassCard, IconBox } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
 
-const PLATFORMS = [
-  { icon: Monitor, name: "Windows" },
-  { icon: Monitor, name: "macOS" },
-  { icon: Monitor, name: "Linux" },
-  { icon: Smartphone, name: "iOS" },
-  { icon: Smartphone, name: "Android" },
+const FEATURES = [
+  { icon: Lock, key: "install.feat.encryption" as const },
+  { icon: Shield, key: "install.feat.zeroknowledge" as const },
+  { icon: Key, key: "install.feat.dualkey" as const },
+  { icon: Clock, key: "install.feat.expiration" as const },
+  { icon: Globe, key: "install.feat.browser" as const },
+  { icon: Zap, key: "install.feat.free" as const },
 ];
 
-// ─── Social SVG icons (inline, no external deps) ───
+const VS_LINKS = [
+  { name: "Hat.sh", href: "/vs/hat-sh", descKey: "install.vs.hatsh" as const },
+  { name: "Picocrypt", href: "/vs/picocrypt", descKey: "install.vs.picocrypt" as const },
+  { name: "Bitwarden Send", href: "/vs/bitwarden-send", descKey: "install.vs.bitwarden" as const },
+  { name: "Cryptomator", href: "/vs/cryptomator", descKey: "install.vs.cryptomator" as const },
+  { name: "VeraCrypt", href: "/vs/veracrypt", descKey: "install.vs.veracrypt" as const },
+];
 
-const SocialIcon = ({ d, viewBox = "0 0 24 24" }: { d: string; viewBox?: string }) => (
-  <svg viewBox={viewBox} fill="currentColor" className="w-3.5 h-3.5 shrink-0" aria-hidden="true"><path d={d} /></svg>
+const SocialIcon = ({ d }: { d: string }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 shrink-0" aria-hidden="true"><path d={d} /></svg>
 );
 
 const SOCIALS = [
@@ -29,16 +36,9 @@ const SOCIALS = [
   { href: "https://linkedin.com/in/carrilloapps", label: "LinkedIn", icon: <SocialIcon d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /> },
   { href: "https://x.com/carrilloapps", label: "X", icon: <SocialIcon d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /> },
   { href: "https://t.me/carrilloapps", label: "Telegram", icon: <SocialIcon d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /> },
-  { href: "https://dev.to/carrilloapps", label: "Dev.to", icon: <SocialIcon d="M7.42 10.05c-.18-.16-.46-.23-.84-.23H6v4.36h.58c.37 0 .67-.08.86-.23.21-.18.31-.47.31-.95v-2c0-.49-.1-.79-.33-.95zm13.37-7.55H3.21C1.44 2.5 0 3.94 0 5.71v12.58C0 20.06 1.44 21.5 3.21 21.5h17.58c1.77 0 3.21-1.44 3.21-3.21V5.71c0-1.77-1.44-3.21-3.21-3.21zM8.88 14.57c0 .87-.29 1.56-.88 2.05-.56.47-1.31.7-2.25.7h-2.5V6.68h2.63c.9 0 1.6.23 2.12.68.55.47.82 1.15.82 2.02v5.19zm4.97.14c0 .67-.17 1.2-.49 1.6-.36.43-.86.66-1.53.66-.65 0-1.16-.23-1.52-.66-.32-.4-.49-.93-.49-1.6V6.68h1.77v8.08c0 .38.04.64.14.8.09.14.26.22.47.22.23 0 .38-.08.48-.22.1-.16.14-.42.14-.8V6.68h1.77v8.03h-.74zm6.57-1.49c0 .73-.12 1.3-.37 1.7-.3.5-.78.76-1.44.76-.58 0-1.03-.24-1.35-.7v.61h-1.76V6.68h1.76v3.12c.31-.45.76-.67 1.34-.67.66 0 1.13.25 1.44.76.25.4.37.96.37 1.7v1.63zm-2.1-2.06c0-.39-.04-.66-.12-.84-.1-.21-.29-.32-.56-.32-.24 0-.43.1-.55.31-.1.17-.15.43-.15.84v2.39c0 .44.05.73.15.88.11.2.3.3.55.3.25 0 .43-.1.54-.3.1-.18.14-.47.14-.91v-2.35z" /> },
-  { href: "https://medium.com/@carrilloapps", label: "Medium", icon: <SocialIcon d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z" /> },
-  { href: "https://www.buymeacoffee.com/carrilloapps", label: "Donate", icon: <SocialIcon d="M20.216 6.415l-.132-.666c-.119-.598-.388-1.163-1.001-1.379-.197-.069-.42-.098-.57-.241-.152-.143-.196-.366-.231-.572-.065-.378-.125-.756-.192-1.133-.057-.325-.102-.69-.25-.987-.195-.4-.597-.634-.996-.788a5.723 5.723 0 00-.626-.194c-1-.263-2.05-.36-3.077-.416a25.834 25.834 0 00-3.7.062c-.915.083-1.88.184-2.75.5-.318.116-.646.256-.888.501-.297.302-.393.77-.177 1.146.154.267.415.456.692.58.36.162.737.284 1.123.366 1.075.238 2.189.331 3.287.37 1.218.05 2.437.01 3.65-.118.299-.033.598-.073.896-.119.352-.054.578-.513.474-.834-.124-.383-.457-.531-.834-.473-.466.074-.96.108-1.382.146-1.177.08-2.358.082-3.536.006a22.228 22.228 0 01-1.157-.107c-.086-.01-.18-.025-.258-.036-.243-.036-.484-.08-.724-.13-.111-.027-.111-.185 0-.212h.005c.277-.06.557-.108.838-.147h.002c.131-.009.263-.032.394-.048a25.076 25.076 0 013.426-.12c.674.019 1.347.067 2.017.144l.228.031c.267.04.533.088.798.145.392.085.895.113 1.07.542.055.137.08.288.111.431l.319 1.484a.237.237 0 01-.199.284h-.003c-.037.006-.075.01-.112.015a36.704 36.704 0 01-4.743.295 37.059 37.059 0 01-4.699-.304c-.14-.017-.293-.042-.417-.06-.326-.048-.649-.108-.973-.161-.393-.065-.768-.032-1.123.161-.29.16-.502.451-.399.792.045.15.152.263.273.335.333.2.722.286 1.105.342 1.068.155 2.15.225 3.228.251a36.67 36.67 0 004.31-.18l.191-.025c.09-.012.294-.042.294-.042v.012l.484 2.242a.237.237 0 01-.199.284h-.003l-.077.012a36.055 36.055 0 01-5.043.31 35.923 35.923 0 01-4.881-.326l-.321-.047c-.393-.058-.622-.197-.79-.587l-.598-1.39C2.09 10.08 2.382 8.16 2.87 7.487c.2-.275.47-.408.787-.458.374-.058.759-.074 1.138-.067 1.156.02 2.31.107 3.453.253l.203.029a36.377 36.377 0 014.765.788c.113.028.158.19.068.274-.328.303-1.017.437-1.467.453a25.076 25.076 0 01-3.426-.12l-.394-.048h-.002a17.21 17.21 0 01-.838-.147h-.005c-.111-.027-.111.185 0 .212.24.05.481.094.724.13.078.011.172.026.258.036.38.043.762.077 1.157.107 1.178.076 2.36.074 3.536-.006.422-.038.916-.072 1.382-.146.377-.058.71.09.834.473.104.321-.122.78-.474.834z" /> },
 ];
 
-interface AuthorData {
-  name: string;
-  avatar: string;
-  bio: string;
-}
+interface AuthorData { name: string; avatar: string; bio: string }
 
 export default function InstallContent() {
   const { t } = useLanguage();
@@ -53,71 +53,71 @@ export default function InstallContent() {
 
   return (
     <PageLayout>
-      <PageHeader icon={Download} badge={t("install.coming")} title={t("install.title")} subtitle={t("install.desc")} />
+      <PageHeader icon={Download} badge={t("install.badge")} title={t("install.title")} subtitle={t("install.desc")} />
 
-      {/* ─── Install as PWA ─── */}
-      <GlassCard glow className="mb-6">
-        <div className="flex items-center gap-3 mb-3">
-          <IconBox icon={Monitor} />
-          <div className="text-left">
-            <h2 className="text-sm font-semibold theme-heading">{t("install.usage.pwa.title")}</h2>
-            <p className="text-xs theme-muted leading-relaxed">{t("install.usage.pwa.desc")}</p>
+      {/* ─── Hero CTA ─── */}
+      <GlassCard glow className="mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3 flex-1">
+            <IconBox icon={Globe} size="lg" />
+            <div>
+              <h2 className="text-sm font-semibold theme-heading">{t("install.web.title")}</h2>
+              <p className="text-xs theme-muted leading-relaxed">{t("install.web.desc")}</p>
+            </div>
           </div>
+          <a href="/" className="btn-primary !w-auto shrink-0 px-6">{t("install.web.cta")} <ArrowRight className="w-4 h-4" /></a>
         </div>
       </GlassCard>
 
-      {/* ─── Native Apps (Coming Soon) ─── */}
-      <div className="mb-8">
-        <h2 className="text-base font-semibold theme-heading mb-4 text-center">{t("install.native.title")}</h2>
-        <div className="grid grid-cols-2 min-[480px]:grid-cols-3 sm:grid-cols-5 gap-3">
-          {PLATFORMS.map((p) => (
-            <div key={p.name} className="glass glass-lift p-5 text-center animate-in">
-              <p.icon className="w-7 h-7 theme-muted mx-auto mb-3" />
-              <p className="text-xs font-semibold theme-heading mb-1.5">{p.name}</p>
-              <span className="text-[9px] font-mono theme-warning uppercase tracking-wider theme-warning-faint px-2 py-0.5 rounded-full inline-block">
-                {t("install.coming")}
-              </span>
-            </div>
+      {/* ─── Feature strip (plain text, no cards) ─── */}
+      <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 mb-10">
+        {FEATURES.map((f) => (
+          <div key={f.key} className="flex items-center gap-1.5">
+            <f.icon className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[11px] theme-muted">{t(f.key)}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* ─── PWA Installation (accordion) ─── */}
+      <PwaSection t={t} />
+
+      {/* ─── Native Apps (coming soon, plain text) ─── */}
+      <div className="mb-10">
+        <h2 className="text-sm font-semibold theme-heading mb-2">{t("install.native.title")}</h2>
+        <p className="text-xs theme-muted leading-relaxed mb-3">{t("install.native.desc")}</p>
+        <div className="flex flex-wrap gap-2">
+          {["Windows", "macOS", "Linux", "iOS", "Android"].map((name) => (
+            <span key={name} className="inline-flex items-center gap-1.5 text-[11px] theme-faint border border-[var(--border-subtle)] rounded-lg px-3 py-1.5">
+              {name}
+              <span className="text-[8px] font-mono theme-warning uppercase">{t("install.coming")}</span>
+            </span>
           ))}
         </div>
       </div>
 
-      {/* ─── Web CTA ─── */}
-      <GlassCard glow className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <IconBox icon={Globe} />
-          <div className="text-left">
-            <h2 className="text-sm font-semibold theme-heading">{t("install.web.title")}</h2>
-            <p className="text-xs theme-muted">{t("install.web.desc")}</p>
-          </div>
-        </div>
-        <a href="/" className="btn-primary">{t("install.web.cta")} <ArrowRight className="w-4 h-4" /></a>
-      </GlassCard>
-
-      {/* ─── Guide links ─── */}
-      <div className="mb-8">
-        <h2 className="text-base font-semibold theme-heading mb-4 text-center">{t("install.guides.title")}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <Link href="/install/guide" className="glass glass-hover glass-lift p-5 text-center animate-in cursor-pointer block">
-            <BookOpen className="w-6 h-6 text-primary mx-auto mb-3" />
-            <p className="text-xs font-semibold theme-heading mb-1">{t("install.guides.usage")}</p>
-            <p className="text-[10px] theme-muted">{t("install.guides.usage.desc")}</p>
-          </Link>
-          <Link href="/install/guide#selfhost" className="glass glass-hover glass-lift p-5 text-center animate-in cursor-pointer block">
-            <Server className="w-6 h-6 text-primary mx-auto mb-3" />
-            <p className="text-xs font-semibold theme-heading mb-1">{t("install.usage.selfhost.title")}</p>
-            <p className="text-[10px] theme-muted">{t("install.guides.selfhost.desc")}</p>
-          </Link>
-          <Link href="/install/guide#url" className="glass glass-hover glass-lift p-5 text-center animate-in cursor-pointer block">
-            <Link2 className="w-6 h-6 text-primary mx-auto mb-3" />
-            <p className="text-xs font-semibold theme-heading mb-1">{t("install.usage.url.title")}</p>
-            <p className="text-[10px] theme-muted">{t("install.guides.url.desc")}</p>
-          </Link>
+      {/* ─── Documentation ─── */}
+      <div className="mb-10 border-t border-[var(--border-subtle)] pt-8">
+        <h2 className="text-sm font-semibold theme-heading mb-4">{t("install.guides.title")}</h2>
+        <div className="space-y-1">
+          <NavLink href="/install/guide" icon={BookOpen} title={t("install.guides.usage")} desc={t("install.guides.usage.desc")} />
+          <NavLink href="/install/guide#selfhost" icon={Server} title={t("install.usage.selfhost.title")} desc={t("install.guides.selfhost.desc")} />
+          <NavLink href="/install/guide#url" icon={Link2} title={t("install.usage.url.title")} desc={t("install.guides.url.desc")} />
         </div>
       </div>
 
-      {/* ─── Author & Social ─── */}
-      <div className="glass p-5">
+      {/* ─── Alternatives ─── */}
+      <div className="mb-10 border-t border-[var(--border-subtle)] pt-8">
+        <h2 className="text-sm font-semibold theme-heading mb-4">{t("install.compare.title")}</h2>
+        <div className="space-y-1">
+          {VS_LINKS.map((c) => (
+            <NavLink key={c.name} href={c.href} title={`Zefer vs ${c.name}`} desc={t(c.descKey)} badge={c.name[0]} />
+          ))}
+        </div>
+      </div>
+
+      {/* ─── Author ─── */}
+      <GlassCard>
         <div className="flex items-center gap-3 mb-4">
           {author ? (
             <img src={author.avatar} alt={author.name} width={40} height={40} className="w-10 h-10 rounded-full border border-[var(--glass-border)]" />
@@ -137,7 +137,105 @@ export default function InstallContent() {
             </a>
           ))}
         </div>
-      </div>
+      </GlassCard>
     </PageLayout>
+  );
+}
+
+function NavLink({ href, icon: Icon, title, desc, badge }: { href: string; icon?: typeof BookOpen; title: string; desc: string; badge?: string }) {
+  return (
+    <Link href={href} className="flex items-center gap-3 px-3 py-2.5 -mx-3 rounded-xl hover:bg-[var(--glass-bg)] transition-colors duration-200 cursor-pointer group">
+      {Icon ? (
+        <Icon className="w-4 h-4 text-primary shrink-0" />
+      ) : (
+        <div className="w-6 h-6 rounded-md bg-[var(--glass-bg)] border border-[var(--glass-border)] flex items-center justify-center shrink-0 group-hover:border-[var(--primary-border)] transition-colors duration-200">
+          <span className="text-[9px] font-bold theme-faint group-hover:text-primary transition-colors duration-200">{badge}</span>
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <span className="text-xs font-medium theme-heading group-hover:text-primary transition-colors duration-200">{title}</span>
+        <span className="text-[10px] theme-faint ml-2 hidden min-[400px]:inline">{desc}</span>
+      </div>
+      <ChevronRight className="w-3.5 h-3.5 theme-faint shrink-0 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+    </Link>
+  );
+}
+
+/* ─── PWA accordion section ─── */
+
+import { ChevronDown } from "lucide-react";
+import type { TranslationKey } from "@/app/lib/i18n";
+
+const BROWSERS: { name: string; steps: TranslationKey[]; code: string; menuKey: TranslationKey }[] = [
+  {
+    name: "Chrome / Edge",
+    steps: ["install.pwa.chrome.1", "install.pwa.chrome.2", "install.pwa.chrome.3"],
+    code: "zefer.carrillo.app → ⋮ → ",
+    menuKey: "install.pwa.chrome.menu",
+  },
+  {
+    name: "Safari (iOS / macOS)",
+    steps: ["install.pwa.safari.1", "install.pwa.safari.2", "install.pwa.safari.3"],
+    code: "zefer.carrillo.app → ↑ Share → ",
+    menuKey: "install.pwa.safari.menu",
+  },
+  {
+    name: "Firefox (Android)",
+    steps: ["install.pwa.firefox.1", "install.pwa.firefox.2"],
+    code: "zefer.carrillo.app → ⋮ → ",
+    menuKey: "install.pwa.firefox.menu",
+  },
+];
+
+function PwaSection({ t }: { t: (k: TranslationKey) => string }) {
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
+  const toggle = useCallback((i: number) => setOpenIdx((prev) => (prev === i ? null : i)), []);
+
+  return (
+    <GlassCard className="mb-8">
+      <div className="flex items-center gap-3 mb-1">
+        <IconBox icon={Monitor} />
+        <div>
+          <h2 className="text-sm font-semibold theme-heading">{t("install.usage.pwa.title")}</h2>
+          <p className="text-xs theme-muted leading-relaxed">{t("install.pwa.intro")}</p>
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-1">
+        {BROWSERS.map((browser, i) => {
+          const isOpen = openIdx === i;
+          return (
+            <div key={browser.name} className="rounded-xl overflow-hidden">
+              <button
+                type="button"
+                onClick={() => toggle(i)}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-[var(--glass-bg)] rounded-xl transition-colors duration-200 cursor-pointer"
+                aria-expanded={isOpen}
+                aria-label={browser.name}
+              >
+                <Globe className="w-4 h-4 text-primary shrink-0" />
+                <span className="text-xs font-medium theme-heading flex-1">{browser.name}</span>
+                <ChevronDown className={`w-3.5 h-3.5 theme-faint shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              <div className={`advanced-panel ${isOpen ? "advanced-open" : ""}`}>
+                <div>
+                  <div className="px-3 pb-3 pt-1">
+                    <ol className="space-y-1.5 text-[12px] theme-muted leading-relaxed pl-5 mb-2">
+                      {browser.steps.map((stepKey) => (
+                        <li key={stepKey} className="list-decimal">{t(stepKey)}</li>
+                      ))}
+                    </ol>
+                    <code className="block text-[11px] font-mono text-primary bg-[var(--glass-bg)] rounded-lg px-3 py-2">
+                      {browser.code}{t(browser.menuKey)}
+                    </code>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </GlassCard>
   );
 }

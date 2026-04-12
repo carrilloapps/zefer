@@ -11,6 +11,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/device`, lastModified, changeFrequency: "monthly", priority: 0.5 },
     { url: `${baseUrl}/install`, lastModified, changeFrequency: "monthly", priority: 0.5 },
     { url: `${baseUrl}/install/guide`, lastModified, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${baseUrl}/vs/hat-sh`, lastModified, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${baseUrl}/vs/picocrypt`, lastModified, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${baseUrl}/vs/bitwarden-send`, lastModified, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${baseUrl}/vs/cryptomator`, lastModified, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${baseUrl}/vs/veracrypt`, lastModified, changeFrequency: "monthly", priority: 0.5 },
     { url: `${baseUrl}/llms.txt`, lastModified, changeFrequency: "monthly", priority: 0.3 },
   ];
 }

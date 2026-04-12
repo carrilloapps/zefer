@@ -5,30 +5,32 @@ const url = "https://zefer.carrillo.app/install";
 const siteUrl = "https://zefer.carrillo.app";
 
 export const metadata: Metadata = {
-  title: "Install",
+  title: "Install Zefer — PWA, Self-Host, or Use Online",
   description:
-    "Install Zefer as a Progressive Web App on any device, self-host your own instance with Docker or Vercel, or use it directly from the browser. No account required.",
+    "Install Zefer as a Progressive Web App, self-host with Docker or Vercel, or encrypt directly from the browser. Free, no account, AES-256-GCM encryption. Compare with Hat.sh, Picocrypt, Bitwarden Send, Cryptomator, and VeraCrypt.",
   keywords: [
     "install zefer",
-    "PWA",
-    "self-hosting",
-    "encryption setup",
+    "PWA encryption app",
+    "self-host encryption",
     "progressive web app",
-    "install encryption app",
-    "self-host encryption tool",
-    "Docker encryption",
+    "encrypt files online free",
+    "hat.sh alternative",
+    "picocrypt alternative",
+    "bitwarden send alternative",
+    "cryptomator alternative",
+    "veracrypt alternative",
   ],
   openGraph: {
     url,
-    title: "Install | Zefer",
+    title: "Install Zefer — PWA, Self-Host, or Use Online",
     description:
-      "Install Zefer as PWA on any device, self-host with Docker or Vercel, or use directly from the browser. No account required.",
+      "Free AES-256-GCM encryption. Install as PWA, self-host, or use directly in your browser. No account required.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Install | Zefer",
+    title: "Install Zefer — PWA, Self-Host, or Use Online",
     description:
-      "Install Zefer as a PWA, self-host your own instance, or use it directly from the browser. No account required.",
+      "Free AES-256-GCM encryption. Install as PWA, self-host, or use in your browser. Compare with Hat.sh, Picocrypt, and more.",
   },
   alternates: { canonical: url },
 };
