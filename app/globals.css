@@ -225,11 +225,16 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
   transition: background 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
 }
 
 /* ============================================
@@ -264,23 +269,31 @@ body {
 
 .nav-mobile-header {
   background: var(--background);
-  border-bottom: 1px solid var(--glass-border);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 0.5px solid var(--glass-border);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+
+[data-theme="light"] .nav-mobile-header {
+  background: rgba(248, 250, 251, 0.85);
 }
 
 .nav-mobile-safe-top {
-  padding-top: env(safe-area-inset-top, 0px);
+  height: env(safe-area-inset-top, 0px);
 }
 
 .nav-mobile-safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  height: env(safe-area-inset-bottom, 0px);
 }
 
-/* In standalone PWA mode, extend the header background behind the status bar */
+/* PWA standalone: status bar blends with header */
 @media all and (display-mode: standalone) {
   .nav-mobile-header {
-    background: var(--nav-bg);
+    background: var(--background);
+  }
+
+  [data-theme="light"] .nav-mobile-header {
+    background: rgba(248, 250, 251, 0.92);
   }
 }
 

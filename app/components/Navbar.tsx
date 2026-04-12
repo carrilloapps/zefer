@@ -36,55 +36,53 @@ export default function Navbar() {
 
   return (
     <>
-      {/* ─── Mobile header (app-native, flush to top) ─── */}
+      {/* ─── Mobile header (native app bar) ─── */}
       <nav className="sm:hidden fixed top-0 left-0 right-0 z-50 nav-mobile-header">
-        <div className="flex items-center justify-between px-4 py-2 nav-mobile-safe-top">
-          <a href="/" className="flex items-center gap-2 cursor-pointer">
-            <div className="w-7 h-7 rounded-lg theme-primary-faint theme-primary-border border flex items-center justify-center">
-              <Shield className="w-3.5 h-3.5 text-primary" />
-            </div>
-            <span className="font-semibold theme-heading tracking-tight text-sm">Zefer</span>
+        <div className="nav-mobile-safe-top" />
+        <div className="flex items-center justify-between px-4 h-12">
+          <a href="/" className="flex items-center gap-2.5 cursor-pointer">
+            <Shield className="w-5 h-5 text-primary" />
+            <span className="font-semibold theme-heading tracking-tight text-[15px]">Zefer</span>
           </a>
           <button
             onClick={() => setOpen(true)}
-            className="flex items-center justify-center w-9 h-9 rounded-lg theme-muted hover:theme-heading transition-colors duration-200 cursor-pointer"
+            className="flex items-center justify-center w-10 h-10 -mr-1.5 rounded-full theme-muted active:bg-[var(--glass-bg)] transition-colors duration-100 cursor-pointer"
             aria-label={t("nav.menu")}
           >
-            <Menu className="w-4 h-4" />
+            <Menu className="w-5 h-5" />
           </button>
         </div>
       </nav>
 
       {/* ─── Desktop header (floating glass pill) ─── */}
       <nav className="hidden sm:block fixed top-4 left-4 right-4 z-50">
-        <div className="max-w-5xl mx-auto glass-nav px-5 py-2.5 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2 cursor-pointer group">
+        <div className="max-w-5xl mx-auto glass-nav px-4 lg:px-5 py-2.5 flex items-center justify-between gap-2 overflow-hidden">
+          <a href="/" className="flex items-center gap-2 cursor-pointer group shrink-0">
             <div className="w-7 h-7 rounded-lg theme-primary-faint theme-primary-border border flex items-center justify-center group-hover:opacity-80 transition-opacity duration-200">
               <Shield className="w-3.5 h-3.5 text-primary" />
             </div>
             <span className="font-semibold theme-heading tracking-tight text-sm">Zefer</span>
           </a>
 
-          <div className="flex items-center gap-1">
-            <a href="/how" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)]">
+          <div className="flex items-center gap-0.5 lg:gap-1 min-w-0">
+            <a href="/how" className="px-2 lg:px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] whitespace-nowrap">
               {t("steps.title")}
             </a>
-            <a href="/project" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1">
-              <Code className="w-3 h-3" />{t("nav.project")}
+            <a href="/project" className="px-2 lg:px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1 whitespace-nowrap">
+              <Code className="w-3 h-3 shrink-0" />{t("nav.project")}
             </a>
-            <a href="https://www.buymeacoffee.com/carrilloapps" target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1">
-              <Heart className="w-3 h-3" />{t("nav.donate")}
+            <a href="https://www.buymeacoffee.com/carrilloapps" target="_blank" rel="noopener noreferrer" className="hidden lg:flex px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] items-center gap-1 whitespace-nowrap">
+              <Heart className="w-3 h-3 shrink-0" />{t("nav.donate")}
             </a>
-            <a href="https://github.com/carrilloapps" target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1">
-              <User className="w-3 h-3" />{t("nav.author")}
+            <a href="https://github.com/carrilloapps" target="_blank" rel="noopener noreferrer" className="hidden lg:flex px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] items-center gap-1 whitespace-nowrap">
+              <User className="w-3 h-3 shrink-0" />{t("nav.author")}
             </a>
-            <a href="/install" className="px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1.5">
-              <Download className="w-3 h-3" />{t("nav.install")}
-              <span className="text-[8px] font-mono font-bold theme-warning px-1 py-0.5 rounded theme-warning-faint leading-none">{t("install.coming")}</span>
+            <a href="/install" className="px-2 lg:px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1 whitespace-nowrap">
+              <Download className="w-3 h-3 shrink-0" />{t("nav.install")}
             </a>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full theme-primary-faint theme-primary-border border">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
               <span className="text-[10px] text-primary font-mono tracking-wide">{t("nav.encrypted")}</span>
@@ -103,36 +101,35 @@ export default function Navbar() {
       />
 
       <div
-        className={`fixed inset-0 z-[70] drawer-bg flex flex-col transition-transform duration-300 sm:hidden ${open ? "translate-y-0" : "translate-y-full"}`}
+        className={`fixed inset-0 z-[70] drawer-bg flex flex-col transition-transform duration-300 ease-out sm:hidden ${open ? "translate-y-0" : "translate-y-full"}`}
         role="dialog"
         aria-modal="true"
         aria-label={t("nav.menu")}
       >
-        {/* Safe area top spacer + handle */}
-        <div className="nav-mobile-safe-top flex flex-col items-center pt-3 pb-2 px-5">
-          <div className="w-10 h-1 rounded-full bg-[var(--glass-border)] mb-4" />
-          <div className="w-full flex items-center justify-between">
+        {/* Handle + header */}
+        <div className="nav-mobile-safe-top" />
+        <div className="flex flex-col items-center pt-2 pb-1 px-4">
+          <div className="w-9 h-1 rounded-full bg-[var(--glass-border)] mb-3" />
+          <div className="w-full flex items-center justify-between h-12">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl theme-primary-faint theme-primary-border border flex items-center justify-center">
-                <Shield className="w-4 h-4 text-primary" />
-              </div>
+              <Shield className="w-5 h-5 text-primary" />
               <div>
-                <span className="font-semibold theme-heading text-base block leading-tight">Zefer</span>
+                <span className="font-semibold theme-heading text-[15px] block leading-tight">Zefer</span>
                 <span className="text-[10px] text-primary font-mono">{t("nav.encrypted")}</span>
               </div>
             </div>
             <button
               onClick={close}
-              className="flex items-center justify-center w-9 h-9 rounded-xl bg-[var(--glass-bg)] theme-muted hover:theme-heading transition-colors duration-200 cursor-pointer"
+              className="flex items-center justify-center w-10 h-10 -mr-1.5 rounded-full bg-[var(--glass-bg)] theme-muted active:bg-[var(--glass-bg-hover)] transition-colors duration-100 cursor-pointer"
               aria-label={t("nav.close")}
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Scrollable links with iOS momentum */}
-        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-4 pb-2" style={{ WebkitOverflowScrolling: "touch" }}>
+        {/* Scrollable links */}
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-2" style={{ WebkitOverflowScrolling: "touch" }}>
           <div className="drawer-group mb-3">
             <DrawerLink href="/" icon={Shield} label={t("nav.home")} onClick={close} />
             <DrawerLink href="/how" icon={Lock} label={t("nav.how")} onClick={close} />
@@ -145,7 +142,7 @@ export default function Navbar() {
             <DrawerLink href="/install/guide" icon={BookOpen} label={t("nav.guide")} onClick={close} />
           </div>
 
-          <p className="text-[10px] font-mono theme-muted uppercase tracking-wider px-4 mb-1.5 mt-2">{t("footer.legal")}</p>
+          <p className="text-[10px] font-mono theme-muted uppercase tracking-wider px-4 mb-1.5 mt-1">{t("footer.legal")}</p>
           <div className="drawer-group mb-3">
             <DrawerLink href="/privacy" icon={Scale} label={t("nav.privacy")} onClick={close} />
             <DrawerLink href="/security" icon={ShieldAlert} label={t("footer.securitypolicy")} onClick={close} />
@@ -158,9 +155,9 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Bottom bar with safe area */}
-        <div className="px-5 py-3 border-t border-[var(--glass-border)] flex items-center justify-between gap-3 nav-mobile-safe-bottom">
-          <div className="flex items-center gap-2">
+        {/* Bottom bar */}
+        <div className="px-4 py-2.5 border-t border-[var(--glass-border)] flex items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5">
             <ThemeToggle />
             <LanguageSelector />
           </div>
@@ -168,6 +165,7 @@ export default function Navbar() {
             &copy; {new Date().getFullYear()} José Carrillo
           </p>
         </div>
+        <div className="nav-mobile-safe-bottom" />
       </div>
     </>
   );
@@ -193,7 +191,7 @@ function DrawerLink({
       href={href}
       onClick={onClick}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className="drawer-row flex items-center gap-3 px-4 py-3 text-[14px] theme-text cursor-pointer active:bg-[var(--glass-bg-hover)] transition-colors duration-100"
+      className="drawer-row flex items-center gap-3 px-4 h-12 text-[15px] theme-text cursor-pointer active:bg-[var(--glass-bg-hover)] transition-colors duration-100"
     >
       <Icon className="w-[18px] h-[18px] text-primary shrink-0" />
       <span className="flex-1 leading-tight">{label}</span>
