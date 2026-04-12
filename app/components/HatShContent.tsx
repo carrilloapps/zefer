@@ -89,7 +89,7 @@ export default function HatShContent() {
       {/* Feature comparison table */}
       <GlassCard className="mb-6">
         <h2 className="text-sm font-semibold theme-heading mb-4">{t("vs.features")}</h2>
-        <div className="overflow-x-auto -mx-2">
+        <div className="overflow-x-auto">
           <table className="w-full text-[12px] min-w-[400px]">
             <thead>
               <tr className="border-b border-[var(--border-subtle)]">

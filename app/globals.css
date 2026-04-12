@@ -378,8 +378,8 @@ body {
 
 .blob-accent {
   position: fixed;
-  width: 400px;
-  height: 400px;
+  width: min(400px, 100vw);
+  height: min(400px, 100vw);
   border-radius: 50%;
   background: radial-gradient(circle, var(--blob-purple) 0%, transparent 70%);
   filter: blur(100px);
@@ -636,6 +636,7 @@ select option {
 /* Hero radial glow (dark mode) */
 .hero-glow {
   position: relative;
+  overflow: hidden;
 }
 
 .hero-glow::before {
