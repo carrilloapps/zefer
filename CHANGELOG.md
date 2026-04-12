@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Native mobile header** — Flush-to-top app bar (h-12, 48px) with safe-area-inset-top padding, 0.5px hairline border, backdrop blur. Separate desktop floating glass nav preserved for tablets and desktops
 - **Consistent layout widths** — `max-w-2xl` (672px) for hero/subtitle text, `max-w-3xl` (768px) for all content containers. Eliminated all `max-w-4xl` usage
 - **Advanced panel** — No longer renders as glass card inside glass card. Uses `border-t` separator integrated into the parent form card
-- **PWA offline** — Full offline support: service worker caches all 17 pages, static assets (JS/CSS/fonts/icons), and `/api/author` profile. Stale-while-revalidate for pages, cache-first for static. Offline fallback to cached home page
+- **PWA offline** — Full offline support: service worker caches all 17 pages, static assets (JS/CSS/fonts/icons), and `/api/author` profile. Network-first for pages (always fresh when online, cached when offline), cache-first for static. Offline fallback to cached home page
 - **Overflow prevention** — `overflow-x: hidden` on html and body, `overflow: hidden` on `.hero-glow`, blob-accent uses `min(400px, 100vw)`, removed `-mx-2` from scrollable table wrappers
 - **Offline author fallback** — ProjectContent now shows local fallback data when `/api/author` fails offline (previously showed infinite skeleton)
 
@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CSS not loading** — Removed custom `Cache-Control` header on `/_next/static/*` that was interfering with Next.js internal static asset caching (caused build warning and potential CSS delivery issues)
 - **Horizontal scroll on Android** — Fixed hero-glow pseudo-element (700px) causing overflow on small viewports, blob-accent (400px) now viewport-clamped, desktop nav overflow-hidden with responsive link visibility
 - **WCAG contrast** — Removed `text-primary/60` and `text-primary/70` opacity on E2E badge and drawer labels, replaced with full `text-primary` and `theme-muted`
+- **Skeleton on refresh** — Changed service worker page strategy from stale-while-revalidate to network-first. Stale-while-revalidate was serving cached HTML with outdated JS chunk references, causing the skeleton to persist indefinitely after deploys
+- **OG/Twitter image readability** — Increased all text sizes by ~25% (subtitle 21→26px, pills 13→16px, brand 32→44px), raised opacity from 0.15-0.4 to 0.35-0.7 range, added gradient background for depth. Text is now legible at the ~50% size social platforms render previews
 
 ## [0.4.0] - 2026-04-11
 

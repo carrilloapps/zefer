@@ -255,7 +255,7 @@ When releasing a new version, ALL of these must be updated together:
 - Advanced panel: CSS `grid-template-rows` transition (not conditional render) for smooth expand/collapse. Uses `border-t` separator inside parent card, never `glass` inside `glass`
 - Theme toggle: View Transitions API with circle reveal (1.4s, cubic-bezier(0.22,1,0.36,1)). Button blocked with `pointer-events-none` during transition, unblocked on `transition.finished`
 - Overflow: `overflow-x: hidden` on html+body. `overflow: hidden` on `.hero-glow`. Blobs use `min(400px, 100vw)`. No `-mx-*` on scrollable children
-- PWA offline: Service Worker caches all 17 pages + static assets + `/api/author`. Stale-while-revalidate for pages, cache-first for static. Offline fallback to cached home
+- PWA offline: Service Worker caches all 17 pages + static assets + `/api/author`. Network-first for pages (fresh online, cached offline), cache-first for static. Offline fallback to cached home. Never use stale-while-revalidate for pages (causes skeleton persistence after deploys)
 - No custom Cache-Control on `/_next/static/*` — Next.js manages its own static asset caching
 
 @AGENTS.md
