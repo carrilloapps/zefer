@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { Lock, Unlock, BookOpen, Bot, Download, Shield, Code, Cpu } from "lucide-react";
 import Link from "next/link";
@@ -97,7 +97,7 @@ export default function HomeContent() {
     setReduceMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   }, []);
 
-  const phrases = ROTATE_KEYS.map((k) => t(k));
+  const phrases = useMemo(() => ROTATE_KEYS.map((k) => t(k)), [t]);
   const { display, showCursor } = useTypewriter(phrases, !reduceMotion);
 
   useEffect(() => {
@@ -169,7 +169,7 @@ export default function HomeContent() {
       </section>
 
       {/* Quick steps */}
-      <section className="py-12 px-4 sm:px-6">
+      <section className="py-12 px-4 sm:px-6 below-fold">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-sm font-semibold theme-heading text-center mb-4">{t("steps.title")}</h2>
           <div className="grid grid-cols-1 min-[480px]:grid-cols-3 gap-3">
@@ -188,7 +188,7 @@ export default function HomeContent() {
       </section>
 
       {/* Resources */}
-      <section className="pb-12 px-4 sm:px-6">
+      <section className="pb-12 px-4 sm:px-6 below-fold">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-sm font-semibold theme-heading text-center mb-4">{t("home.resources")}</h2>
           <div className="flex flex-wrap items-center justify-center gap-2">

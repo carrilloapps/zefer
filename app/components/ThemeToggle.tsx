@@ -1,12 +1,10 @@
 "use client";
 
-import { useRef } from "react";
 import { Sun, Moon } from "lucide-react";
 import { useTheme } from "@/app/components/ThemeProvider";
 
 export default function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
-  const btnRef = useRef<HTMLButtonElement>(null);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const root = document.documentElement;
@@ -36,7 +34,6 @@ export default function ThemeToggle() {
 
   return (
     <button
-      ref={btnRef}
       onClick={handleClick}
       className="flex items-center justify-center w-9 h-9 rounded-lg theme-muted hover:theme-heading transition-colors duration-200 cursor-pointer hover:bg-[var(--glass-bg-hover)]"
       aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}

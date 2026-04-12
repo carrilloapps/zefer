@@ -312,6 +312,7 @@ body {
   filter: blur(120px);
   opacity: var(--blob-opacity);
   transition: opacity 0.5s ease;
+  will-change: transform;
 }
 
 .ambient-glow::before {
@@ -351,6 +352,7 @@ body {
   pointer-events: none;
   z-index: 0;
   animation: float-slow 18s ease-in-out infinite;
+  will-change: transform;
   opacity: var(--blob-opacity);
   transition: opacity 0.5s ease;
 }
@@ -503,6 +505,13 @@ select option {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ── Content visibility (LCP optimization) ── */
+
+.below-fold {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
 }
 
 /* ============================================
