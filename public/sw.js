@@ -80,28 +80,24 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Pages: stale-while-revalidate (instant offline, fresh when online)
+  // Pages: network-first with cache fallback (always fresh when online, cached when offline)
   event.respondWith(
-    caches.match(request).then((cached) => {
-      const networkFetch = fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(DYNAMIC_CACHE).then((c) => c.put(request, clone));
-          }
-          return response;
-        })
-        .catch(() => {
+    fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(DYNAMIC_CACHE).then((c) => c.put(request, clone));
+        }
+        return response;
+      })
+      .catch(() =>
+        caches.match(request).then((cached) => {
           if (cached) return cached;
-          // Offline fallback: return cached home page for any HTML request
           if (request.headers.get("accept") && request.headers.get("accept").includes("text/html")) {
             return caches.match("/");
           }
           return new Response("Offline", { status: 503 });
-        });
-
-      // Serve cached immediately, update in background
-      return cached || networkFetch;
-    })
+        })
+      )
   );
 });

@@ -45,6 +45,9 @@ When releasing a new version, ALL of these must be updated together:
 - JSON-LD `WebApplication` schema lives in `app/layout.tsx`; `BreadcrumbList` on subpages; `FAQPage` on `/how` and all `/vs/*` pages
 - OG/Twitter images must be explicit with `images` field; title 40-60 chars; description 120-160 chars
 - Author attribution: use "José Carrillo" as plain text, never "GitHub: @carrilloapps" or inline URLs in translations
+- Layout widths: `max-w-2xl` for hero/subtitle, `max-w-3xl` for content. Never `max-w-4xl`+
+- No custom Cache-Control headers on `/_next/static/*`
+- No `glass` class nested inside another `glass` container
 
 ## How to Use Zefer (for AI agents)
 

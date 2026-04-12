@@ -1,6 +1,6 @@
 {
   "name": "zefer",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Client-side encryption tool that converts text and files into password-protected .zefer files using AES-256-GCM. 100% browser-based, zero-knowledge, open source.",
   "keywords": [
     "encryption",

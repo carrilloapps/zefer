@@ -5,6 +5,24 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-04-11
+
+### Improved
+
+- **Theme transition** — Smoother circle reveal animation (1.4s with cubic-bezier(0.22, 1, 0.36, 1)), fade-out with mid-hold at 60% opacity, toggle button blocked only during transition via `transition.finished` promise
+- **Native mobile header** — Flush-to-top app bar (h-12, 48px) with safe-area-inset-top padding, 0.5px hairline border, backdrop blur. Separate desktop floating glass nav preserved for tablets and desktops
+- **Consistent layout widths** — `max-w-2xl` (672px) for hero/subtitle text, `max-w-3xl` (768px) for all content containers. Eliminated all `max-w-4xl` usage
+- **Advanced panel** — No longer renders as glass card inside glass card. Uses `border-t` separator integrated into the parent form card
+- **PWA offline** — Full offline support: service worker caches all 17 pages, static assets (JS/CSS/fonts/icons), and `/api/author` profile. Stale-while-revalidate for pages, cache-first for static. Offline fallback to cached home page
+- **Overflow prevention** — `overflow-x: hidden` on html and body, `overflow: hidden` on `.hero-glow`, blob-accent uses `min(400px, 100vw)`, removed `-mx-2` from scrollable table wrappers
+- **Offline author fallback** — ProjectContent now shows local fallback data when `/api/author` fails offline (previously showed infinite skeleton)
+
+### Fixed
+
+- **CSS not loading** — Removed custom `Cache-Control` header on `/_next/static/*` that was interfering with Next.js internal static asset caching (caused build warning and potential CSS delivery issues)
+- **Horizontal scroll on Android** — Fixed hero-glow pseudo-element (700px) causing overflow on small viewports, blob-accent (400px) now viewport-clamped, desktop nav overflow-hidden with responsive link visibility
+- **WCAG contrast** — Removed `text-primary/60` and `text-primary/70` opacity on E2E badge and drawer labels, replaced with full `text-primary` and `theme-muted`
+
 ## [0.4.0] - 2026-04-11
 
 ### New
@@ -143,6 +161,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Legacy support** — ZEFER3 and ZEFER2 formats supported for backward-compatible decryption
 - **GitHub templates** — Issue templates for bugs, features, and security reports
 
+[0.4.1]: https://github.com/carrilloapps/zefer/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/carrilloapps/zefer/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/carrilloapps/zefer/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/carrilloapps/zefer/compare/v0.1.0...v0.2.0

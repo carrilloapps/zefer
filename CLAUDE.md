@@ -240,9 +240,11 @@ When releasing a new version, ALL of these must be updated together:
 - Expand/collapse controls: must have `aria-expanded` and descriptive `aria-label`
 - Headings: strict descending hierarchy (h1 → h2 → h3). Footer labels use `<p>`, not heading tags
 - Responsive: mobile-first, `min-[Xpx]:` for custom breakpoints
-- Mobile drawer: full-screen slide-up with iOS-style grouped rows (`drawer-group`), safe-area padding, body scroll lock
+- Layout widths: `max-w-2xl` (672px) for hero/subtitle text, `max-w-3xl` (768px) for all content containers. Never use `max-w-4xl` or larger
+- Mobile header: native app bar flush to top (`h-12`, safe-area-inset-top), logo + hamburger only
+- Desktop header: floating glass pill with nav links, theme toggle, language selector
+- Mobile drawer: full-screen slide-up with iOS-style grouped rows (`drawer-group`, `h-12` rows), safe-area padding, body scroll lock with scrollbar compensation
 - Mobile footer: compact single-line (legal links + copyright), desktop gets full 4-column grid
-- Mobile navbar: logo + hamburger only; theme toggle and language selector live inside the drawer
 - Popovers: `fixed` on mobile, `absolute` on desktop
 - Inputs: 16px minimum font-size on mobile (prevents iOS zoom)
 - Animations: all respect `prefers-reduced-motion: reduce`
@@ -250,6 +252,10 @@ When releasing a new version, ALL of these must be updated together:
 - Performance: `will-change: transform` on animated blobs, `content-visibility: auto` on below-fold sections, `display: "swap"` on fonts, `useMemo` for derived arrays
 - Scroll lock: body overflow hidden + scrollbar width compensation to prevent CLS
 - Passphrase strength: visual meter bar (weak/fair/good/strong) with 4-level color scale
-- Advanced panel: CSS `grid-template-rows` transition (not conditional render) for smooth expand/collapse
+- Advanced panel: CSS `grid-template-rows` transition (not conditional render) for smooth expand/collapse. Uses `border-t` separator inside parent card, never `glass` inside `glass`
+- Theme toggle: View Transitions API with circle reveal (1.4s, cubic-bezier(0.22,1,0.36,1)). Button blocked with `pointer-events-none` during transition, unblocked on `transition.finished`
+- Overflow: `overflow-x: hidden` on html+body. `overflow: hidden` on `.hero-glow`. Blobs use `min(400px, 100vw)`. No `-mx-*` on scrollable children
+- PWA offline: Service Worker caches all 17 pages + static assets + `/api/author`. Stale-while-revalidate for pages, cache-first for static. Offline fallback to cached home
+- No custom Cache-Control on `/_next/static/*` — Next.js manages its own static asset caching
 
 @AGENTS.md
