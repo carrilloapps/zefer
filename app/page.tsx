@@ -27,12 +27,14 @@ export const metadata: Metadata = {
     title: "Zefer — Share Secrets Securely",
     description:
       "Encrypt text and files into password-protected .zefer files. AES-256-GCM, 100% client-side, zero-knowledge. No servers, no traces.",
+    images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Zefer — Share Secrets Securely" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Zefer — Share Secrets Securely",
     description:
       "Encrypt text and files into password-protected .zefer files. AES-256-GCM encryption, 100% client-side, zero-knowledge.",
+    images: [`${siteUrl}/twitter-image`],
   },
   alternates: {
     canonical: siteUrl,

@@ -5,7 +5,7 @@ const url = "https://zefer.carrillo.app/device";
 const siteUrl = "https://zefer.carrillo.app";
 
 export const metadata: Metadata = {
-  title: "Device & Performance",
+  title: "Device Detection and Encryption Performance",
   description:
     "See how Zefer detects your device RAM, CPU cores, and GPU to calculate dynamic file size limits. Optimize your browser for maximum encryption performance.",
   keywords: [

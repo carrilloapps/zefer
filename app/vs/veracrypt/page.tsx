@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   description:
     "Compare Zefer and VeraCrypt. Browser-based file encryption for sharing vs full-disk and container encryption. Different tools for different threats.",
   keywords: ["zefer vs veracrypt", "veracrypt alternative", "file encryption vs disk encryption", "veracrypt review", "veracrypt online alternative"],
-  openGraph: { url, title: "Zefer vs VeraCrypt — Shareable Files vs Full-Disk Encryption", description: "Encrypted shareable files vs encrypted disk volumes. Different tools, different threats." },
-  twitter: { card: "summary_large_image", title: "Zefer vs VeraCrypt", description: "Shareable encrypted files vs full-disk encryption. Which threat model fits yours?" },
+  openGraph: { url, title: "Zefer vs VeraCrypt — Shareable Files vs Full-Disk Encryption", description: "Encrypted shareable files vs encrypted disk volumes. Different tools, different threats.", images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Zefer vs VeraCrypt" }] },
+  twitter: { card: "summary_large_image", title: "Zefer vs VeraCrypt", description: "Shareable encrypted files vs full-disk encryption. Which threat model fits yours?", images: [`${siteUrl}/twitter-image`] },
   alternates: { canonical: url },
 };
 

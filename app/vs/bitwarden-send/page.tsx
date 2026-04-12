@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   description:
     "Compare Zefer and Bitwarden Send for sharing secrets. Free vs freemium, no account vs vault-integrated, and advanced access controls compared.",
   keywords: ["zefer vs bitwarden send", "bitwarden send alternative", "free secret sharing", "bitwarden send review", "share passwords securely"],
-  openGraph: { url, title: "Zefer vs Bitwarden Send — Free Secret Sharing", description: "Free zero-knowledge encryption vs vault-integrated secret sharing. Full comparison." },
-  twitter: { card: "summary_large_image", title: "Zefer vs Bitwarden Send", description: "Which free secret sharing tool is right for you? Zero-knowledge vs vault-integrated." },
+  openGraph: { url, title: "Zefer vs Bitwarden Send — Free Secret Sharing", description: "Free zero-knowledge encryption vs vault-integrated secret sharing. Full comparison.", images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Zefer vs Bitwarden Send" }] },
+  twitter: { card: "summary_large_image", title: "Zefer vs Bitwarden Send", description: "Which free secret sharing tool is right for you? Zero-knowledge vs vault-integrated.", images: [`${siteUrl}/twitter-image`] },
   alternates: { canonical: url },
 };
 

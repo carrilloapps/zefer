@@ -7,7 +7,7 @@ const siteUrl = "https://zefer.carrillo.app";
 export const metadata: Metadata = {
   title: "Usage Guide",
   description:
-    "Step-by-step guide to encrypt and decrypt files with Zefer. Covers advanced security features, URL parameters for automation, dual keys, IP restrictions, and self-hosting.",
+    "Step-by-step guide to encrypt and decrypt files with Zefer. URL parameters, dual keys, IP restrictions, and self-hosting.",
   keywords: [
     "zefer guide",
     "encrypt files",

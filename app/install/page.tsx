@@ -7,7 +7,7 @@ const siteUrl = "https://zefer.carrillo.app";
 export const metadata: Metadata = {
   title: "Install Zefer — PWA, Self-Host, or Use Online",
   description:
-    "Install Zefer as a Progressive Web App, self-host with Docker or Vercel, or encrypt directly from the browser. Free, no account, AES-256-GCM encryption. Compare with Hat.sh, Picocrypt, Bitwarden Send, Cryptomator, and VeraCrypt.",
+    "Install Zefer as a PWA, self-host with Docker, or encrypt directly in your browser. Free AES-256-GCM encryption, no account required.",
   keywords: [
     "install zefer",
     "PWA encryption app",

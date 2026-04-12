@@ -5,9 +5,9 @@ const url = "https://zefer.carrillo.app/how";
 const siteUrl = "https://zefer.carrillo.app";
 
 export const metadata: Metadata = {
-  title: "How It Works",
+  title: "How Zefer Encrypts Files with AES-256-GCM",
   description:
-    "Learn how Zefer encrypts your secrets end-to-end using AES-256-GCM, PBKDF2 key derivation, and zero-knowledge architecture. 7 steps from input to decryption explained in detail.",
+    "How Zefer encrypts your secrets end-to-end using AES-256-GCM and PBKDF2. 7 steps from input to decryption explained in detail.",
   keywords: [
     "how encryption works",
     "AES-256-GCM explained",

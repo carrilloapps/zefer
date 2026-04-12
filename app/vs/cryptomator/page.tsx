@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   description:
     "Compare Zefer and Cryptomator. Browser-based file encryption for sharing vs transparent cloud storage encryption. Features, use cases, and security compared.",
   keywords: ["zefer vs cryptomator", "cryptomator alternative", "cloud encryption comparison", "cryptomator review", "encrypt files for sharing"],
-  openGraph: { url, title: "Zefer vs Cryptomator — File Sharing vs Cloud Encryption", description: "Shareable encrypted files vs transparent cloud vault encryption. Full comparison." },
-  twitter: { card: "summary_large_image", title: "Zefer vs Cryptomator", description: "Encrypted file sharing vs cloud vault encryption. Which approach fits your needs?" },
+  openGraph: { url, title: "Zefer vs Cryptomator — File Sharing vs Cloud Encryption", description: "Shareable encrypted files vs transparent cloud vault encryption. Full comparison.", images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Zefer vs Cryptomator" }] },
+  twitter: { card: "summary_large_image", title: "Zefer vs Cryptomator", description: "Encrypted file sharing vs cloud vault encryption. Which approach fits your needs?", images: [`${siteUrl}/twitter-image`] },
   alternates: { canonical: url },
 };
 
