@@ -265,7 +265,7 @@ function CodeBlock({ code }: { code: string }) {
 
 function CliSection({ t }: { t: (k: TranslationKey) => string }) {
   const [openPlatform, setOpenPlatform] = useState<string | null>(null);
-  const [openNpm, setOpenNpm] = useState(false);
+  const [openNpm, setOpenNpm] = useState(true); // npm is the recommended option — open by default
 
   return (
     <GlassCard className="mb-8">

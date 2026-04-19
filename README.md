@@ -65,15 +65,19 @@ Zefer encrypts your secrets into password-protected `.zefer` files using AES-256
 
 ## CLI
 
-Zefer also has an official command-line companion — **[zefer-cli](https://github.com/carrilloapps/zefer-cli)** — for scripting, automation, and terminal workflows. `.zefer` files are fully cross-compatible between the web app and the CLI.
+Zefer has an official command-line companion — **[zefer-cli](https://github.com/carrilloapps/zefer-cli)** — for scripting, automation, and terminal workflows. `.zefer` files are fully cross-compatible between the web app and the CLI.
 
+**Via npm (recommended):**
 ```bash
 npm install -g zefer-cli
 
 zefer encrypt report.pdf -p mypassword
 zefer decrypt report.pdf.zefer -p mypassword
 zefer keygen --mode secure --length 64
+zefer info secret.zefer
 ```
+
+**Standalone binary (no Node.js required):** download for [Linux x64](https://github.com/carrilloapps/zefer-cli/releases/latest/download/zefer-linux-x64) · [Linux ARM64](https://github.com/carrilloapps/zefer-cli/releases/latest/download/zefer-linux-arm64) · [macOS Intel](https://github.com/carrilloapps/zefer-cli/releases/latest/download/zefer-macos-x64) · [macOS Apple Silicon](https://github.com/carrilloapps/zefer-cli/releases/latest/download/zefer-macos-arm64) · [Windows x64](https://github.com/carrilloapps/zefer-cli/releases/latest/download/zefer-win-x64.exe)
 
 [![npm](https://img.shields.io/npm/v/zefer-cli?style=flat-square&color=22c55e)](https://www.npmjs.com/package/zefer-cli)
 [![CLI repo](https://img.shields.io/badge/GitHub-zefer--cli-181717?style=flat-square&logo=github)](https://github.com/carrilloapps/zefer-cli)
