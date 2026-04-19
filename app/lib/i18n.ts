@@ -2133,6 +2133,51 @@ const translations = {
     en: "Or run without installing:",
     pt: "Ou execute sem instalar:",
   },
+  "install.cli.binary.title": {
+    es: "Binario independiente",
+    en: "Standalone binary",
+    pt: "Binário independente",
+  },
+  "install.cli.binary.desc": {
+    es: "Sin Node.js, sin npm. Descarga el ejecutable y listo.",
+    en: "No Node.js, no npm. Download the executable and run.",
+    pt: "Sem Node.js, sem npm. Baixe o executável e execute.",
+  },
+  "install.cli.binary.download": {
+    es: "Descargar",
+    en: "Download",
+    pt: "Baixar",
+  },
+  "install.cli.binary.releases": {
+    es: "Todas las versiones →",
+    en: "All releases →",
+    pt: "Todas as versões →",
+  },
+  "install.cli.binary.checksum": {
+    es: "Verificar integridad (SHA-256):",
+    en: "Verify integrity (SHA-256):",
+    pt: "Verificar integridade (SHA-256):",
+  },
+  "install.cli.binary.install": {
+    es: "Instalar en el sistema:",
+    en: "Install system-wide:",
+    pt: "Instalar no sistema:",
+  },
+  "install.cli.binary.win.desc": {
+    es: "Descarga y ejecuta directamente. Para usar desde cualquier directorio, mueve el .exe a una carpeta en tu PATH.",
+    en: "Download and run directly. To use from any directory, move the .exe to a folder in your PATH.",
+    pt: "Baixe e execute diretamente. Para usar de qualquer diretório, mova o .exe para uma pasta no seu PATH.",
+  },
+  "install.cli.npm.title": {
+    es: "Vía npm",
+    en: "Via npm",
+    pt: "Via npm",
+  },
+  "install.cli.npm.req": {
+    es: "Requiere Node.js ≥ 20",
+    en: "Requires Node.js ≥ 20",
+    pt: "Requer Node.js ≥ 20",
+  },
   "install.compare.title": {
     es: "Zefer vs alternativas",
     en: "Zefer vs alternatives",

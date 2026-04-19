@@ -170,6 +170,53 @@ function NavLink({ href, icon: Icon, title, desc, badge }: { href: string; icon?
 import { ChevronDown } from "lucide-react";
 import type { TranslationKey } from "@/app/lib/i18n";
 
+const BASE_URL = "https://github.com/carrilloapps/zefer-cli/releases/latest/download";
+
+const PLATFORMS: {
+  id: string;
+  label: string;
+  icon: string;
+  file: string;
+  unixCmd?: string;
+  winCmd?: boolean;
+}[] = [
+  {
+    id: "linux-x64",
+    label: "Linux — x64",
+    icon: "🐧",
+    file: "zefer-linux-x64",
+    unixCmd: "zefer-linux-x64",
+  },
+  {
+    id: "linux-arm64",
+    label: "Linux — ARM64",
+    icon: "🐧",
+    file: "zefer-linux-arm64",
+    unixCmd: "zefer-linux-arm64",
+  },
+  {
+    id: "macos-x64",
+    label: "macOS — Intel",
+    icon: "",
+    file: "zefer-macos-x64",
+    unixCmd: "zefer-macos-x64",
+  },
+  {
+    id: "macos-arm64",
+    label: "macOS — Apple Silicon",
+    icon: "",
+    file: "zefer-macos-arm64",
+    unixCmd: "zefer-macos-arm64",
+  },
+  {
+    id: "win-x64",
+    label: "Windows — x64",
+    icon: "🪟",
+    file: "zefer-win-x64.exe",
+    winCmd: true,
+  },
+];
+
 const CLI_STEPS: { titleKey: TranslationKey; descKey: TranslationKey; code: string }[] = [
   {
     titleKey: "install.cli.step1.title",
@@ -207,70 +254,154 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
+function CodeBlock({ code }: { code: string }) {
+  return (
+    <div className="flex items-start gap-2 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-xl px-3 py-2.5">
+      <pre className="flex-1 text-[11px] font-mono text-primary overflow-x-auto whitespace-pre leading-relaxed">{code}</pre>
+      <CopyButton text={code} />
+    </div>
+  );
+}
+
 function CliSection({ t }: { t: (k: TranslationKey) => string }) {
+  const [openPlatform, setOpenPlatform] = useState<string | null>(null);
+  const [openNpm, setOpenNpm] = useState(false);
+
   return (
     <GlassCard className="mb-8">
-      <div className="flex items-start gap-3 mb-4">
+      {/* Header */}
+      <div className="flex items-start gap-3 mb-5">
         <IconBox icon={Terminal} />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="text-sm font-semibold theme-heading">{t("install.cli.title")}</h2>
-            <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-[var(--glass-bg)] border border-[var(--glass-border)] theme-faint uppercase tracking-wide">npm</span>
-          </div>
+          <h2 className="text-sm font-semibold theme-heading">{t("install.cli.title")}</h2>
           <p className="text-xs theme-muted leading-relaxed mt-0.5">{t("install.cli.desc")}</p>
         </div>
-      </div>
-
-      {/* Steps */}
-      <div className="space-y-4">
-        {CLI_STEPS.map((step, i) => (
-          <div key={i}>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="w-4 h-4 rounded-full bg-[var(--glass-bg)] border border-[var(--primary-border)] flex items-center justify-center shrink-0">
-                <span className="text-[9px] font-bold text-primary">{i + 1}</span>
-              </span>
-              <span className="text-xs font-medium theme-heading">{t(step.titleKey)}</span>
-              <span className="text-[10px] theme-faint">{t(step.descKey)}</span>
-            </div>
-            <div className="flex items-start gap-2 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-xl px-3 py-2.5">
-              <pre className="flex-1 text-[11px] font-mono text-primary overflow-x-auto whitespace-pre leading-relaxed">{step.code}</pre>
-              <CopyButton text={step.code} />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* npx alternative */}
-      <div className="mt-4 pt-3 border-t border-[var(--border-subtle)]">
-        <p className="text-[10px] theme-faint mb-1.5">{t("install.cli.npx")}</p>
-        <div className="flex items-center gap-2 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-xl px-3 py-2">
-          <pre className="flex-1 text-[11px] font-mono text-primary overflow-x-auto">{"npx zefer-cli encrypt report.pdf -p mypassword"}</pre>
-          <CopyButton text="npx zefer-cli encrypt report.pdf -p mypassword" />
+        <div className="flex gap-1.5 shrink-0">
+          <a href="https://github.com/carrilloapps/zefer-cli" target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-[10px] theme-faint hover:text-primary border border-[var(--glass-border)] hover:border-[var(--primary-border)] rounded-lg px-2 py-1 transition-colors cursor-pointer">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-2.5 h-2.5" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
+            GitHub
+          </a>
+          <a href="https://www.npmjs.com/package/zefer-cli" target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-[10px] theme-faint hover:text-primary border border-[var(--glass-border)] hover:border-[var(--primary-border)] rounded-lg px-2 py-1 transition-colors cursor-pointer">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-2.5 h-2.5" aria-hidden="true"><path d="M0 7.334v8h6.666v1.332H12v-1.332h12v-8H0zm6.666 6.664H5.334v-4H3.999v4H1.335V8.667h5.331v5.331zm4 0v1.336H8.001V8.667h5.334v5.332h-2.669v-.001zm12.001 0h-1.33v-4h-1.336v4h-1.335v-4h-1.33v4h-2.671V8.667h8.002v5.331z" /></svg>
+            npm
+          </a>
         </div>
       </div>
 
-      {/* Compat + links */}
-      <div className="mt-4 pt-3 border-t border-[var(--border-subtle)] flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        <p className="text-[10px] theme-faint flex-1">{t("install.cli.compat")}</p>
-        <div className="flex items-center gap-2 flex-wrap">
-          <a
-            href="https://github.com/carrilloapps/zefer-cli"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-[10px] font-medium theme-muted hover:text-primary border border-[var(--glass-border)] hover:border-[var(--primary-border)] rounded-lg px-2.5 py-1 transition-colors cursor-pointer"
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
-            {t("install.cli.github")}
-          </a>
-          <a
-            href="https://www.npmjs.com/package/zefer-cli"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-[10px] font-medium theme-muted hover:text-primary border border-[var(--glass-border)] hover:border-[var(--primary-border)] rounded-lg px-2.5 py-1 transition-colors cursor-pointer"
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3" aria-hidden="true"><path d="M0 7.334v8h6.666v1.332H12v-1.332h12v-8H0zm6.666 6.664H5.334v-4H3.999v4H1.335V8.667h5.331v5.331zm4 0v1.336H8.001V8.667h5.334v5.332h-2.669v-.001zm12.001 0h-1.33v-4h-1.336v4h-1.335v-4h-1.33v4h-2.671V8.667h8.002v5.331z" /></svg>
-            {t("install.cli.npm")}
-          </a>
+      {/* ── Option 1: Standalone binary ── */}
+      <div className="mb-3">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="w-5 h-5 rounded-full bg-[var(--glass-bg)] border border-[var(--primary-border)] flex items-center justify-center shrink-0">
+            <span className="text-[9px] font-bold text-primary">1</span>
+          </span>
+          <span className="text-xs font-semibold theme-heading">{t("install.cli.binary.title")}</span>
+          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-[var(--primary-faint)] text-primary border border-[var(--primary-border)] uppercase tracking-wide font-bold">
+            {t("install.cli.binary.desc")}
+          </span>
+        </div>
+
+        <div className="space-y-1 ml-7">
+          {PLATFORMS.map((p) => {
+            const isOpen = openPlatform === p.id;
+            const downloadUrl = `${BASE_URL}/${p.file}`;
+            const unixInstall = p.unixCmd
+              ? `curl -L ${downloadUrl} -o zefer\nchmod +x zefer\nsudo mv zefer /usr/local/bin/zefer`
+              : null;
+            const winInstall = p.winCmd
+              ? `Invoke-WebRequest -Uri "${downloadUrl}" -OutFile zefer.exe\n.\\zefer.exe --help`
+              : null;
+            const checksumUrl = `${BASE_URL}/checksums.txt`;
+
+            return (
+              <div key={p.id} className="rounded-xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setOpenPlatform(isOpen ? null : p.id)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-[var(--glass-bg)] rounded-xl transition-colors duration-200 cursor-pointer group"
+                  aria-expanded={isOpen}
+                >
+                  <span className="text-sm">{p.icon}</span>
+                  <span className="text-xs font-medium theme-heading flex-1">{p.label}</span>
+                  <a
+                    href={downloadUrl}
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-[10px] font-medium text-primary hover:underline mr-2 shrink-0"
+                  >
+                    ↓ {t("install.cli.binary.download")}
+                  </a>
+                  <ChevronDown className={`w-3.5 h-3.5 theme-faint shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                <div className={`advanced-panel ${isOpen ? "advanced-open" : ""}`}>
+                  <div className="px-3 pb-3 pt-1 space-y-3">
+                    {unixInstall && (
+                      <div>
+                        <p className="text-[10px] theme-faint mb-1.5">{t("install.cli.binary.install")}</p>
+                        <CodeBlock code={unixInstall} />
+                      </div>
+                    )}
+                    {winInstall && (
+                      <div>
+                        <p className="text-[10px] theme-faint mb-1.5">PowerShell:</p>
+                        <CodeBlock code={winInstall} />
+                        <p className="text-[10px] theme-faint mt-2">{t("install.cli.binary.win.desc")}</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-[10px] theme-faint mb-1.5">{t("install.cli.binary.checksum")}</p>
+                      <CodeBlock code={`curl -L ${checksumUrl} | grep ${p.file} | sha256sum -c`} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <a
+          href="https://github.com/carrilloapps/zefer-cli/releases"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ml-7 mt-2 inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+        >
+          {t("install.cli.binary.releases")}
+        </a>
+      </div>
+
+      {/* ── Option 2: npm ── */}
+      <div className="border-t border-[var(--border-subtle)] pt-3">
+        <button
+          type="button"
+          onClick={() => setOpenNpm((v) => !v)}
+          className="w-full flex items-center gap-2 mb-2 cursor-pointer group"
+          aria-expanded={openNpm}
+        >
+          <span className="w-5 h-5 rounded-full bg-[var(--glass-bg)] border border-[var(--glass-border)] flex items-center justify-center shrink-0 group-hover:border-[var(--primary-border)] transition-colors">
+            <span className="text-[9px] font-bold theme-faint group-hover:text-primary transition-colors">2</span>
+          </span>
+          <span className="text-xs font-semibold theme-heading flex-1 text-left">{t("install.cli.npm.title")}</span>
+          <span className="text-[9px] theme-faint">{t("install.cli.npm.req")}</span>
+          <ChevronDown className={`w-3.5 h-3.5 theme-faint ml-2 shrink-0 transition-transform duration-200 ${openNpm ? "rotate-180" : ""}`} />
+        </button>
+
+        <div className={`advanced-panel ${openNpm ? "advanced-open" : ""}`}>
+          <div className="ml-7 pb-2 space-y-3">
+            {CLI_STEPS.map((step, i) => (
+              <div key={i}>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[10px] font-medium theme-heading">{t(step.titleKey)}</span>
+                  <span className="text-[10px] theme-faint">{t(step.descKey)}</span>
+                </div>
+                <CodeBlock code={step.code} />
+              </div>
+            ))}
+            <div>
+              <p className="text-[10px] theme-faint mb-1.5">{t("install.cli.npx")}</p>
+              <CodeBlock code="npx zefer-cli encrypt report.pdf -p mypassword" />
+            </div>
+          </div>
         </div>
       </div>
     </GlassCard>
