@@ -1,58 +1,233 @@
 # Zefer
 
-> Client-side encryption tool. Converts text and files into password-protected .zefer files using AES-256-GCM. 100% browser-based, zero-knowledge, open source.
+> Client-side encryption tool. Converts text and files into password-protected .zefer files using AES-256-GCM. 100% browser-based and CLI, zero-knowledge, open source.
 
-Zefer encrypts secrets (text, files, API keys, images, ZIPs) into `.zefer` files that can only be decrypted with the correct passphrase. All cryptographic operations happen in the browser via the Web Crypto API. No data ever reaches a server.
+Zefer encrypts secrets (text, files, API keys, images, ZIPs) into `.zefer` files that can only be decrypted with the correct passphrase. All cryptographic operations happen locally via the Web Crypto API (browser) or Node.js crypto module (CLI). No data ever reaches a server.
 
-- Live: https://zefer.carrillo.app
-- Source: https://github.com/carrilloapps/zefer
+- Live web app: https://zefer.carrillo.app
+- Web source: https://github.com/carrilloapps/zefer
+- CLI source: https://github.com/carrilloapps/zefer-cli
+- CLI on npm: https://www.npmjs.com/package/zefer-cli
 - Agent instructions: https://zefer.carrillo.app/agents.md
 - License: MIT
 - Author: [José Carrillo](https://github.com/carrilloapps)
 
-## Docs
+---
 
-- [How It Works](https://zefer.carrillo.app/how): 7-step encryption process, 5 features, 12 technical specs
-- [Privacy Policy](https://zefer.carrillo.app/privacy): 9-section policy, GDPR/CCPA/LGPD compliance
-- [Security Policy](https://zefer.carrillo.app/security): Vulnerability reporting, crypto architecture, response timeline
-- [Code of Conduct](https://zefer.carrillo.app/conduct): Contributor Covenant 2.1, enforcement guidelines
-- [Terms & Conditions](https://zefer.carrillo.app/terms): 12 sections, MIT license, Colombia Law 1581
-- [Project Info](https://zefer.carrillo.app/project): Tech stack, creator, donate
-- [Device Detection](https://zefer.carrillo.app/device): RAM/CPU/GPU analysis, dynamic file limits
-- [Usage Guide](https://zefer.carrillo.app/install): Encrypt/decrypt steps, advanced features, self-hosting, PWA
+## CLI (zefer-cli)
 
-## Encryption
+The official command-line companion. `.zefer` files are fully cross-compatible between the web app and the CLI — same binary format, same cryptographic parameters.
+
+### Install
+
+```bash
+npm install -g zefer-cli        # recommended (requires Node.js 20+)
+npx zefer-cli <command>         # without installing
+```
+
+Standalone binaries (no Node.js required):
+
+| Platform | Download |
+|---|---|
+| Linux x64 | https://github.com/carrilloapps/zefer-cli/releases/latest/download/zefer-linux-x64 |
+| Linux ARM64 | https://github.com/carrilloapps/zefer-cli/releases/latest/download/zefer-linux-arm64 |
+| macOS Intel | https://github.com/carrilloapps/zefer-cli/releases/latest/download/zefer-macos-x64 |
+| macOS Apple Silicon | https://github.com/carrilloapps/zefer-cli/releases/latest/download/zefer-macos-arm64 |
+| Windows x64 | https://github.com/carrilloapps/zefer-cli/releases/latest/download/zefer-win-x64.exe |
+
+Verify integrity: `checksums.txt` is included in every release.
+
+### Commands
+
+#### zefer encrypt
+
+```bash
+zefer encrypt report.pdf -p mypassphrase
+zefer encrypt --text "secret note" -p mypassphrase -o note.zefer
+echo "secret" | zefer encrypt - -p mypassphrase -o out.zefer
+
+# All options
+zefer encrypt secret.txt \
+  -p "main-passphrase" \
+  -2 "second-key" --dual-key \       # two-person authorization (ZEFR3 if also --reveal)
+  --reveal "reveal-passphrase" \     # recipient can decrypt without main key
+  -q "Pet name?" -a "firulais" \     # secret question (PBKDF2-hashed)
+  --ttl 1440 \                       # expires in 24h (minutes)
+  --max-attempts 3 \                 # lock after 3 failed attempts
+  --allowed-ips "10.0.0.1,::1" \    # IPv4/IPv6 allowlist (stored encrypted)
+  --hint "two parts needed" \        # visible without passphrase
+  --note "For Alice only" \          # public metadata
+  -c gzip \                          # compress before encrypting
+  -i 1000000 \                       # PBKDF2 iterations (0 = auto-benchmark)
+  -o output.zefer \
+  --verbose
+```
+
+#### zefer decrypt
+
+```bash
+zefer decrypt report.pdf.zefer -p mypassphrase
+zefer decrypt note.zefer -p mypassphrase          # text mode → stdout
+zefer decrypt file.zefer -p pass -o out.txt --force
+zefer decrypt file.zefer -p "main" -2 "second"    # dual-key
+zefer decrypt file.zefer -p "reveal-key" -a "answer"  # reveal key + question
+```
+
+#### zefer keygen
+
+```bash
+zefer keygen                          # 64-char base64url (recommended)
+zefer keygen --mode alpha --length 32 # printable ASCII + symbols
+zefer keygen --mode hex   --length 32 # hex token
+zefer keygen --mode uuid              # UUID v4
+zefer keygen --mode unicode --length 24 # Latin/Cyrillic/CJK/Emoji
+zefer keygen --count 5 --length 64   # 5 keys at once
+```
+
+#### zefer info
+
+```bash
+zefer info secret.zefer
+# Shows: format (ZEFB3/ZEFR3), mode (text/file), iterations, compression, hint, note
+# Security details (expiry, IPs, question, max attempts) are inside the encrypted payload
+```
+
+### CLI flags reference
+
+```
+encrypt [input] [options]
+  input                 File path, - for stdin, or use --text
+  -o, --output          Output path (default: <input>.zefer)
+  -p, --passphrase      Passphrase (prompted if omitted)
+  -2, --second          Second passphrase (dual-key mode)
+  -r, --reveal          Reveal key (creates ZEFR3 dual-block file)
+  -t, --text            Encrypt text directly
+  --hint                Public hint (visible without passphrase)
+  --note                Public note (visible without passphrase)
+  -q, --question        Secret question
+  -a, --answer          Secret question answer (prompted if -q but no -a)
+  --ttl <minutes>       Expiration in minutes (0 = never)
+  -i, --iterations      PBKDF2 iterations (0 = auto-benchmark device)
+  -c, --compression     none | gzip | deflate | deflate-raw (default: none)
+  --max-attempts <n>    Max decryption attempts (0 = unlimited)
+  --allowed-ips <ips>   Comma-separated IPv4/IPv6 allowlist
+  --dual-key            Enable dual-key mode (requires --second)
+  --verbose             Show security options before encrypting
+
+decrypt <input> [options]
+  -o, --output          Output path (default: stdout for text, original name for file)
+  -p, --passphrase      Passphrase (prompted if omitted)
+  -2, --second          Second passphrase (dual-key mode)
+  -a, --answer          Secret question answer (prompted if needed)
+  --force               Overwrite existing output file
+
+keygen [options]
+  -m, --mode            alpha | hex | uuid | secure | unicode (default: secure)
+  -l, --length          Length in characters (default: 64)
+  -n, --count           Number of keys to generate (default: 1)
+
+info <input>            Show public header without decrypting
+```
+
+### Automation examples
+
+```bash
+# Encrypt all .env files
+for f in *.env; do
+  zefer encrypt "$f" -p "$ZEFER_PASS" -o "encrypted/$f.zefer"
+done
+
+# Decrypt and pipe
+zefer decrypt secrets.zefer -p "$ZEFER_PASS" | jq '.api_key'
+
+# CI/CD: encrypt before commit, decrypt in deployment
+zefer encrypt .env.production -p "$CI_KEY" --ttl 10080 -o .env.production.zefer
+zefer decrypt .env.production.zefer -p "$DEPLOY_KEY" -o .env --force
+
+# Generate and immediately use a key
+PASS=$(zefer keygen --mode secure --length 64)
+zefer encrypt secret.txt -p "$PASS" -o secret.zefer
+```
+
+### CLI npm scripts (for contributors)
+
+```
+npm run build                    # ESM bundle for npm
+npm run build:cjs                # Bundle for standalone binaries
+npm run build:binary             # All platform binaries (requires Bun)
+npm run build:binary:linux-x64   # Linux x64 only
+npm run build:binary:linux-arm64 # Linux ARM64 only
+npm run build:binary:macos-x64   # macOS Intel only
+npm run build:binary:macos-arm64 # macOS Apple Silicon only
+npm run build:binary:win-x64     # Windows x64 only
+npm run build:binary:current     # Current machine only
+npm run clean                    # Remove dist/ and binaries/
+npm run test                     # 26 smoke tests
+npm run verify                   # typecheck + build + version check
+npm run release:patch            # Bump version + push tag
+npm run release:gh               # Create GitHub release (triggers binary builds)
+```
+
+---
+
+## Web App
+
+### Encryption flow
 
 1. User enters text or selects a file (click or drag-and-drop)
 2. Sets a passphrase (minimum 6 characters)
 3. PBKDF2-SHA256 derives a 256-bit key from passphrase + 32-byte random salt
 4. AES-256-GCM encrypts the payload with a 12-byte random IV
 5. Files over 16MB are split into chunks (unique IV per chunk via base_iv XOR chunk_index)
-6. Result is packaged as a ZEFB3 binary file (or ZEFR3 if reveal key is used)
+6. Result is packaged as ZEFB3 (single key) or ZEFR3 (with reveal key) binary file
 
-## Security Features
+### Web URL Parameters
 
-All security metadata lives inside the encrypted payload (invisible without the key):
+Pre-configure encrypt/decrypt forms via URL. Every param has a long name and short alias. Sensitive params (`p`, `p2`, `r`, `a`) are auto-cleared from the URL after reading.
 
-- **Reveal key**: same payload encrypted with a second passphrase (ZEFR3 format, independent salt/IV/key)
-- **Dual passphrase**: two keys combined via `\x00ZEFER_DUAL\x00` separator before derivation
-- **Secret question**: answer hashed with PBKDF2-SHA256 (100k iterations, deterministic salt)
-- **IP restriction**: IPv4/IPv6 allowlist (comma-separated, checked client-side after decryption)
-- **Expiration**: UTC timestamp, 30min to 2 weeks or never
-- **Max attempts**: localStorage-based counter per file
-- **Compression**: Gzip or Deflate via CompressionStream API (before encryption)
-- **PBKDF2 iterations**: 300k (standard), 600k (high), 1M (maximum)
+**Tab**: `tab`/`t` = `encrypt` | `decrypt`
 
-## Binary File Format
+**Encrypt params**:
+
+| Long | Short | Type | Values |
+|---|---|---|---|
+| passphrase | p | string | min 6 chars |
+| passphrase2 | p2 | string | enables dual key |
+| dual | d | flag | 1/true |
+| reveal | r | string | min 6 chars |
+| mode | m | enum | text/file |
+| ttl | — | number | 0=never, 30, 60, 1440, 10080, 20160 (minutes) |
+| security | s | enum | standard/high/maximum |
+| iterations | i | number | 300000–1000000 |
+| compression | c | enum | none/gzip/deflate |
+| hint | h | string | public hint |
+| note | n | string | public note |
+| question | q | string | security question |
+| answer | a | string | question answer |
+| attempts | att | number | 0/3/5/10 |
+| ips | — | string | comma-separated IPv4/IPv6 |
+
+**Decrypt params**: `passphrase/p`, `passphrase2/p2`, `dual/d`, `answer/a`
+
+**Examples**:
+```
+/?t=decrypt&p=myKey123
+/?t=encrypt&m=file&ttl=30&c=gzip&s=high
+/?t=encrypt&p=key1&p2=key2&q=Color%3F&a=blue&ips=10.0.0.1,192.168.1.5&att=5
+```
+
+---
+
+## Binary File Format (web ↔ CLI compatible)
 
 ### ZEFB3 (single key)
 
 ```
 ZEFB3 (5 bytes: 0x5A 0x45 0x46 0x42 0x33)
-header_length (4 bytes, big-endian)
-header_json {"iterations":N,"compression":"...","hint":null,"note":null,"mode":"text|file"}
-salt (32 bytes) + base_iv (12 bytes)
-chunks: [4-byte length][AES-GCM ciphertext + 16-byte auth tag] ...
+header_length (4 bytes, big-endian uint32)
+header_json {"iterations":N,"compression":"none|gzip|deflate","hint":null,"note":null,"mode":"text|file"}
+salt (32 bytes, random) + base_iv (12 bytes, random)
+chunks: [4-byte length (big-endian)][AES-GCM ciphertext + 16-byte GCM auth tag] ...
 ```
 
 ### ZEFR3 (with reveal key)
@@ -62,89 +237,78 @@ ZEFR3 (5 bytes: 0x5A 0x45 0x46 0x52 0x33)
 header_length (4 bytes, big-endian)
 header_json (same fields as ZEFB3)
 main_block_size (4 bytes, big-endian)
-main_block: salt(32) + iv(12) + chunks
-reveal_block: salt(32) + iv(12) + chunks
+main_block:   salt(32) + base_iv(12) + chunks  ← encrypted with main passphrase
+reveal_block: salt(32) + base_iv(12) + chunks  ← encrypted with reveal key
 ```
 
 ### Encrypted metadata (inside AES-256-GCM payload)
 
-Packed as: 4-byte meta length (big-endian) + metadata JSON + raw content bytes
+Format: `[4-byte meta_length (big-endian)][meta JSON bytes][content bytes]`
 
 ```json
-{"v":3,"fileName":"...","fileType":"...","fileSize":0,"expiresAt":0,"createdAt":0,"answerHash":null,"allowedIps":[],"question":null,"maxAttempts":0}
+{
+  "v": 3,
+  "fileName": "report.pdf",
+  "fileType": "application/pdf",
+  "fileSize": 102400,
+  "expiresAt": 0,
+  "createdAt": 1713484800000,
+  "answerHash": null,
+  "allowedIps": [],
+  "question": null,
+  "maxAttempts": 0
+}
 ```
 
-## URL Parameters
-
-Pre-configure encrypt/decrypt forms via URL. Every param has a long name and short alias. Sensitive params (`p`, `p2`, `r`, `a`) are auto-cleared from the URL after reading.
-
-### Tab: `tab`/`t` = `encrypt` | `decrypt`
-
-### Encrypt
-
-| Long | Short | Type | Values |
-|------|-------|------|--------|
-| passphrase | p | string | min 6 chars |
-| passphrase2 | p2 | string | enables dual key |
-| dual | d | flag | 1/true |
-| reveal | r | string | min 6 chars |
-| mode | m | enum | text/file |
-| ttl | - | number | 0=never, 30, 60, 1440, 10080, 20160 (minutes) |
-| security | s | enum | standard/high/maximum |
-| iterations | i | number | 300000-1000000 |
-| compression | c | enum | none/gzip/deflate |
-| hint | h | string | public hint |
-| note | n | string | public note |
-| question | q | string | security question |
-| answer | a | string | question answer |
-| attempts | att | number | 0/3/5/10 |
-| ips | - | string | comma-separated IPv4/IPv6 |
-
-### Decrypt
-
-| Long | Short | Type |
-|------|-------|------|
-| passphrase | p | string |
-| passphrase2 | p2 | string |
-| dual | d | flag |
-| answer | a | string |
-
-### Examples
+### Chunk IV derivation
 
 ```
-/?t=decrypt&p=myKey123
-/?t=encrypt&m=file&ttl=30&c=gzip&s=high
-/?t=encrypt&p=key1&p2=key2&q=Color%3F&a=blue&ips=10.0.0.1,192.168.1.5&att=5
+chunkIv = baseIv with last 4 bytes XOR'd with chunk_index (unsigned 32-bit: >>> 0)
 ```
+
+### Dual key combination
+
+```
+combinedKey = passphrase1 + "\x00ZEFER_DUAL\x00" + passphrase2
+```
+
+---
+
+## Security Features
+
+All security metadata lives inside the encrypted payload (invisible without the key):
+
+| Feature | Web | CLI flag | Details |
+|---|---|---|---|
+| Reveal key | ✓ | `--reveal` | ZEFR3 format, independent salt/IV/key |
+| Dual passphrase | ✓ | `--dual-key -2` | Combined with `\x00ZEFER_DUAL\x00` |
+| Secret question | ✓ | `-q -a` | PBKDF2-SHA256, 100k iterations, deterministic salt |
+| IP restriction | ✓ | `--allowed-ips` | IPv4/IPv6 allowlist, comma-separated |
+| Expiration | ✓ | `--ttl` | UTC timestamp in ms, 30min to 2 weeks or never |
+| Max attempts | ✓ | `--max-attempts` | Browser: localStorage. CLI: `~/.zefer/attempts.json` |
+| Compression | ✓ | `-c` | Gzip/Deflate before encryption |
+| PBKDF2 iterations | ✓ | `-i` | 300k/600k/1M. CLI auto-benchmarks if 0 |
+
+---
+
+## Cryptographic Primitives
+
+| Primitive | Algorithm | Parameters |
+|---|---|---|
+| Symmetric encryption | AES-256-GCM | 256-bit key, 96-bit IV, 128-bit auth tag |
+| Key derivation | PBKDF2-SHA256 | 300k–1M iterations, 256-bit random salt |
+| Answer hashing | PBKDF2-SHA256 | 100,000 iterations, deterministic salt |
+| Random generation | OS-level CSPRNG | `crypto.getRandomValues` (browser), `crypto.randomBytes` (CLI) |
+
+---
 
 ## Tech Stack
 
-- Next.js 16.2.3 (React 19), TypeScript 6, Tailwind CSS v4
-- Web Crypto API (SubtleCrypto), CompressionStream API
-- Lucide React, Sonner (toasts)
-- Vitest (125 tests, 100% line coverage, 7 test files)
-- i18n: Spanish, English, Portuguese (~600 translation keys)
-- Competitor comparisons: [Zefer vs Hat.sh](/vs/hat-sh), [vs Picocrypt](/vs/picocrypt), [vs Bitwarden Send](/vs/bitwarden-send), [vs Cryptomator](/vs/cryptomator), [vs VeraCrypt](/vs/veracrypt)
-- WCAG 2.1 AA compliant, responsive, dark/light themes
+**Web app**: Next.js 16.2.3 (React 19), TypeScript 6, Tailwind CSS v4, Web Crypto API, CompressionStream API, Vitest (125 tests, 100% line coverage), i18n: Spanish/English/Portuguese (~600 translation keys)
 
-## Accessibility Rules
+**CLI**: Node.js 20+, Ink 5 (React 18 for terminal), Commander 12, TypeScript 5, tsup, Bun compile (standalone binaries)
 
-- Icon-only buttons: minimum 36x36px (`w-9 h-9`) with dynamic `aria-label`
-- Headings: strict descending order (h1 → h2 → h3); footer labels use `<p>`, not heading tags
-- Expand/collapse controls: must have `aria-expanded` and descriptive `aria-label`
-- All text: WCAG 2.1 AA (4.5:1 contrast ratio)
-
-## Versioning
-
-When releasing a new version, update ALL: `CHANGELOG.md`, `package.json`, `app/layout.tsx` (JSON-LD), `app/opengraph-image.tsx` (badge), `app/twitter-image.tsx` (badge), `app/sitemap.ts` (lastModified).
-
-## SEO Rules
-
-- Every `page.tsx` must export `metadata` with: title, description, keywords, openGraph, twitter, alternates.canonical
-- Legal/doc pages (`/privacy`, `/terms`, `/security`, `/conduct`): `robots: { index: false, follow: true }` — excluded from sitemap
-- 404 page: `robots: { index: false, follow: false }`
-- Only indexable routes go in `app/sitemap.ts`
-- JSON-LD `WebApplication` schema lives in `app/layout.tsx`
+---
 
 ## What Zefer Does NOT Do
 
@@ -155,9 +319,19 @@ When releasing a new version, update ALL: `CHANGELOG.md`, `package.json`, `app/l
 - Does not transmit passphrases or keys
 - Cannot recover lost passphrases
 
-## Optional
+---
 
+## Docs
+
+- [How It Works](https://zefer.carrillo.app/how): 7-step encryption process, technical specs
+- [Install / CLI](https://zefer.carrillo.app/install): Binary downloads, npm install, PWA
+- [Privacy Policy](https://zefer.carrillo.app/privacy): GDPR/CCPA/LGPD compliance
+- [Security Policy](https://zefer.carrillo.app/security): Vulnerability reporting, crypto architecture
+- [Project Info](https://zefer.carrillo.app/project): Tech stack, creator
+- [Device Detection](https://zefer.carrillo.app/device): RAM/CPU/GPU analysis, file limits
 - [Architecture](https://github.com/carrilloapps/zefer/blob/main/docs/ARCHITECTURE.md)
+- [CLI Architecture](https://github.com/carrilloapps/zefer-cli/blob/main/docs/ARCHITECTURE.md)
 - [Security Model](https://github.com/carrilloapps/zefer/blob/main/docs/SECURITY.md)
-- [Deployment](https://github.com/carrilloapps/zefer/blob/main/docs/DEPLOYMENT.md)
-- [Contributing](https://github.com/carrilloapps/zefer/blob/main/docs/CONTRIBUTING.md)
+- [CLI Security](https://github.com/carrilloapps/zefer-cli/blob/main/docs/SECURITY.md)
+- [Contributing (web)](https://github.com/carrilloapps/zefer/blob/main/docs/CONTRIBUTING.md)
+- [Contributing (CLI)](https://github.com/carrilloapps/zefer-cli/blob/main/docs/CONTRIBUTING.md)
