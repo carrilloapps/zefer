@@ -2073,6 +2073,66 @@ const translations = {
     en: "Native desktop and mobile apps are in development. In the meantime, the PWA offers the same experience.",
     pt: "Os aplicativos nativos para desktop e mobile estão em desenvolvimento. Enquanto isso, o PWA oferece a mesma experiência.",
   },
+  "install.cli.title": {
+    es: "CLI — zefer-cli",
+    en: "CLI — zefer-cli",
+    pt: "CLI — zefer-cli",
+  },
+  "install.cli.desc": {
+    es: "Cifra y descifra archivos .zefer directamente desde la terminal. 100% compatible con la versión web — los archivos funcionan en ambos.",
+    en: "Encrypt and decrypt .zefer files directly from your terminal. 100% compatible with the web app — files work in both.",
+    pt: "Criptografe e descriptografe arquivos .zefer direto do terminal. 100% compatível com o web app — os arquivos funcionam nos dois.",
+  },
+  "install.cli.step1.title": {
+    es: "Instalar",
+    en: "Install",
+    pt: "Instalar",
+  },
+  "install.cli.step1.desc": {
+    es: "Instala globalmente con npm. El comando disponible es zefer (sin sufijo).",
+    en: "Install globally with npm. The available command is zefer (no suffix).",
+    pt: "Instale globalmente com npm. O comando disponível é zefer (sem sufixo).",
+  },
+  "install.cli.step2.title": {
+    es: "Verificar",
+    en: "Verify",
+    pt: "Verificar",
+  },
+  "install.cli.step2.desc": {
+    es: "Confirma que la instalación fue correcta.",
+    en: "Confirm the installation was successful.",
+    pt: "Confirme que a instalação foi bem-sucedida.",
+  },
+  "install.cli.step3.title": {
+    es: "Usar",
+    en: "Use",
+    pt: "Usar",
+  },
+  "install.cli.step3.desc": {
+    es: "Cifra archivos, descifra, genera claves seguras y más.",
+    en: "Encrypt files, decrypt, generate secure keys, and more.",
+    pt: "Criptografe arquivos, descriptografe, gere chaves seguras e mais.",
+  },
+  "install.cli.compat": {
+    es: "Linux · macOS · Windows · Node.js ≥ 20",
+    en: "Linux · macOS · Windows · Node.js ≥ 20",
+    pt: "Linux · macOS · Windows · Node.js ≥ 20",
+  },
+  "install.cli.github": {
+    es: "Ver en GitHub",
+    en: "View on GitHub",
+    pt: "Ver no GitHub",
+  },
+  "install.cli.npm": {
+    es: "Ver en npm",
+    en: "View on npm",
+    pt: "Ver no npm",
+  },
+  "install.cli.npx": {
+    es: "O sin instalar:",
+    en: "Or run without installing:",
+    pt: "Ou execute sem instalar:",
+  },
   "install.compare.title": {
     es: "Zefer vs alternativas",
     en: "Zefer vs alternatives",

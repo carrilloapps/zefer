@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Monitor, Smartphone, Download, Globe, ArrowRight, Shield,
   BookOpen, Server, Link2, Lock, Key, Clock, Zap, ChevronRight,
+  Terminal, Copy, Check,
 } from "lucide-react";
 import Link from "next/link";
 import { PageLayout, PageHeader, GlassCard, IconBox } from "@/app/components/ui";
@@ -81,6 +82,9 @@ export default function InstallContent() {
 
       {/* ─── PWA Installation (accordion) ─── */}
       <PwaSection t={t} />
+
+      {/* ─── CLI ─── */}
+      <CliSection t={t} />
 
       {/* ─── Native Apps (coming soon, plain text) ─── */}
       <div className="mb-10">
@@ -161,10 +165,117 @@ function NavLink({ href, icon: Icon, title, desc, badge }: { href: string; icon?
   );
 }
 
-/* ─── PWA accordion section ─── */
+/* ─── CLI section ─── */
 
 import { ChevronDown } from "lucide-react";
 import type { TranslationKey } from "@/app/lib/i18n";
+
+const CLI_STEPS: { titleKey: TranslationKey; descKey: TranslationKey; code: string }[] = [
+  {
+    titleKey: "install.cli.step1.title",
+    descKey: "install.cli.step1.desc",
+    code: "npm install -g zefer-cli",
+  },
+  {
+    titleKey: "install.cli.step2.title",
+    descKey: "install.cli.step2.desc",
+    code: "zefer --help",
+  },
+  {
+    titleKey: "install.cli.step3.title",
+    descKey: "install.cli.step3.desc",
+    code: [
+      "zefer encrypt report.pdf -p mypassword",
+      "zefer decrypt report.pdf.zefer -p mypassword",
+      "zefer keygen --mode secure --length 64",
+      "zefer info secret.zefer",
+    ].join("\n"),
+  },
+];
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1800); }}
+      className="shrink-0 text-[10px] theme-faint hover:text-primary transition-colors cursor-pointer"
+      aria-label="Copy"
+    >
+      {copied ? <Check className="w-3 h-3 text-primary" /> : <Copy className="w-3 h-3" />}
+    </button>
+  );
+}
+
+function CliSection({ t }: { t: (k: TranslationKey) => string }) {
+  return (
+    <GlassCard className="mb-8">
+      <div className="flex items-start gap-3 mb-4">
+        <IconBox icon={Terminal} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="text-sm font-semibold theme-heading">{t("install.cli.title")}</h2>
+            <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-[var(--glass-bg)] border border-[var(--glass-border)] theme-faint uppercase tracking-wide">npm</span>
+          </div>
+          <p className="text-xs theme-muted leading-relaxed mt-0.5">{t("install.cli.desc")}</p>
+        </div>
+      </div>
+
+      {/* Steps */}
+      <div className="space-y-4">
+        {CLI_STEPS.map((step, i) => (
+          <div key={i}>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-4 h-4 rounded-full bg-[var(--glass-bg)] border border-[var(--primary-border)] flex items-center justify-center shrink-0">
+                <span className="text-[9px] font-bold text-primary">{i + 1}</span>
+              </span>
+              <span className="text-xs font-medium theme-heading">{t(step.titleKey)}</span>
+              <span className="text-[10px] theme-faint">{t(step.descKey)}</span>
+            </div>
+            <div className="flex items-start gap-2 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-xl px-3 py-2.5">
+              <pre className="flex-1 text-[11px] font-mono text-primary overflow-x-auto whitespace-pre leading-relaxed">{step.code}</pre>
+              <CopyButton text={step.code} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* npx alternative */}
+      <div className="mt-4 pt-3 border-t border-[var(--border-subtle)]">
+        <p className="text-[10px] theme-faint mb-1.5">{t("install.cli.npx")}</p>
+        <div className="flex items-center gap-2 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-xl px-3 py-2">
+          <pre className="flex-1 text-[11px] font-mono text-primary overflow-x-auto">{"npx zefer-cli encrypt report.pdf -p mypassword"}</pre>
+          <CopyButton text="npx zefer-cli encrypt report.pdf -p mypassword" />
+        </div>
+      </div>
+
+      {/* Compat + links */}
+      <div className="mt-4 pt-3 border-t border-[var(--border-subtle)] flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <p className="text-[10px] theme-faint flex-1">{t("install.cli.compat")}</p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <a
+            href="https://github.com/carrilloapps/zefer-cli"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-[10px] font-medium theme-muted hover:text-primary border border-[var(--glass-border)] hover:border-[var(--primary-border)] rounded-lg px-2.5 py-1 transition-colors cursor-pointer"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
+            {t("install.cli.github")}
+          </a>
+          <a
+            href="https://www.npmjs.com/package/zefer-cli"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-[10px] font-medium theme-muted hover:text-primary border border-[var(--glass-border)] hover:border-[var(--primary-border)] rounded-lg px-2.5 py-1 transition-colors cursor-pointer"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3" aria-hidden="true"><path d="M0 7.334v8h6.666v1.332H12v-1.332h12v-8H0zm6.666 6.664H5.334v-4H3.999v4H1.335V8.667h5.331v5.331zm4 0v1.336H8.001V8.667h5.334v5.332h-2.669v-.001zm12.001 0h-1.33v-4h-1.336v4h-1.335v-4h-1.33v4h-2.671V8.667h8.002v5.331z" /></svg>
+            {t("install.cli.npm")}
+          </a>
+        </div>
+      </div>
+    </GlassCard>
+  );
+}
 
 const BROWSERS: { name: string; steps: TranslationKey[]; code: string; menuKey: TranslationKey }[] = [
   {
