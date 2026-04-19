@@ -6,6 +6,7 @@ Client-side encryption tool that converts text and files into password-protected
 
 **Live:** https://zefer.carrillo.app
 **Repo:** https://github.com/carrilloapps/zefer
+**CLI companion:** https://github.com/carrilloapps/zefer-cli — Node.js CLI, same binary format, same crypto params. Local path: `/home/carrilloapps/Desarrollo/Ink/zefer-cli`
 
 ## Stack
 

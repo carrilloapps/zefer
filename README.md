@@ -9,6 +9,7 @@
 Client-side encryption tool that converts text and files into password-protected `.zefer` files using AES-256-GCM. 100% browser-based — no servers, no traces, no cookies.
 
 [![Live](https://img.shields.io/badge/Live-zefer.carrillo.app-22c55e?style=flat-square)](https://zefer.carrillo.app)
+[![CLI](https://img.shields.io/npm/v/zefer-cli?style=flat-square&color=22c55e&label=CLI)](https://www.npmjs.com/package/zefer-cli)
 [![License](https://img.shields.io/github/license/carrilloapps/zefer?style=flat-square&color=22c55e)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-125%20passed-22c55e?style=flat-square)](https://github.com/carrilloapps/zefer)
 [![Coverage](https://img.shields.io/badge/coverage-100%25-22c55e?style=flat-square)](https://github.com/carrilloapps/zefer)
@@ -24,7 +25,7 @@ Client-side encryption tool that converts text and files into password-protected
 
 <br />
 
-[Live Demo](https://zefer.carrillo.app) · [Report Bug](https://github.com/carrilloapps/zefer/issues/new?template=bug_report.md) · [Request Feature](https://github.com/carrilloapps/zefer/issues/new?template=feature_request.md) · [Security Report](https://github.com/carrilloapps/zefer/issues/new?template=security_vulnerability.md) · [Documentation](docs/)
+[Live Demo](https://zefer.carrillo.app) · [CLI (zefer-cli)](https://github.com/carrilloapps/zefer-cli) · [Report Bug](https://github.com/carrilloapps/zefer/issues/new?template=bug_report.md) · [Request Feature](https://github.com/carrilloapps/zefer/issues/new?template=feature_request.md) · [Security Report](https://github.com/carrilloapps/zefer/issues/new?template=security_vulnerability.md) · [Documentation](docs/)
 
 </div>
 
@@ -33,6 +34,7 @@ Client-side encryption tool that converts text and files into password-protected
 ## Table of Contents
 
 - [About](#about)
+- [CLI](#cli)
 - [Features](#features)
 - [Architecture](#architecture)
 - [Binary File Format](#binary-file-format)
@@ -60,6 +62,21 @@ Zefer encrypts your secrets into password-protected `.zefer` files using AES-256
 - **No cookies, no analytics, no trackers** — zero data collection
 - **Open source** — MIT license, fully auditable
 - **Standards-based** — Web Crypto API, CompressionStream API, no third-party crypto dependencies
+
+## CLI
+
+Zefer also has an official command-line companion — **[zefer-cli](https://github.com/carrilloapps/zefer-cli)** — for scripting, automation, and terminal workflows. `.zefer` files are fully cross-compatible between the web app and the CLI.
+
+```bash
+npm install -g zefer-cli
+
+zefer encrypt report.pdf -p mypassword
+zefer decrypt report.pdf.zefer -p mypassword
+zefer keygen --mode secure --length 64
+```
+
+[![npm](https://img.shields.io/npm/v/zefer-cli?style=flat-square&color=22c55e)](https://www.npmjs.com/package/zefer-cli)
+[![CLI repo](https://img.shields.io/badge/GitHub-zefer--cli-181717?style=flat-square&logo=github)](https://github.com/carrilloapps/zefer-cli)
 
 ## Features
 
