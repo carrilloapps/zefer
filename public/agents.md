@@ -100,7 +100,7 @@ Sensitive params (p, p2, r, a) are auto-cleared from the URL after reading.
 
 ## Tech Stack
 
-- Next.js 16.2.3 (React 19), TypeScript 6, Tailwind CSS v4
+- Next.js 16.2.7 (React 19), TypeScript 6, Tailwind CSS v4
 - Web Crypto API, CompressionStream API
 - Vitest (125 tests, 100% line coverage)
 - i18n: es, en, pt

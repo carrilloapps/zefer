@@ -304,7 +304,7 @@ All security metadata lives inside the encrypted payload (invisible without the 
 
 ## Tech Stack
 
-**Web app**: Next.js 16.2.3 (React 19), TypeScript 6, Tailwind CSS v4, Web Crypto API, CompressionStream API, Vitest (125 tests, 100% line coverage), i18n: Spanish/English/Portuguese (~600 translation keys)
+**Web app**: Next.js 16.2.7 (React 19), TypeScript 6, Tailwind CSS v4, Web Crypto API, CompressionStream API, Vitest (125 tests, 100% line coverage), i18n: Spanish/English/Portuguese (~600 translation keys)
 
 **CLI**: Node.js 20+, Ink 5 (React 18 for terminal), Commander 12, TypeScript 5, tsup, Bun compile (standalone binaries)
 

@@ -259,7 +259,7 @@ When releasing a new version, ALL of these must be updated together:
 
 ## Tech Stack
 
-- Next.js 16.2.3 (React 19), TypeScript 6, Tailwind CSS v4
+- Next.js 16.2.7 (React 19), TypeScript 6, Tailwind CSS v4
 - Web Crypto API, CompressionStream API
 - Vitest (125 tests, 100% line coverage)
 - i18n: es, en, pt (~600 translation keys)
