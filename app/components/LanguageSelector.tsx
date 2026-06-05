@@ -37,7 +37,7 @@ const FLAGS: Record<string, React.ReactNode> = {
 };
 
 export default function LanguageSelector() {
-  const { locale, setLocale } = useLanguage();
+  const { locale, setLocale, t } = useLanguage();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -56,7 +56,9 @@ export default function LanguageSelector() {
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center gap-1.5 w-9 h-9 justify-center rounded-lg text-xs font-medium theme-muted hover:theme-heading hover:bg-[var(--glass-bg-hover)] transition-colors duration-200 cursor-pointer"
-        aria-label="Select language"
+        aria-label={t("aria.language")}
+        aria-expanded={open}
+        aria-haspopup="menu"
       >
         {FLAGS[locale]}
       </button>

@@ -155,6 +155,9 @@ export function GlassSelect({
         onClick={() => { setOpen(!open); setSearch(""); }}
         className="w-full flex items-center justify-between text-sm py-[0.6875rem] px-3 rounded-xl border border-[var(--input-border)] cursor-pointer hover:border-[var(--input-border-focus)] transition-colors"
         style={{ background: "var(--input-bg)" }}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        {...(label ? { "aria-label": label } : {})}
       >
         <span className="theme-text">{current?.label ?? ""}</span>
         <ChevronDown className={`w-3.5 h-3.5 theme-faint transition-transform ${open ? "rotate-180" : ""}`} />
@@ -169,6 +172,7 @@ export function GlassSelect({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={searchPlaceholder}
+                aria-label={searchPlaceholder}
                 className="w-full text-xs px-2.5 py-1.5 bg-transparent theme-text placeholder:theme-faint outline-none"
               />
             </div>

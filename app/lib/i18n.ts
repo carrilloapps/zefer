@@ -79,6 +79,73 @@ const translations = {
     pt: "Privacidade",
   },
 
+  // ─── Accessibility labels ───
+  "aria.showpass": {
+    es: "Mostrar frase clave",
+    en: "Show passphrase",
+    pt: "Mostrar frase-chave",
+  },
+  "aria.hidepass": {
+    es: "Ocultar frase clave",
+    en: "Hide passphrase",
+    pt: "Ocultar frase-chave",
+  },
+  "aria.showsecond": {
+    es: "Mostrar segunda frase clave",
+    en: "Show second passphrase",
+    pt: "Mostrar segunda frase-chave",
+  },
+  "aria.hidesecond": {
+    es: "Ocultar segunda frase clave",
+    en: "Hide second passphrase",
+    pt: "Ocultar segunda frase-chave",
+  },
+  "aria.showreveal": {
+    es: "Mostrar clave de revelado",
+    en: "Show reveal key",
+    pt: "Mostrar chave de revelação",
+  },
+  "aria.hidereveal": {
+    es: "Ocultar clave de revelado",
+    en: "Hide reveal key",
+    pt: "Ocultar chave de revelação",
+  },
+  "aria.theme.light": {
+    es: "Cambiar a modo claro",
+    en: "Switch to light mode",
+    pt: "Mudar para modo claro",
+  },
+  "aria.theme.dark": {
+    es: "Cambiar a modo oscuro",
+    en: "Switch to dark mode",
+    pt: "Mudar para modo escuro",
+  },
+  "aria.language": {
+    es: "Seleccionar idioma",
+    en: "Select language",
+    pt: "Selecionar idioma",
+  },
+  "aria.copy": {
+    es: "Copiar",
+    en: "Copy",
+    pt: "Copiar",
+  },
+  "aria.copylink": {
+    es: "Copiar enlace",
+    en: "Copy link",
+    pt: "Copiar link",
+  },
+  "aria.removefile": {
+    es: "Quitar archivo",
+    en: "Remove file",
+    pt: "Remover arquivo",
+  },
+  "aria.close": {
+    es: "Cerrar",
+    en: "Close",
+    pt: "Fechar",
+  },
+
   // ─── Legal banner ───
   "banner.title": {
     es: "Aviso legal y de privacidad",

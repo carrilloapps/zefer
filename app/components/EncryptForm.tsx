@@ -402,6 +402,14 @@ export default function EncryptForm() {
     if (fileRef.current) fileRef.current.value = "";
   }
 
+  // Bring the success panel fully into view (the form is taller, so the
+  // viewport would otherwise rest with the panel under the fixed navbar)
+  useEffect(() => {
+    if (done) {
+      document.getElementById("encrypt-success")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [done]);
+
   // ─── Progress ───
   if (progress && loading) {
     return <CryptoProgress state={progress} mode="encrypt" />;
@@ -410,7 +418,7 @@ export default function EncryptForm() {
   // ─── Success ───
   if (done) {
     return (
-      <div className="glass glow-green p-6 sm:p-8 animate-in stagger-children">
+      <div id="encrypt-success" className="glass glow-green p-6 sm:p-8 animate-in stagger-children scroll-mt-28">
         <div className="flex items-center gap-3 mb-5">
           <div className="w-9 h-9 rounded-xl theme-primary-faint theme-primary-border border flex items-center justify-center success-icon">
             <Check className="w-4 h-4 text-primary" />
@@ -439,7 +447,7 @@ export default function EncryptForm() {
                 type="button"
                 onClick={() => { navigator.clipboard.writeText(shareLink); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000); }}
                 className="shrink-0 glass px-3 py-2 rounded-lg cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors"
-                aria-label="Copy link"
+                aria-label={t("aria.copylink")}
               >
                 {linkCopied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5 theme-muted" />}
               </button>
@@ -485,7 +493,7 @@ export default function EncryptForm() {
                 {textFileName && (
                   <span className="flex items-center gap-1 text-[11px] text-primary theme-primary-faint theme-primary-border border px-2 py-0.5 rounded-md">
                     <FileText className="w-3 h-3" />{textFileName}
-                    <button type="button" onClick={clearTextFile} className="w-6 h-6 flex items-center justify-center hover:theme-heading cursor-pointer rounded" aria-label="Remove file"><X className="w-3 h-3" /></button>
+                    <button type="button" onClick={clearTextFile} className="w-6 h-6 flex items-center justify-center hover:theme-heading cursor-pointer rounded" aria-label={t("aria.removefile")}><X className="w-3 h-3" /></button>
                   </span>
                 )}
                 <button type="button" onClick={() => textFileRef.current?.click()} className="flex items-center gap-1 text-[11px] theme-faint hover:text-primary transition-colors duration-200 cursor-pointer px-2 py-1 rounded-md hover:bg-[var(--glass-bg)]">
@@ -510,7 +518,7 @@ export default function EncryptForm() {
                     <p className="text-sm font-medium text-primary">{fileName}</p>
                     <p className="text-[10px] theme-muted">{fileType} &middot; {formatBytes(fileSize)}</p>
                   </div>
-                  <button type="button" onClick={(e) => { e.stopPropagation(); clearFile(); }} className="w-9 h-9 flex items-center justify-center rounded-lg theme-faint hover:theme-danger transition-colors cursor-pointer ml-2" aria-label="Remove file">
+                  <button type="button" onClick={(e) => { e.stopPropagation(); clearFile(); }} className="w-9 h-9 flex items-center justify-center rounded-lg theme-faint hover:theme-danger transition-colors cursor-pointer ml-2" aria-label={t("aria.removefile")}>
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -547,8 +555,8 @@ export default function EncryptForm() {
             <label htmlFor="passphrase" className="block text-xs font-medium theme-text mb-2">{t("form.passphrase")}</label>
             <div className="flex gap-2">
               <div className="relative flex-1 has-toggle-wrap">
-                <input id="passphrase" type={showPass ? "text" : "password"} value={passphrase} onChange={(e) => setPassphrase(e.target.value)} placeholder={t("form.passphrase.placeholder")} className="w-full has-toggle font-mono text-sm" />
-                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center theme-faint hover:theme-text transition-colors cursor-pointer" aria-label={showPass ? "Hide passphrase" : "Show passphrase"}>
+                <input id="passphrase" name="passphrase" autoComplete="new-password" type={showPass ? "text" : "password"} value={passphrase} onChange={(e) => setPassphrase(e.target.value)} placeholder={t("form.passphrase.placeholder")} className="w-full has-toggle font-mono text-sm" />
+                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center theme-faint hover:theme-text transition-colors cursor-pointer" aria-label={showPass ? t("aria.hidepass") : t("aria.showpass")}>
                   {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
@@ -589,6 +597,8 @@ export default function EncryptForm() {
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
           className="w-full flex items-center justify-between py-2.5 px-3 mb-4 rounded-xl text-xs theme-muted hover:theme-text hover:bg-[var(--glass-bg)] transition-colors duration-200 cursor-pointer"
+          aria-expanded={showAdvanced}
+          aria-controls="advanced-options"
         >
           <span className="flex items-center gap-2">
             <Shield className="w-3.5 h-3.5" />
@@ -598,7 +608,7 @@ export default function EncryptForm() {
         </button>
 
         {/* Advanced options */}
-        <div className={`advanced-panel ${showAdvanced ? "advanced-open" : ""} mb-4`}>
+        <div id="advanced-options" className={`advanced-panel ${showAdvanced ? "advanced-open" : ""} mb-4`}>
           <div>
           <div className="border-t border-[var(--border-subtle)] pt-4 space-y-4">
             {/* Security level */}
@@ -665,8 +675,8 @@ export default function EncryptForm() {
               </label>
               {dualKey && (
                 <div className="relative mt-2 has-toggle-wrap">
-                  <input id="encrypt-pass2" type={showSecondPass ? "text" : "password"} value={secondPassphrase} onChange={(e) => setSecondPassphrase(e.target.value)} placeholder={t("advanced.dualkey.placeholder")} className="w-full has-toggle font-mono text-sm" aria-label="Second passphrase" />
-                  <button type="button" onClick={() => setShowSecondPass(!showSecondPass)} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center theme-faint hover:theme-text transition-colors cursor-pointer" aria-label={showSecondPass ? "Hide second passphrase" : "Show second passphrase"}>
+                  <input id="encrypt-pass2" name="second-passphrase" autoComplete="new-password" type={showSecondPass ? "text" : "password"} value={secondPassphrase} onChange={(e) => setSecondPassphrase(e.target.value)} placeholder={t("advanced.dualkey.placeholder")} className="w-full has-toggle font-mono text-sm" aria-label={t("advanced.dualkey")} />
+                  <button type="button" onClick={() => setShowSecondPass(!showSecondPass)} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center theme-faint hover:theme-text transition-colors cursor-pointer" aria-label={showSecondPass ? t("aria.hidesecond") : t("aria.showsecond")}>
                     {showSecondPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
@@ -675,13 +685,13 @@ export default function EncryptForm() {
 
             {/* Reveal key */}
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+              <label htmlFor="encrypt-reveal" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
                 <KeyRound className="w-3 h-3" />{t("advanced.revealkey")}
               </label>
               <div className="flex gap-2">
                 <div className="relative flex-1 has-toggle-wrap">
-                  <input id="encrypt-reveal" type={showRevealKey ? "text" : "password"} value={revealKey} onChange={(e) => setRevealKey(e.target.value)} placeholder={t("advanced.revealkey.placeholder")} className="w-full has-toggle font-mono text-sm" aria-label="Reveal key" />
-                  <button type="button" onClick={() => setShowRevealKey(!showRevealKey)} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center theme-faint hover:theme-text transition-colors cursor-pointer" aria-label={showRevealKey ? "Hide reveal key" : "Show reveal key"}>
+                  <input id="encrypt-reveal" name="reveal-key" autoComplete="new-password" type={showRevealKey ? "text" : "password"} value={revealKey} onChange={(e) => setRevealKey(e.target.value)} placeholder={t("advanced.revealkey.placeholder")} className="w-full has-toggle font-mono text-sm" />
+                  <button type="button" onClick={() => setShowRevealKey(!showRevealKey)} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center theme-faint hover:theme-text transition-colors cursor-pointer" aria-label={showRevealKey ? t("aria.hidereveal") : t("aria.showreveal")}>
                     {showRevealKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
@@ -709,38 +719,38 @@ export default function EncryptForm() {
 
             {/* Hint */}
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+              <label htmlFor="encrypt-hint" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
                 <MessageSquare className="w-3 h-3" />{t("advanced.hint")}
               </label>
-              <input type="text" value={hint} onChange={(e) => setHint(e.target.value)} placeholder={t("advanced.hint.placeholder")} className="w-full text-sm" />
+              <input id="encrypt-hint" name="hint" type="text" value={hint} onChange={(e) => setHint(e.target.value)} placeholder={t("advanced.hint.placeholder")} className="w-full text-sm" />
             </div>
 
             {/* Public note */}
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+              <label htmlFor="encrypt-note" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
                 <MessageSquare className="w-3 h-3" />{t("advanced.note")}
               </label>
-              <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("advanced.note.placeholder")} className="w-full text-sm" />
+              <input id="encrypt-note" name="note" type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("advanced.note.placeholder")} className="w-full text-sm" />
             </div>
 
             {/* Secret question */}
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+              <label htmlFor="encrypt-question" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
                 <HelpCircle className="w-3 h-3" />{t("advanced.question")}
               </label>
-              <input type="text" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={t("advanced.question.placeholder")} className="w-full text-sm mb-2" />
+              <input id="encrypt-question" name="question" type="text" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={t("advanced.question.placeholder")} className="w-full text-sm mb-2" />
               {question && (
-                <input type="text" value={questionAnswer} onChange={(e) => setQuestionAnswer(e.target.value)} placeholder={t("advanced.question.answer")} className="w-full text-sm" />
+                <input id="encrypt-answer" name="answer" type="text" value={questionAnswer} onChange={(e) => setQuestionAnswer(e.target.value)} placeholder={t("advanced.question.answer")} aria-label={t("advanced.question.answer")} className="w-full text-sm" />
               )}
             </div>
 
             {/* IP allowlist */}
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+              <label htmlFor="allowed-ips" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
                 <Globe className="w-3 h-3" />{t("advanced.ip")}
               </label>
               <div className="flex flex-col min-[400px]:flex-row gap-2 mb-1">
-                <input id="allowed-ips" type="text" value={allowedIpsInput} onChange={(e) => setAllowedIpsInput(e.target.value)} placeholder={t("advanced.ip.placeholder")} className="flex-1 text-sm font-mono" aria-label="Allowed IP addresses" />
+                <input id="allowed-ips" name="allowed-ips" type="text" value={allowedIpsInput} onChange={(e) => setAllowedIpsInput(e.target.value)} placeholder={t("advanced.ip.placeholder")} className="flex-1 text-sm font-mono" />
                 <button
                   type="button"
                   disabled={ipLoading}

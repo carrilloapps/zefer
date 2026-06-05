@@ -40,6 +40,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     setReady(true);
   }, []);
 
+  // Keep <html lang> in sync with the active locale (WCAG 3.1.1)
+  useEffect(() => {
+    if (ready) document.documentElement.lang = locale;
+  }, [locale, ready]);
+
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
     localStorage.setItem("zefer-lang", l);

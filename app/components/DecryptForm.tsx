@@ -440,8 +440,8 @@ export default function DecryptForm() {
         <div className="mb-4">
           <label htmlFor="decrypt-pass" className="block text-xs font-medium theme-text mb-2">{t("form.passphrase")}</label>
           <div className="relative has-toggle-wrap">
-            <input id="decrypt-pass" type={showPass ? "text" : "password"} value={passphrase} onChange={(e) => setPassphrase(e.target.value)} placeholder={t("form.passphrase.placeholder")} className="w-full has-toggle font-mono text-sm" />
-            <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center theme-faint hover:theme-text transition-colors cursor-pointer" aria-label={showPass ? "Hide passphrase" : "Show passphrase"}>
+            <input id="decrypt-pass" name="passphrase" autoComplete="current-password" type={showPass ? "text" : "password"} value={passphrase} onChange={(e) => setPassphrase(e.target.value)} placeholder={t("form.passphrase.placeholder")} className="w-full has-toggle font-mono text-sm" />
+            <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center theme-faint hover:theme-text transition-colors cursor-pointer" aria-label={showPass ? t("aria.hidepass") : t("aria.showpass")}>
               {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
@@ -461,8 +461,8 @@ export default function DecryptForm() {
           </label>
           {useDualKey && (
             <div className="relative mt-2 has-toggle-wrap">
-              <input id="decrypt-pass2" type={showSecondPass ? "text" : "password"} value={secondPassphrase} onChange={(e) => setSecondPassphrase(e.target.value)} placeholder={t("advanced.dualkey.placeholder")} className="w-full has-toggle font-mono text-sm" aria-label="Second passphrase" />
-              <button type="button" onClick={() => setShowSecondPass(!showSecondPass)} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center theme-faint hover:theme-text transition-colors cursor-pointer" aria-label={showSecondPass ? "Hide passphrase" : "Show passphrase"}>
+              <input id="decrypt-pass2" name="second-passphrase" autoComplete="current-password" type={showSecondPass ? "text" : "password"} value={secondPassphrase} onChange={(e) => setSecondPassphrase(e.target.value)} placeholder={t("advanced.dualkey.placeholder")} className="w-full has-toggle font-mono text-sm" aria-label={t("advanced.dualkey")} />
+              <button type="button" onClick={() => setShowSecondPass(!showSecondPass)} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center theme-faint hover:theme-text transition-colors cursor-pointer" aria-label={showSecondPass ? t("aria.hidesecond") : t("aria.showsecond")}>
                 {showSecondPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
@@ -472,10 +472,10 @@ export default function DecryptForm() {
         {/* Secret question answer — shown only after decryption reveals a question */}
         {errorType === "needs_answer" && (
           <div className="mb-4">
-            <label className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+            <label htmlFor="decrypt-answer" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
               <HelpCircle className="w-3 h-3" />{t("decrypt.question.label")}
             </label>
-            <input type="text" value={questionAnswer} onChange={(e) => setQuestionAnswer(e.target.value)} placeholder={t("advanced.question.answer")} className="w-full text-sm" />
+            <input id="decrypt-answer" name="answer" type="text" value={questionAnswer} onChange={(e) => setQuestionAnswer(e.target.value)} placeholder={t("advanced.question.answer")} className="w-full text-sm" />
           </div>
         )}
 

@@ -312,9 +312,9 @@ body {
   opacity: 0.7;
 }
 
-/* Banner (cookie/legal) — strongest blur */
+/* Banner (cookie/legal) — strongest blur + near-solid bg for legibility over content */
 .glass-banner {
-  background: var(--nav-bg);
+  background: var(--glass-solid);
   backdrop-filter: blur(48px) saturate(220%);
   -webkit-backdrop-filter: blur(48px) saturate(220%);
   border: 1px solid var(--nav-border);
@@ -628,9 +628,12 @@ select option {
 }
 
 /* Hero radial glow (dark mode) */
+/* overflow-x clip (not hidden) keeps the glow from causing horizontal
+   overflow while letting dropdowns/popovers extend below the section */
 .hero-glow {
   position: relative;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .hero-glow::before {
@@ -920,6 +923,15 @@ select:focus {
 
 .advanced-panel > div {
   overflow: hidden;
+  /* Collapsed content must be unreachable by keyboard and screen readers.
+     visibility flips after the collapse transition ends, instantly on expand. */
+  visibility: hidden;
+  transition: visibility 0s 0.35s;
+}
+
+.advanced-panel.advanced-open > div {
+  visibility: visible;
+  transition: visibility 0s;
 }
 
 /* ── Success checkmark ── */

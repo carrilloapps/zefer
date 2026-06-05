@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { Sun, Moon } from "lucide-react";
 import { useTheme } from "@/app/components/ThemeProvider";
+import { useLanguage } from "@/app/components/LanguageProvider";
 
 export default function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
+  const { t } = useLanguage();
   const [transitioning, setTransitioning] = useState(false);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -40,7 +42,7 @@ export default function ThemeToggle() {
       onClick={handleClick}
       disabled={transitioning}
       className={`flex items-center justify-center w-9 h-9 rounded-lg theme-muted hover:theme-heading transition-colors duration-200 cursor-pointer hover:bg-[var(--glass-bg-hover)] ${transitioning ? "pointer-events-none" : ""}`}
-      aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      aria-label={theme === "dark" ? t("aria.theme.light") : t("aria.theme.dark")}
     >
       {theme === "dark" ? (
         <Sun className="w-3.5 h-3.5" />

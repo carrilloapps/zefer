@@ -56,7 +56,7 @@ export default function Navbar() {
 
       {/* ─── Desktop header (floating glass pill) ─── */}
       <nav className="hidden sm:block fixed top-4 left-4 right-4 z-50">
-        <div className="max-w-5xl mx-auto glass-nav px-4 lg:px-5 py-2.5 flex items-center justify-between gap-2 overflow-hidden">
+        <div className="max-w-5xl mx-auto glass-nav px-4 lg:px-5 py-2.5 flex items-center justify-between gap-2">
           <a href="/" className="flex items-center gap-2 cursor-pointer group shrink-0">
             <div className="w-7 h-7 rounded-lg theme-primary-faint theme-primary-border border flex items-center justify-center group-hover:opacity-80 transition-opacity duration-200">
               <Shield className="w-3.5 h-3.5 text-primary" />
