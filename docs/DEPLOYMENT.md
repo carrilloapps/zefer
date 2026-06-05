@@ -78,7 +78,7 @@ Use a reverse proxy (nginx, Caddy) to add HTTPS.
 | Step | Why |
 |------|-----|
 | Node.js 20+ installed | Required runtime |
-| `npm test` passes (125 tests) | Ensures nothing is broken |
+| `npm test` passes (161 tests) | Ensures nothing is broken |
 | `npm run build` succeeds | Generates optimized production build |
 | HTTPS enabled | **Required** — Web Crypto API only works in secure contexts |
 | Domain configured in `app/layout.tsx` (`siteUrl`) | Correct canonical URLs and OpenGraph metadata |

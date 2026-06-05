@@ -250,7 +250,7 @@ Drop any `.zefer` file for a **deep security report without the passphrase** (su
 5. **Minimum passphrase length is 6 characters**
 6. **Test both dark and light mode** after any CSS change
 7. **All text must pass WCAG 2.1 AA** (4.5:1 contrast ratio)
-8. **Run `npm test` before any commit** — 125 tests must pass
+8. **Run `npm test` before any commit** — 161 tests must pass
 9. **URL params: every new option needs a long + short alias** in both EncryptForm and DecryptForm
 
 ## Accessibility Rules
@@ -280,7 +280,7 @@ When releasing a new version, ALL of these must be updated together:
 
 - Next.js 16.2.7 (React 19), TypeScript 6, Tailwind CSS v4
 - Web Crypto API, CompressionStream API
-- Vitest (125 tests, 100% line coverage)
+- Vitest (161 tests, 100% line coverage)
 - i18n: es, en, pt (~600 translation keys)
 
 ## For AI Tool Integration

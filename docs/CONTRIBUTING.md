@@ -38,7 +38,7 @@ public/          # Static assets (llms.txt)
 ## Testing
 
 ```bash
-npm test              # Run 125 tests (Vitest)
+npm test              # Run 161 tests (Vitest)
 npm run test:watch    # Watch mode for development
 ```
 

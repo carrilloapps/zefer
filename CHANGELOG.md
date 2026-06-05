@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Generator/Analyzer tabs** — `/generator` is now a two-tab password lab; every generated key gets its own strength meter, score and effective bits, sorted highest → lowest
-- **2 new key types** — Base58 *Readable* (no `0O1lI`, safe to dictate or hand-copy) and *PIN* (digits only), shared with the home popover via the canonical `MODES` list
+- **2 new key types** — Base58 *Readable* (standard Bitcoin alphabet, no `0 O I l` — safe to dictate or hand-copy) and *PIN* (digits only), shared with the home popover via the canonical `MODES` list
 - **Advanced generation options** (collapsible panel, persisted): exclude ambiguous characters, exclude custom characters, guarantee all character classes, no consecutive repeats, dash grouping every 4/6/8
 - **Stop-slider controls** — length (presets 16–1024 + custom up to 2048) and quantity (1–50, default 1) use a horizontal slider with dot markers mathematically centered on the thumb path, plus a manual input
 - **Security report** (`SecurityInsights`, shared by the config panel and the analyzer tab): 4 attack scenarios (10²–10¹⁵ guesses/s), cybersecurity framework checks (NIST SP 800-63B, OWASP ≥64 bits, long-term ≥100 bits, AES-128 ≥128 bits, post-quantum Grover), total keyspace, post-quantum entropy, and comparison vs an average human password (~40 bits) — collapsible on the generator tab
@@ -29,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Saved keygen preferences were never applied** — local state initialized before `localStorage` hydration; the popover now adopts preferences when they arrive
 - **Scenario labels wrapping** — shortened and truncate-protected; technical detail moved into the scenarios tooltip
 - **Service Worker in development** — now registers only in production, preventing stale-chunk issues while developing
+
+### Testing
+
+- **36 new unit tests for the password engine** (`app/lib/passwords.ts` added to the coverage gates): charsets and modes, unbiased generation (including the rejection-sampling branch via a mocked CSPRNG), advanced options, analysis warnings and scoring bands, crack-time buckets (no `Infinity`), compliance checks and superscript formatting — suite grows from 125 to 161 tests, 100% line coverage maintained
 
 ### Documentation
 

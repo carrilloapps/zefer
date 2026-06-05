@@ -15,7 +15,7 @@
 ### Build & Tests
 
 - [ ] `npm run build` passes with no errors
-- [ ] `npm test` passes (125 tests)
+- [ ] `npm test` passes (161 tests)
 
 ### Code Conventions
 

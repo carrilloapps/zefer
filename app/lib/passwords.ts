@@ -47,7 +47,7 @@ export const CHARSETS: Record<Exclude<KeygenMode, "uuid">, string> = {
   secure: LATIN + SYMBOLS + ACCENTED,
   alpha: LATIN,
   hex: "0123456789abcdef",
-  // Base58 (Bitcoin alphabet): no 0/O/1/l/I — safe to read aloud or hand-copy
+  // Base58 (standard Bitcoin alphabet): no 0 O I l — safe to read aloud or hand-copy
   base58: "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
   // Numeric PIN: devices, cards, safes
   pin: "0123456789",
@@ -373,10 +373,6 @@ export const ATTACK_SCENARIOS: { key: ScenarioKey; gps: number; expLabel: string
   { key: "gpu", gps: 1e12, expLabel: "10¹²" },    // GPU farm vs fast hash
   { key: "nation", gps: 1e15, expLabel: "10¹⁵" }, // nation-state scale
 ];
-
-export function crackSecondsAt(bits: number, gps: number): number {
-  return Math.pow(2, bits - 1) / gps;
-}
 
 /** Crack-time bucket computed in log space — never overflows to Infinity,
  *  even for multi-thousand-bit keys (2^bits overflows Number at ~1024 bits). */

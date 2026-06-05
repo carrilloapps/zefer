@@ -23,7 +23,7 @@ npm run dev
 
 ## Before Submitting a PR
 
-1. Run `npm test` — all 125 tests must pass
+1. Run `npm test` — all 161 tests must pass
 2. Run `npx tsc --noEmit` — no type errors
 3. Run `npm run build` — production build succeeds
 4. Test both dark and light mode

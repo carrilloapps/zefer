@@ -179,7 +179,8 @@ between the home key-generator popover and the `/generator` page.
 Shared by the home `KeyGenerator` popover and the `/generator` page:
 
 - **Charsets** for 7 modes — `unicode`, `secure`, `alpha`, `hex`, `base58`
-  (no `0O1lI`, safe to dictate), `pin` (digits), `uuid` (v7, RFC 9562)
+  (standard Bitcoin alphabet: no `0 O I l`, safe to dictate), `pin` (digits),
+  `uuid` (v7, RFC 9562)
 - **Generation** via `crypto.getRandomValues` with rejection sampling (no modulo
   bias); `generateWithOptions()` adds exclusions, class guarantees, no-repeat
   sampling and cosmetic dash grouping

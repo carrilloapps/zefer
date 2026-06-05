@@ -22,7 +22,7 @@ LLM context: https://zefer.carrillo.app/llms.txt
 5. **Minimum passphrase length is 6 characters**
 6. **Test both dark and light mode** after any CSS change
 7. **All text must pass WCAG 2.1 AA** (4.5:1 contrast ratio)
-8. **Run `npm test` before any commit** — 125 tests must pass
+8. **Run `npm test` before any commit** — 161 tests must pass
 9. **URL params: every new option needs a long + short alias** in both EncryptForm and DecryptForm
 
 ## Accessibility Rules
@@ -107,7 +107,7 @@ Sensitive params (p, p2, r, a) are auto-cleared from the URL after reading.
 
 - Next.js 16.2.7 (React 19), TypeScript 6, Tailwind CSS v4
 - Web Crypto API, CompressionStream API
-- Vitest (125 tests, 100% line coverage)
+- Vitest (161 tests, 100% line coverage)
 - i18n: es, en, pt
 
 ## For AI Tool Integration

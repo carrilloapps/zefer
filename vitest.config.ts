@@ -17,6 +17,7 @@ export default defineConfig({
         "app/lib/zefer.ts",
         "app/lib/chunked-crypto.ts",
         "app/lib/compression.ts",
+        "app/lib/passwords.ts",
       ],
       thresholds: {
         lines: 100,

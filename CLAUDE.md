@@ -13,7 +13,7 @@ Client-side encryption tool that converts text and files into password-protected
 - Next.js 16.2.7 (React 19), TypeScript 6, Tailwind CSS v4
 - Web Crypto API (AES-256-GCM, PBKDF2-SHA256), CompressionStream API
 - Lucide React icons, Sonner (toast notifications)
-- Vitest + @vitest/coverage-v8 (125 tests, 100% line coverage)
+- Vitest + @vitest/coverage-v8 (161 tests, 100% line coverage)
 
 ## Critical Rules
 
@@ -208,7 +208,7 @@ Toggles: checked styles come from native `.peer:checked ~ .toggle-track/.toggle-
 ## Testing
 
 - Framework: Vitest + @vitest/coverage-v8
-- 125 tests across 7 test files
+- 161 tests across 8 test files
 - Coverage: 100% statements, 100% functions, 100% lines, 99.47% branches
 - Scripts: `npm test` (single run), `npm run test:watch` (dev mode)
 

@@ -11,7 +11,7 @@ Client-side encryption tool that converts text and files into password-protected
 [![Live](https://img.shields.io/badge/Live-zefer.carrillo.app-22c55e?style=flat-square)](https://zefer.carrillo.app)
 [![CLI](https://img.shields.io/npm/v/zefer-cli?style=flat-square&color=22c55e&label=CLI)](https://www.npmjs.com/package/zefer-cli)
 [![License](https://img.shields.io/github/license/carrilloapps/zefer?style=flat-square&color=22c55e)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-125%20passed-22c55e?style=flat-square)](https://github.com/carrilloapps/zefer)
+[![Tests](https://img.shields.io/badge/tests-161%20passed-22c55e?style=flat-square)](https://github.com/carrilloapps/zefer)
 [![Coverage](https://img.shields.io/badge/coverage-100%25-22c55e?style=flat-square)](https://github.com/carrilloapps/zefer)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6-3178c6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.7-000?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
@@ -118,7 +118,7 @@ zefer info secret.zefer
 - [`/analyzer`](https://zefer.carrillo.app/analyzer) — `.zefer` file inspector: public header, KDF level, compression — no passphrase needed
 - Real-time progress bar with device benchmarking
 - Drag-and-drop file upload
-- 125 tests, 100% line coverage
+- 161 tests, 100% line coverage
 
 </td>
 <td width="50%">
@@ -202,7 +202,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ### Verify
 
 ```bash
-npm test              # 125 tests
+npm test              # 161 tests
 npx tsc --noEmit      # Type check
 npm run build         # Production build
 ```
@@ -321,7 +321,7 @@ Pre-configure forms via URL for workflow automation. Every parameter has a long 
 ## Testing
 
 ```bash
-npm test              # Run 125 tests
+npm test              # Run 161 tests
 npm run test:watch    # Watch mode
 ```
 
