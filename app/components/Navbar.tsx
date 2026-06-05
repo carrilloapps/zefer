@@ -152,7 +152,7 @@ export default function Navbar() {
               className="drawer-row w-full flex items-center gap-3 px-4 h-12 text-[15px] theme-text cursor-pointer active:bg-[var(--glass-bg-hover)] transition-colors duration-100"
             >
               <Code className="w-[18px] h-[18px] text-primary shrink-0" />
-              <span className="flex-1 text-left leading-tight">{t("nav.project")}</span>
+              <span className="flex-1 text-left leading-tight">{t("nav.dev")}</span>
               <ChevronDown className={`w-3.5 h-3.5 theme-faint shrink-0 transition-transform duration-200 ${projOpen ? "rotate-180" : ""}`} />
             </button>
             {projOpen && (
@@ -230,10 +230,10 @@ function ProjectMenu() {
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-haspopup="menu"
-        aria-label={t("nav.project")}
+        aria-label={t("nav.dev")}
         className="px-2 lg:px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1 whitespace-nowrap"
       >
-        <Code className="w-3 h-3 shrink-0" />{t("nav.project")}
+        <Code className="w-3 h-3 shrink-0" />{t("nav.dev")}
         <ChevronDown className={`w-3 h-3 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
