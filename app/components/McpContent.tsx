@@ -119,11 +119,46 @@ function ClientAccordion() {
 }
 
 const TOOLS = [
-  { icon: Lock, name: "zefer_encrypt", descKey: "mcp.tool.encrypt" },
-  { icon: Unlock, name: "zefer_decrypt", descKey: "mcp.tool.decrypt" },
-  { icon: KeyRound, name: "zefer_keygen", descKey: "mcp.tool.keygen" },
-  { icon: ScanSearch, name: "zefer_analyze_password", descKey: "mcp.tool.analyze" },
-  { icon: FileSearch, name: "zefer_inspect", descKey: "mcp.tool.inspect" },
+  {
+    icon: Lock,
+    name: "zefer_encrypt",
+    descKey: "mcp.tool.encrypt",
+    returnsKey: "mcp.tool.encrypt.returns",
+    params: ["passphrase*", "text | inputPath*", "outputPath", "secondPassphrase", "revealKey", "ttlMinutes", "compression", "question", "maxAttempts", "allowedIps"],
+    example: `zefer_encrypt({ text: "api_key=abc", passphrase: "…", ttlMinutes: 1440 })`,
+  },
+  {
+    icon: Unlock,
+    name: "zefer_decrypt",
+    descKey: "mcp.tool.decrypt",
+    returnsKey: "mcp.tool.decrypt.returns",
+    params: ["inputPath*", "passphrase*", "secondPassphrase", "questionAnswer", "outputPath", "overwrite"],
+    example: `zefer_decrypt({ inputPath: "secret.zefer", passphrase: "…" })`,
+  },
+  {
+    icon: KeyRound,
+    name: "zefer_keygen",
+    descKey: "mcp.tool.keygen",
+    returnsKey: "mcp.tool.keygen.returns",
+    params: ["mode", "length", "count", "excludeAmbiguous", "excludeChars", "requireAllClasses", "noRepeats", "groupSize"],
+    example: `zefer_keygen({ mode: "base58", length: 24, count: 3, groupSize: 6 })`,
+  },
+  {
+    icon: ScanSearch,
+    name: "zefer_analyze_password",
+    descKey: "mcp.tool.analyze",
+    returnsKey: "mcp.tool.analyze.returns",
+    params: ["password*"],
+    example: `zefer_analyze_password({ password: "Tr0ub4dor&3" })`,
+  },
+  {
+    icon: FileSearch,
+    name: "zefer_inspect",
+    descKey: "mcp.tool.inspect",
+    returnsKey: "mcp.tool.inspect.returns",
+    params: ["inputPath*"],
+    example: `zefer_inspect({ inputPath: "secret.zefer" })`,
+  },
 ] as const;
 
 export default function McpContent() {
@@ -205,14 +240,46 @@ export default function McpContent() {
         <h2 className="text-sm font-semibold theme-heading mb-4 flex items-center gap-2">
           <Wrench className="w-4 h-4 text-primary" />{t("mcp.tools.title")}
         </h2>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {TOOLS.map((tool) => (
-            <div key={tool.name} className="glass !rounded-lg px-3.5 py-3 flex items-start gap-3">
-              <tool.icon className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-              <div className="min-w-0">
-                <p className="text-xs font-mono theme-heading mb-0.5">{tool.name}</p>
-                <p className="text-[11px] theme-muted leading-relaxed">{t(tool.descKey)}</p>
+            <div key={tool.name} className="glass !rounded-xl px-4 py-3.5">
+              <div className="flex items-start gap-3 mb-2.5">
+                <span className="w-8 h-8 rounded-lg theme-primary-faint theme-primary-border border flex items-center justify-center shrink-0">
+                  <tool.icon className="w-4 h-4 text-primary" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-mono font-semibold theme-heading mb-0.5">{tool.name}</p>
+                  <p className="text-[11px] theme-muted leading-relaxed">{t(tool.descKey)}</p>
+                </div>
               </div>
+
+              {/* Key parameters */}
+              <p className="text-[9px] theme-faint uppercase tracking-wider mb-1.5">{t("mcp.tools.params")}</p>
+              <div className="flex flex-wrap gap-1 mb-2.5">
+                {tool.params.map((p) => (
+                  <span
+                    key={p}
+                    className={`px-2 py-0.5 rounded-full text-[9px] font-mono border ${
+                      p.endsWith("*")
+                        ? "theme-primary-faint theme-primary-border text-primary"
+                        : "glass theme-muted"
+                    }`}
+                  >
+                    {p.replace("*", "")}{p.endsWith("*") && <span aria-hidden="true"> •</span>}
+                  </span>
+                ))}
+              </div>
+
+              {/* Returns */}
+              <p className="text-[10px] theme-faint leading-relaxed mb-2">
+                <span className="uppercase tracking-wider text-[9px]">{t("mcp.tools.returns")}: </span>
+                <span className="theme-muted">{t(tool.returnsKey)}</span>
+              </p>
+
+              {/* Example */}
+              <code className="block glass !rounded-lg px-3 py-2 text-[10px] font-mono text-primary overflow-x-auto whitespace-nowrap">
+                {tool.example}
+              </code>
             </div>
           ))}
         </div>

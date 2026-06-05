@@ -535,6 +535,19 @@ select:focus {
   bottom: max(1.25rem, calc(env(safe-area-inset-bottom) + 0.5rem));
 }
 
+/* Invitation bubble: primary-accented glass with a soft glow */
+.donate-bubble {
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--glass-border));
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.3),
+    0 0 24px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.donate-bubble-tail {
+  border-right: 1px solid color-mix(in srgb, var(--primary) 35%, var(--glass-border));
+  border-bottom: 1px solid color-mix(in srgb, var(--primary) 35%, var(--glass-border));
+}
+
 .donate-fab {
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.25),

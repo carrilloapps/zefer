@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Coffee, X } from "lucide-react";
+import { Coffee, X, Heart, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/app/components/LanguageProvider";
 
 const BMC_URL = "https://www.buymeacoffee.com/carrilloapps";
@@ -46,32 +46,41 @@ export default function DonateFab() {
   return (
     <div className="donate-fab-wrap fixed z-40">
       {bubble && (
-        <div role="status" className="absolute bottom-full right-0 mb-3 w-56 animate-in-down">
-          <div
-            className="rounded-xl border border-[var(--glass-border)] shadow-2xl px-3.5 py-3 flex items-start gap-2.5"
-            style={{ background: "var(--glass-solid)" }}
-          >
-            <a
-              href={BMC_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setBubble(false)}
-              className="text-[11px] theme-text leading-relaxed flex-1 cursor-pointer hover:text-primary transition-colors"
-            >
-              {t("fab.bubble")}
-            </a>
-            <button
-              type="button"
-              onClick={dismiss}
-              aria-label={t("aria.close")}
-              className="relative w-4 h-4 flex items-center justify-center rounded-full theme-faint hover:theme-text transition-colors cursor-pointer shrink-0 before:content-[''] before:absolute before:-inset-2"
-            >
-              <X className="w-3 h-3" aria-hidden="true" />
-            </button>
+        <div role="status" className="absolute bottom-full right-0 mb-3 w-64 animate-in-down">
+          <div className="donate-bubble rounded-2xl px-4 py-3.5" style={{ background: "var(--glass-solid)" }}>
+            <div className="flex items-start gap-3">
+              <span className="w-9 h-9 rounded-xl theme-primary-faint theme-primary-border border flex items-center justify-center shrink-0 success-icon">
+                <Coffee className="w-4 h-4 text-primary" aria-hidden="true" />
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold theme-heading flex items-center gap-1.5">
+                  <Heart className="w-3 h-3 text-primary" aria-hidden="true" />
+                  {t("fab.bubble.title")}
+                </p>
+                <a
+                  href={BMC_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setBubble(false)}
+                  className="inline-flex items-center gap-1 mt-1.5 text-[11px] font-medium text-primary hover:opacity-80 transition-opacity cursor-pointer"
+                >
+                  {t("fab.bubble.cta")}
+                  <ArrowRight className="w-3 h-3" aria-hidden="true" />
+                </a>
+              </div>
+              <button
+                type="button"
+                onClick={dismiss}
+                aria-label={t("aria.close")}
+                className="relative w-4 h-4 flex items-center justify-center rounded-full theme-faint hover:theme-text transition-colors cursor-pointer shrink-0 before:content-[''] before:absolute before:-inset-2"
+              >
+                <X className="w-3 h-3" aria-hidden="true" />
+              </button>
+            </div>
           </div>
           {/* bubble tail */}
           <div
-            className="absolute -bottom-1 right-5 w-2.5 h-2.5 rotate-45 border-r border-b border-[var(--glass-border)]"
+            className="donate-bubble-tail absolute -bottom-1 right-5 w-2.5 h-2.5 rotate-45"
             style={{ background: "var(--glass-solid)" }}
             aria-hidden="true"
           />
