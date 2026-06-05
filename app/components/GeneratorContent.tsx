@@ -183,7 +183,7 @@ function SecurityInsights({ bits, length, subjectKey }: { bits: number; length: 
         <div className="grid grid-cols-1 min-[440px]:grid-cols-2 lg:grid-cols-4 gap-2">
           {ATTACK_SCENARIOS.map((s) => (
             <div key={s.key} className="glass !rounded-lg px-3 py-2.5">
-              <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5 leading-snug">
+              <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5 leading-snug whitespace-nowrap truncate">
                 {t(SCENARIO_LABELS[s.key])}
               </p>
               <p className="text-[9px] theme-faint font-mono mb-1">{s.expLabel} {t("gen.scen.guesses")}</p>
@@ -288,6 +288,7 @@ export default function GeneratorContent() {
     setKeygenMode: setMode, setKeygenLength: setLength, setKeygenCount: setCount, setKeygenAdvanced: setAdv,
   } = usePreferences();
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showFullAnalysis, setShowFullAnalysis] = useState(false);
   const [keys, setKeys] = useState<GeneratedKey[]>([]);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [genTick, setGenTick] = useState(0);
@@ -622,7 +623,25 @@ export default function GeneratorContent() {
                 <p className="text-sm font-mono theme-heading">~{bits.toLocaleString()} <span className="text-[10px] theme-muted">{t("gen.metric.bits")}</span></p>
               </div>
             </div>
-            <SecurityInsights bits={bits} length={isUuid ? 36 : length} subjectKey="gen.avg.config" />
+
+            {/* Full report on demand */}
+            <div id="config-insights" className={`advanced-panel ${showFullAnalysis ? "advanced-open" : ""}`}>
+              <div>
+                <div className="pt-1 pb-3">
+                  <SecurityInsights bits={bits} length={isUuid ? 36 : length} subjectKey="gen.avg.config" />
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowFullAnalysis(!showFullAnalysis)}
+              className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium theme-muted hover:theme-text hover:bg-[var(--glass-bg)] transition-colors duration-200 cursor-pointer"
+              aria-expanded={showFullAnalysis}
+              aria-controls="config-insights"
+            >
+              {showFullAnalysis ? t("gen.config.less") : t("gen.config.more")}
+              {showFullAnalysis ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
           </div>
 
           <button type="button" onClick={generate} className="btn-primary">

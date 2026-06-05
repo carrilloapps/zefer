@@ -2667,6 +2667,8 @@ const translations = {
   "gen.tab.analyze": { es: "Analizador", en: "Analyzer", pt: "Analisador" },
   "gen.config.title": { es: "Análisis de esta configuración", en: "Analysis of this configuration", pt: "Análise desta configuração" },
   "gen.config.desc": { es: "Lo que un atacante enfrentaría con cada clave generada con estos ajustes:", en: "What an attacker would face with each key generated with these settings:", pt: "O que um atacante enfrentaria com cada chave gerada com estes ajustes:" },
+  "gen.config.more": { es: "Ver análisis completo", en: "Show full analysis", pt: "Ver análise completa" },
+  "gen.config.less": { es: "Ocultar análisis completo", en: "Hide full analysis", pt: "Ocultar análise completa" },
   "gen.sorted": { es: "Ordenadas de mayor a menor puntuación", en: "Sorted from highest to lowest score", pt: "Ordenadas da maior para a menor pontuação" },
   "gen.adv.ambiguous": { es: "Excluir caracteres ambiguos", en: "Exclude ambiguous characters", pt: "Excluir caracteres ambíguos" },
   "gen.adv.ambiguous.help": { es: "Elimina 0 O 1 l I — útil si la clave se dicta o se copia a mano", en: "Removes 0 O 1 l I — useful when the key is dictated or hand-copied", pt: "Remove 0 O 1 l I — útil se a chave for ditada ou copiada à mão" },
@@ -2741,10 +2743,10 @@ const translations = {
 
   // ─── Attack scenarios ───
   "gen.scen.title": { es: "Tiempo de descifrado por escenario de ataque", en: "Crack time by attack scenario", pt: "Tempo de quebra por cenário de ataque" },
-  "gen.scen.online": { es: "Login web con limitación", en: "Throttled web login", pt: "Login web com limitação" },
-  "gen.scen.cloud": { es: "Clúster en la nube vs PBKDF2", en: "Cloud cluster vs PBKDF2", pt: "Cluster na nuvem vs PBKDF2" },
-  "gen.scen.gpu": { es: "Granja GPU vs hash rápido", en: "GPU farm vs fast hash", pt: "Fazenda GPU vs hash rápido" },
-  "gen.scen.nation": { es: "Escala estado-nación", en: "Nation-state scale", pt: "Escala estado-nação" },
+  "gen.scen.online": { es: "Login web limitado", en: "Throttled login", pt: "Login web limitado" },
+  "gen.scen.cloud": { es: "Clúster en la nube", en: "Cloud cluster", pt: "Cluster na nuvem" },
+  "gen.scen.gpu": { es: "Granja de GPU", en: "GPU farm", pt: "Fazenda de GPU" },
+  "gen.scen.nation": { es: "Estado-nación", en: "Nation-state", pt: "Estado-nação" },
   "gen.scen.guesses": { es: "intentos/s", en: "guesses/s", pt: "tentativas/s" },
 
   // ─── Security framework ───
@@ -2764,7 +2766,7 @@ const translations = {
   "tip.pool": { es: "Cuántos símbolos distintos pueden aparecer en la clave. Cuanto más grande el alfabeto, más difícil es adivinar cada posición.", en: "How many distinct symbols can appear in the key. The bigger the alphabet, the harder each position is to guess.", pt: "Quantos símbolos distintos podem aparecer na chave. Quanto maior o alfabeto, mais difícil é adivinhar cada posição." },
   "tip.entropy": { es: "Mide cuán impredecible es la clave. Cada bit duplica las combinaciones: 10 bits son 1.024; 40 bits, más de un billón.", en: "Measures how unpredictable the key is. Each bit doubles the combinations: 10 bits is 1,024; 40 bits, over a trillion.", pt: "Mede o quão imprevisível é a chave. Cada bit dobra as combinações: 10 bits são 1.024; 40 bits, mais de um trilhão." },
   "tip.effective": { es: "Entropía real tras descontar patrones predecibles (secuencias, repeticiones, palabras filtradas) que un atacante prueba primero.", en: "Real entropy after discounting predictable patterns (sequences, repeats, leaked words) an attacker tries first.", pt: "Entropia real após descontar padrões previsíveis (sequências, repetições, palavras vazadas) que um atacante testa primeiro." },
-  "tip.scenarios": { es: "Tiempo medio para encontrar la clave probando la mitad de todas las combinaciones, a distintas velocidades de ataque reales.", en: "Average time to find the key by trying half of all combinations, at different real-world attack speeds.", pt: "Tempo médio para encontrar a chave testando metade de todas as combinações, em diferentes velocidades reais de ataque." },
+  "tip.scenarios": { es: "Tiempo medio para encontrar la clave probando la mitad de las combinaciones. Login web: servidor que limita intentos. Clúster: nube atacando un KDF lento como PBKDF2. Granja GPU: hardware dedicado contra un hash rápido. Estado-nación: la mayor capacidad conocida.", en: "Average time to find the key by trying half of the combinations. Web login: a server that throttles attempts. Cluster: cloud attacking a slow KDF like PBKDF2. GPU farm: dedicated hardware against a fast hash. Nation-state: the largest known capacity.", pt: "Tempo médio para encontrar a chave testando metade das combinações. Login web: servidor que limita tentativas. Cluster: nuvem atacando um KDF lento como PBKDF2. Fazenda GPU: hardware dedicado contra um hash rápido. Estado-nação: a maior capacidade conhecida." },
   "tip.nist": { es: "El estándar del gobierno de EE. UU. para identidades digitales exige contraseñas de al menos 8 caracteres.", en: "The U.S. government standard for digital identity requires passwords of at least 8 characters.", pt: "O padrão do governo dos EUA para identidades digitais exige senhas de pelo menos 8 caracteres." },
   "tip.owasp": { es: "Mínimo recomendado para resistir ataques automatizados modernos con hardware común.", en: "Recommended minimum to resist modern automated attacks with commodity hardware.", pt: "Mínimo recomendado para resistir a ataques automatizados modernos com hardware comum." },
   "tip.longterm": { es: "Umbral para que la clave siga siendo segura durante décadas, aunque el hardware de los atacantes mejore.", en: "Threshold for the key to remain secure for decades, even as attacker hardware improves.", pt: "Limiar para que a chave continue segura por décadas, mesmo com a melhora do hardware dos atacantes." },
