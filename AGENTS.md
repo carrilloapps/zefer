@@ -272,3 +272,34 @@ Zefer publishes `/llms.txt` following the llmstxt.org standard. Any AI tool can 
 - **GitHub Copilot**: `@workspace /explain #file:llms.txt`
 - **Cursor / Windsurf / Augment**: add `llms.txt` as context file
 - **Any LLM**: pass `https://zefer.carrillo.app/llms.txt` as context URL
+
+---
+
+## Agent Tooling (dev-only, not part of the app)
+
+### CodeGraph — semantic code index (MCP)
+
+[CodeGraph](https://github.com/colbymchenry/codegraph) provides a pre-indexed symbol/call graph of this repo to AI agents via MCP, reducing redundant file scans.
+
+- Project-scoped MCP config lives in `.mcp.json` (`codegraph serve --mcp`, stdio, 100% local)
+- Requires the CLI: `npm i -g @colbymchenry/codegraph` (pin the version; avoid `curl | sh`)
+- The local index lives in `.codegraph/` — **gitignored**, regenerated per machine with `codegraph init`
+- The MCP server only activates in agents that read `.mcp.json` and have the CLI installed; otherwise it is inert
+
+### Chrome DevTools MCP — live browser verification
+
+[chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) (official Google MCP, Apache-2.0) lets agents drive a real Chrome instance: navigate pages, read the console, take screenshots, and run performance traces.
+
+- Configured in `.mcp.json` via `npx -y chrome-devtools-mcp@1.1.1 --isolated` (pinned version; `--isolated` uses a throwaway profile so no cookies/sessions persist between runs)
+- Requires Chrome stable and Node.js LTS — both resolved at runtime, nothing added to `package.json`
+- Typical use in this repo: verify dark/light themes, WCAG contrast, encrypt/decrypt flows, and URL params against `http://localhost:3000` (`npm run dev`)
+- Avoid browsing arbitrary third-party sites with it — page content is a prompt-injection surface
+
+### skill-rules — skill sync across IDEs
+
+[skill-rules](https://www.npmjs.com/package/skill-rules) keeps agent skills in sync between `.claude/skills/` and `.agents/skills/` and manages per-stage skill activation.
+
+- Run via `npx skill-rules@0.3.0` (do NOT add as a project dependency — it bundles React 18/Ink, this app uses React 19)
+- `skills-lock.json` (versioned) records each skill's source repo and content hash
+- `skills.rules` (versioned) defines per-stage skill activation (`skill-rules use <stage>`)
+- Common commands: `npx skill-rules` (sync), `skill-rules add` (assign stages), `skill-rules list`

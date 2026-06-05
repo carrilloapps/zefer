@@ -41,3 +41,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# codegraph (local semantic index, regenerated per machine)
+/.codegraph/
+
+# claude code local settings (machine-specific)
+.claude/settings.local.json
+# skill-rules [start]
+.skill-rules/
+.claude/skills
+.agents/skills
+# skill-rules [end]
