@@ -35,7 +35,7 @@ export default function TwitterImage() {
         {/* Brand + version */}
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div style={{ fontSize: 56, fontWeight: 700, color: "#ffffff", letterSpacing: "-0.03em" }}>Zefer</div>
-          <div style={{ padding: "5px 14px", borderRadius: 100, background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", fontSize: 18, color: "#22c55e", fontFamily: "monospace" }}>v0.6.0</div>
+          <div style={{ padding: "5px 14px", borderRadius: 100, background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", fontSize: 18, color: "#22c55e", fontFamily: "monospace" }}>v0.7.0</div>
         </div>
 
         {/* Subtitle */}

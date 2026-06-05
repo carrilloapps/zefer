@@ -110,6 +110,9 @@ const COMPETITORS: Record<string, CompetitorData> = {
       { key: "vs.feat.cloudintegration", icon: Cloud, zefer: "no", other: "yes" },
       { key: "vs.feat.desktopapp", icon: Monitor, zefer: "no", other: "yes" },
       { key: "vs.feat.transparentvault", icon: HardDrive, zefer: "no", other: "yes" },
+      { key: "vs.feat.passwordtools", icon: KeyRound, zefer: "yes", other: "no" },
+      { key: "vs.feat.fileanalyzer", icon: Eye, zefer: "yes", other: "no" },
+      { key: "vs.feat.mcp", icon: Zap, zefer: "yes", other: "no" },
     ],
     sections: [
       { icon: Shield, titleKey: "vs.cm.section.model", descKey: "vs.cm.model.desc" },
@@ -137,6 +140,9 @@ const COMPETITORS: Record<string, CompetitorData> = {
       { key: "vs.feat.fulldisk", icon: HardDrive, zefer: "no", other: "yes" },
       { key: "vs.feat.hiddenvolume", icon: Eye, zefer: "no", other: "yes" },
       { key: "vs.feat.desktopapp", icon: Monitor, zefer: "no", other: "yes" },
+      { key: "vs.feat.passwordtools", icon: KeyRound, zefer: "yes", other: "no" },
+      { key: "vs.feat.fileanalyzer", icon: Eye, zefer: "yes", other: "no" },
+      { key: "vs.feat.mcp", icon: Zap, zefer: "yes", other: "no" },
     ],
     sections: [
       { icon: Shield, titleKey: "vs.vc.section.scope", descKey: "vs.vc.scope.desc" },

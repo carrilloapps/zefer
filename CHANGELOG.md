@@ -5,16 +5,27 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.7.0] - 2026-06-05
 
 ### Added
 
-- **`/mcp` page** — zefer-cli as a Model Context Protocol server: 2-step setup, smart-detection explanation, the 5 exposed tools, an example JSON-RPC call, and **per-tool accordions** with copy-ready configs for Claude Code, Claude Desktop, Cursor, Windsurf, VS Code (Copilot), Zed and generic stdio clients. Linked from the navbar, mobile drawer, footer, home resources and `/how`
-- AI-integration docs refreshed everywhere: `llms.txt` and `agents.md` gained an MCP section, AGENTS.md documents `zefer mcp`, README routes/AI sections updated
+- **`/mcp` page** — zefer-cli as a Model Context Protocol server: 2-step setup (global **and** npx), smart-detection explanation, the 5 exposed tools as rich entries (icon, key-parameter chips with required markers, returns line, call example), an example JSON-RPC call, and **per-tool accordions** with copy-ready configs for Claude Code (incl. `claude mcp add`), Claude Desktop, Cursor, Windsurf, VS Code (Copilot `servers` format), Zed (`context_servers`) and generic stdio clients — each with global + npx variants and **one-click install buttons** for Cursor and VS Code (official deep links). Linked from the navbar, mobile drawer, footer, home resources and `/how`
+- **Syntax highlighting site-wide** — shared `CodeBlock` with a dependency-free tokenizer (JSON keys/strings/numbers/booleans/comments; bash commands/flags/strings/vars), hover copy button, and theme-variable token colors (dark/light, WCAG-checked); applied to `/mcp` and `/install`
+- **Donations FAB bubble** — a small invitation appears 25 s after load and every 3 min (auto-hides in 9 s, X silences the session); icon-only design (lucide `Coffee` badge), primary-accented border and glow
+- **VS pages: new capability rows** — password generator & analysis, encrypted-file inspector and AI integration (MCP) on all five comparisons with honest per-competitor statuses; Zefer spec card lists the built-in tools and the MCP-enabled CLI
+- AI-integration docs refreshed everywhere: `llms.txt` and `agents.md` gained an MCP section (global + npx configs), AGENTS.md documents `zefer mcp`, README routes/AI sections updated
+
+### Changed
+
+- **"Proyecto" → "Desarrollo"** in the main menu; the dropdown holds "Sobre el proyecto" and "Sobre el autor" ("Donar" lives in the FAB now)
+- Footer PRODUCT column trimmed to Generator, Analyzer, MCP and Performance
 
 ### Fixed
 
-- "Cómo funciona" → "¿Cómo funciona?" (missing opening question mark in the home resources chip)
+- Interrogative headings: "¿Cómo funciona?", "¿Cómo usar Zefer?", "¿Cómo reportar?", "¿Qué incluir en el reporte?", "¿Cómo se generan las contraseñas?" (es `¿…?` / pt `…?`)
+- Outdated Picocrypt comparison row: Zefer **does** have a CLI
+- "Exposed tools" no longer nests glass cards inside glass cards (site-wide `.glass .glass` = 0)
+- Dev servers no longer replay stale chunks: any service worker registered before the prod-only gate is actively unregistered in development
 
 ## [0.6.0] - 2026-06-05
 

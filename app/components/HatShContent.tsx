@@ -24,6 +24,9 @@ const FEATURES: {
   { key: "vs.feat.iprestrict", icon: Globe, zefer: "yes", hatsh: "no" },
   { key: "vs.feat.maxattempts", icon: Shield, zefer: "yes", hatsh: "no" },
   { key: "vs.feat.compression", icon: Zap, zefer: "yes", hatsh: "no" },
+  { key: "vs.feat.passwordtools", icon: KeyRound, zefer: "yes", hatsh: "no" },
+  { key: "vs.feat.fileanalyzer", icon: Eye, zefer: "yes", hatsh: "no" },
+  { key: "vs.feat.mcp", icon: Zap, zefer: "yes", hatsh: "no" },
   { key: "vs.feat.pubkey", icon: Key, zefer: "no", hatsh: "yes" },
   { key: "vs.feat.i18n", icon: Globe, zefer: "partial", hatsh: "yes" },
 ];
@@ -65,6 +68,8 @@ export default function HatShContent() {
             <li><span className="font-mono text-primary">AES-256-GCM</span> + PBKDF2-SHA256</li>
             <li>{t("vs.hatsh.zefer.iterations")}</li>
             <li>{t("vs.hatsh.zefer.features")}</li>
+            <li>{t("vs.zefer.tools")}</li>
+            <li>{t("vs.zefer.mcp")}</li>
             <li>{t("vs.hatsh.zefer.langs")}</li>
             <li>{t("vs.hatsh.zefer.a11y")}</li>
           </ul>
