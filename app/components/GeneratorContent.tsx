@@ -4,14 +4,17 @@ import { useEffect, useMemo, useState } from "react";
 import {
   KeyRound, Copy, Check, RefreshCw, Download, Hash, Eye, EyeOff,
   ShieldCheck, AlertTriangle, Gauge, Layers, ScanSearch, Shield,
-  ChevronUp, ChevronDown, Ban, SquareAsterisk,
+  ChevronUp, ChevronDown, Ban, SquareAsterisk, X, Atom, User, Crosshair,
 } from "lucide-react";
 import { PageLayout, PageHeader } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
 import { notifySuccess } from "@/app/lib/notify";
 import { usePreferences } from "@/app/lib/preferences";
+import type { TranslationKey } from "@/app/lib/i18n";
 import {
   MODES, charsetFor, generateWithOptions, analyzePassword, bucketCrackTime,
+  toSuperscript, ATTACK_SCENARIOS, crackSecondsAt, complianceOf,
+  keyspaceExponent, AVERAGE_HUMAN_BITS,
   type PasswordAnalysis, type PasswordWarning,
 } from "@/app/lib/passwords";
 
@@ -101,6 +104,136 @@ const WARNING_KEYS: Record<PasswordWarning, string> = {
 const SCORE_FILL = ["strength-weak", "strength-weak", "strength-fair", "strength-good", "strength-strong"] as const;
 const SCORE_TEXT = ["theme-danger", "theme-danger", "theme-warning", "text-primary", "text-primary"] as const;
 
+type TFn = (key: TranslationKey) => string;
+
+function formatCrack(seconds: number, t: TFn): string {
+  const { bucket, value } = bucketCrackTime(seconds);
+  if (bucket === "instant") return t("time.instant");
+  if (bucket === "yearsExp") return `≈10${toSuperscript(value)} ${t("time.years")}`;
+  return `${value.toLocaleString()} ${t(`time.${bucket}` as TranslationKey)}`;
+}
+
+const FRAME_LABELS: Record<string, TranslationKey> = {
+  nist: "gen.frame.nist",
+  owasp: "gen.frame.owasp",
+  longterm: "gen.frame.longterm",
+  aes128: "gen.frame.aes128",
+  quantum: "gen.frame.quantum",
+};
+
+const SCENARIO_LABELS: Record<string, TranslationKey> = {
+  online: "gen.scen.online",
+  cloud: "gen.scen.cloud",
+  gpu: "gen.scen.gpu",
+  nation: "gen.scen.nation",
+};
+
+/** Full security report: attack scenarios, framework compliance,
+ *  post-quantum entropy, keyspace and average-password comparison. */
+function SecurityInsights({ bits, length, subjectKey }: { bits: number; length: number; subjectKey: TranslationKey }) {
+  const { t } = useLanguage();
+  const checks = complianceOf(bits, length);
+  const quantumBits = Math.floor(bits / 2);
+  const ksExp = keyspaceExponent(bits);
+  const advantageExp = Math.floor((bits - AVERAGE_HUMAN_BITS) * Math.log10(2));
+  const maxBits = Math.max(bits, AVERAGE_HUMAN_BITS);
+  const humanPct = Math.max(4, Math.round((AVERAGE_HUMAN_BITS / maxBits) * 100));
+  const subjectPct = Math.max(4, Math.round((bits / maxBits) * 100));
+
+  return (
+    <div className="space-y-4">
+      {/* Attack scenarios */}
+      <div>
+        <p className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+          <Crosshair className="w-3 h-3" />{t("gen.scen.title")}
+        </p>
+        <div className="grid grid-cols-1 min-[440px]:grid-cols-2 lg:grid-cols-4 gap-2">
+          {ATTACK_SCENARIOS.map((s) => (
+            <div key={s.key} className="glass !rounded-lg px-3 py-2.5">
+              <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5 leading-snug">
+                {t(SCENARIO_LABELS[s.key])}
+              </p>
+              <p className="text-[9px] theme-faint font-mono mb-1">{s.expLabel} {t("gen.scen.guesses")}</p>
+              <p className="text-[13px] font-mono text-primary leading-tight">{formatCrack(crackSecondsAt(bits, s.gps), t)}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Framework compliance */}
+      <div>
+        <p className="flex items-center gap-1.5 text-xs font-medium theme-text mb-1">
+          <ShieldCheck className="w-3 h-3" />{t("gen.frame.title")}
+        </p>
+        <p className="text-[10px] theme-faint mb-2">{t("gen.frame.desc")}</p>
+        <ul className="space-y-1.5 mb-2">
+          {checks.map((c) => (
+            <li key={c.key} className="glass !rounded-lg px-3 py-2 flex items-center gap-2.5">
+              {c.pass ? (
+                <Check className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden="true" />
+              ) : (
+                <X className="w-3.5 h-3.5 theme-warning shrink-0" aria-hidden="true" />
+              )}
+              <span className="text-[11px] theme-text flex-1 leading-snug">{t(FRAME_LABELS[c.key])}</span>
+              <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full border shrink-0 ${
+                c.pass ? "theme-primary-faint theme-primary-border text-primary" : "theme-warning-faint theme-warning"
+              }`}>
+                {c.pass ? t("gen.frame.pass") : t("gen.frame.fail")}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="glass !rounded-lg px-3 py-2.5">
+            <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5 flex items-center gap-1">
+              <Hash className="w-2.5 h-2.5" />{t("gen.frame.keyspace")}
+            </p>
+            <p className="text-sm font-mono theme-heading">≈10{toSuperscript(ksExp)}</p>
+          </div>
+          <div className="glass !rounded-lg px-3 py-2.5">
+            <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5 flex items-center gap-1">
+              <Atom className="w-2.5 h-2.5" />{t("gen.frame.quantumbits")}
+            </p>
+            <p className="text-sm font-mono theme-heading">{quantumBits} <span className="text-[10px] theme-muted">{t("gen.metric.bits")}</span></p>
+          </div>
+        </div>
+      </div>
+
+      {/* Versus an average human password */}
+      <div>
+        <p className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+          <User className="w-3 h-3" />{t("gen.avg.title")}
+        </p>
+        <div className="glass !rounded-lg px-3 py-3 space-y-2.5">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] theme-muted">{t("gen.avg.human")}</span>
+              <span className="text-[10px] font-mono theme-faint">{AVERAGE_HUMAN_BITS} {t("gen.metric.bits")}</span>
+            </div>
+            <div className="strength-meter !mt-0">
+              <div className="strength-meter-fill strength-fair !w-[var(--cmp)]" style={{ "--cmp": `${humanPct}%` } as React.CSSProperties} />
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] theme-text font-medium">{t(subjectKey)}</span>
+              <span className="text-[10px] font-mono text-primary">{bits.toLocaleString()} {t("gen.metric.bits")}</span>
+            </div>
+            <div className="strength-meter !mt-0">
+              <div className="strength-meter-fill strength-strong !w-[var(--cmp)]" style={{ "--cmp": `${subjectPct}%` } as React.CSSProperties} />
+            </div>
+          </div>
+          <p className={`text-[11px] leading-snug ${advantageExp > 0 ? "text-primary" : "theme-warning"}`}>
+            {advantageExp > 0
+              ? <>≈10{toSuperscript(advantageExp)} {t("gen.avg.times")}</>
+              : t("gen.avg.weaker")}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface GeneratedKey {
   value: string;
   analysis: PasswordAnalysis;
@@ -138,10 +271,6 @@ export default function GeneratorContent() {
   // Pool and entropy reflect the active exclusions
   const poolSize = isUuid ? 16 : Math.max(charsetFor(mode, adv).length, 2);
   const bits = isUuid ? 122 : Math.floor(Math.log2(poolSize) * length);
-  const configCrack = useMemo(
-    () => Math.pow(2, bits - 1) / 1e12,
-    [bits]
-  );
   const supportsClasses = ["secure", "unicode", "alpha", "base58"].includes(mode);
 
   function commitLength(raw: string) {
@@ -190,13 +319,6 @@ export default function GeneratorContent() {
     a.click();
     URL.revokeObjectURL(url);
     notifySuccess(t("toast.gen.downloaded"));
-  }
-
-  function crackLabel(seconds: number): string {
-    const { bucket, value } = bucketCrackTime(seconds);
-    if (bucket === "instant") return t("time.instant");
-    if (bucket === "heatdeath") return t("time.heatdeath");
-    return `${value.toLocaleString()} ${t(`time.${bucket}` as Parameters<typeof t>[0])}`;
   }
 
   const classChips = (Object.entries(analysis.classes) as [keyof typeof analysis.classes, boolean][]);
@@ -445,20 +567,17 @@ export default function GeneratorContent() {
               <Gauge className="w-3 h-3" />{t("gen.config.title")}
             </p>
             <p className="text-[11px] theme-muted mb-3">{t("gen.config.desc")}</p>
-            <div className="grid grid-cols-3 gap-2">
-              <div>
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="glass !rounded-lg px-3 py-2.5">
                 <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5">{t("gen.metric.pool")}</p>
                 <p className="text-sm font-mono theme-heading">{poolSize.toLocaleString()} <span className="text-[10px] theme-muted">{t("gen.metric.symbols")}</span></p>
               </div>
-              <div>
+              <div className="glass !rounded-lg px-3 py-2.5">
                 <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5">{t("gen.metric.entropy")}</p>
                 <p className="text-sm font-mono theme-heading">~{bits.toLocaleString()} <span className="text-[10px] theme-muted">{t("gen.metric.bits")}</span></p>
               </div>
-              <div>
-                <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5">{t("gen.crack.offline")}</p>
-                <p className="text-sm font-mono text-primary">{crackLabel(configCrack)}</p>
-              </div>
             </div>
+            <SecurityInsights bits={bits} length={isUuid ? 36 : length} subjectKey="gen.avg.config" />
           </div>
 
           <button type="button" onClick={generate} className="btn-primary">
@@ -577,22 +696,8 @@ export default function GeneratorContent() {
                 ))}
               </div>
 
-              {/* Crack times */}
-              <div>
-                <p className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
-                  <Gauge className="w-3 h-3" />{t("gen.crack.title")}
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div className="glass !rounded-lg px-3 py-2.5">
-                    <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5">{t("gen.crack.online")}</p>
-                    <p className="text-sm font-mono text-primary">{crackLabel(analysis.crackSeconds.online)}</p>
-                  </div>
-                  <div className="glass !rounded-lg px-3 py-2.5">
-                    <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5">{t("gen.crack.offline")}</p>
-                    <p className="text-sm font-mono text-primary">{crackLabel(analysis.crackSeconds.offline)}</p>
-                  </div>
-                </div>
-              </div>
+              {/* Full security report */}
+              <SecurityInsights bits={analysis.effectiveBits} length={analysis.length} subjectKey="gen.avg.this" />
 
               {/* Character classes */}
               <div>

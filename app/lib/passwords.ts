@@ -341,9 +341,8 @@ export type CrackBucket =
   | "hours"
   | "days"
   | "months"
-  | "years"
-  | "centuries"
-  | "heatdeath";   // > 10^12 years
+  | "years"        // 2..10^6 years — shown as a number
+  | "yearsExp";    // beyond — shown as ≈10^N years
 
 export function bucketCrackTime(seconds: number): { bucket: CrackBucket; value: number } {
   if (seconds < 1) return { bucket: "instant", value: 0 };
@@ -352,7 +351,55 @@ export function bucketCrackTime(seconds: number): { bucket: CrackBucket; value: 
   if (seconds < 86400) return { bucket: "hours", value: Math.round(seconds / 3600) };
   if (seconds < 86400 * 60) return { bucket: "days", value: Math.round(seconds / 86400) };
   if (seconds < 86400 * 365 * 2) return { bucket: "months", value: Math.round(seconds / (86400 * 30)) };
-  if (seconds < 86400 * 365 * 1000) return { bucket: "years", value: Math.round(seconds / (86400 * 365)) };
-  if (seconds < 86400 * 365 * 1e12) return { bucket: "centuries", value: Math.round(seconds / (86400 * 365 * 100)) };
-  return { bucket: "heatdeath", value: 0 };
+  const years = seconds / (86400 * 365);
+  if (years < 1e6) return { bucket: "years", value: Math.round(years) };
+  return { bucket: "yearsExp", value: Math.floor(Math.log10(years)) };
 }
+
+/** 0-9 → Unicode superscript digits, for ≈10ⁿ rendering */
+export function toSuperscript(n: number): string {
+  const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+  return String(n).split("").map((d) => SUP[Number(d)] ?? d).join("");
+}
+
+// ─── Attack scenarios (guesses per second) ───
+
+export type ScenarioKey = "online" | "cloud" | "gpu" | "nation";
+
+export const ATTACK_SCENARIOS: { key: ScenarioKey; gps: number; expLabel: string }[] = [
+  { key: "online", gps: 1e2, expLabel: "10²" },   // throttled web login
+  { key: "cloud", gps: 1e6, expLabel: "10⁶" },    // rented cloud cluster vs slow KDF
+  { key: "gpu", gps: 1e12, expLabel: "10¹²" },    // GPU farm vs fast hash
+  { key: "nation", gps: 1e15, expLabel: "10¹⁵" }, // nation-state scale
+];
+
+export function crackSecondsAt(bits: number, gps: number): number {
+  return Math.pow(2, bits - 1) / gps;
+}
+
+// ─── Security framework checks ───
+
+export interface ComplianceCheck {
+  key: "nist" | "owasp" | "longterm" | "aes128" | "quantum";
+  pass: boolean;
+}
+
+/** Practical checklist against widely used guidance.
+ *  Quantum: Grover's algorithm halves the effective brute-force exponent. */
+export function complianceOf(bits: number, length: number): ComplianceCheck[] {
+  return [
+    { key: "nist", pass: length >= 8 },
+    { key: "owasp", pass: bits >= 64 },
+    { key: "longterm", pass: bits >= 100 },
+    { key: "aes128", pass: bits >= 128 },
+    { key: "quantum", pass: Math.floor(bits / 2) >= 128 },
+  ];
+}
+
+/** Decimal exponent of the total keyspace: 2^bits ≈ 10^N */
+export function keyspaceExponent(bits: number): number {
+  return Math.floor(bits * Math.log10(2));
+}
+
+/** Typical human-chosen password (~8-10 predictable characters) */
+export const AVERAGE_HUMAN_BITS = 40;

@@ -2738,8 +2738,35 @@ const translations = {
   "time.days": { es: "días", en: "days", pt: "dias" },
   "time.months": { es: "meses", en: "months", pt: "meses" },
   "time.years": { es: "años", en: "years", pt: "anos" },
-  "time.centuries": { es: "siglos", en: "centuries", pt: "séculos" },
-  "time.heatdeath": { es: "Más que la edad del universo", en: "Longer than the age of the universe", pt: "Mais que a idade do universo" },
+
+  // ─── Attack scenarios ───
+  "gen.scen.title": { es: "Tiempo de descifrado por escenario de ataque", en: "Crack time by attack scenario", pt: "Tempo de quebra por cenário de ataque" },
+  "gen.scen.online": { es: "Login web con limitación", en: "Throttled web login", pt: "Login web com limitação" },
+  "gen.scen.cloud": { es: "Clúster en la nube vs PBKDF2", en: "Cloud cluster vs PBKDF2", pt: "Cluster na nuvem vs PBKDF2" },
+  "gen.scen.gpu": { es: "Granja GPU vs hash rápido", en: "GPU farm vs fast hash", pt: "Fazenda GPU vs hash rápido" },
+  "gen.scen.nation": { es: "Escala estado-nación", en: "Nation-state scale", pt: "Escala estado-nação" },
+  "gen.scen.guesses": { es: "intentos/s", en: "guesses/s", pt: "tentativas/s" },
+
+  // ─── Security framework ───
+  "gen.frame.title": { es: "Marco de ciberseguridad", en: "Cybersecurity framework", pt: "Marco de cibersegurança" },
+  "gen.frame.desc": { es: "Cumplimiento frente a guías y umbrales de la industria:", en: "Compliance against industry guidance and thresholds:", pt: "Conformidade com diretrizes e limiares do setor:" },
+  "gen.frame.nist": { es: "NIST SP 800-63B — longitud mínima (≥8)", en: "NIST SP 800-63B — minimum length (≥8)", pt: "NIST SP 800-63B — comprimento mínimo (≥8)" },
+  "gen.frame.owasp": { es: "Línea base OWASP (≥64 bits)", en: "OWASP baseline (≥64 bits)", pt: "Linha de base OWASP (≥64 bits)" },
+  "gen.frame.longterm": { es: "Protección a largo plazo (≥100 bits)", en: "Long-term protection (≥100 bits)", pt: "Proteção de longo prazo (≥100 bits)" },
+  "gen.frame.aes128": { es: "Equivalente a AES-128 (≥128 bits)", en: "AES-128 equivalent (≥128 bits)", pt: "Equivalente a AES-128 (≥128 bits)" },
+  "gen.frame.quantum": { es: "Post-cuántico — Grover (≥128 bits tras reducir a la mitad)", en: "Post-quantum — Grover (≥128 bits after halving)", pt: "Pós-quântico — Grover (≥128 bits após reduzir à metade)" },
+  "gen.frame.pass": { es: "Cumple", en: "Pass", pt: "Cumpre" },
+  "gen.frame.fail": { es: "No cumple", en: "Fail", pt: "Não cumpre" },
+  "gen.frame.quantumbits": { es: "Entropía post-cuántica", en: "Post-quantum entropy", pt: "Entropia pós-quântica" },
+  "gen.frame.keyspace": { es: "Combinaciones totales", en: "Total combinations", pt: "Combinações totais" },
+
+  // ─── Average-password comparison ───
+  "gen.avg.title": { es: "Frente a una contraseña humana promedio", en: "Versus an average human password", pt: "Versus uma senha humana média" },
+  "gen.avg.human": { es: "Humana promedio (~40 bits)", en: "Average human (~40 bits)", pt: "Humana média (~40 bits)" },
+  "gen.avg.this": { es: "Esta clave", en: "This key", pt: "Esta chave" },
+  "gen.avg.config": { es: "Esta configuración", en: "This configuration", pt: "Esta configuração" },
+  "gen.avg.times": { es: "veces más combinaciones", en: "times more combinations", pt: "vezes mais combinações" },
+  "gen.avg.weaker": { es: "Por debajo del promedio humano", en: "Below the human average", pt: "Abaixo da média humana" },
 
   // ─── Analyzer page ───
   "anlz.badge": { es: "INSPECTOR .ZEFER", en: ".ZEFER INSPECTOR", pt: "INSPETOR .ZEFER" },
