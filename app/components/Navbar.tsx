@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Shield, Heart, User, Code, Download, BookOpen, Cpu,
   Lock, Scale, Users, ShieldAlert, ChevronRight, ExternalLink,
-  KeyRound, FileSearch,
+  KeyRound, FileSearch, ChevronDown,
 } from "lucide-react";
 import LanguageSelector from "@/app/components/LanguageSelector";
 import ThemeToggle from "@/app/components/ThemeToggle";
@@ -14,8 +14,9 @@ export default function Navbar() {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [projOpen, setProjOpen] = useState(false);
 
-  const close = useCallback(() => setOpen(false), []);
+  const close = useCallback(() => { setOpen(false); setProjOpen(false); }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -92,15 +93,7 @@ export default function Navbar() {
             <a href="/analyzer" className="px-2 lg:px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1 whitespace-nowrap">
               <FileSearch className="w-3 h-3 shrink-0" />{t("nav.analyzer")}
             </a>
-            <a href="/project" className="px-2 lg:px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1 whitespace-nowrap">
-              <Code className="w-3 h-3 shrink-0" />{t("nav.project")}
-            </a>
-            <a href="https://www.buymeacoffee.com/carrilloapps" target="_blank" rel="noopener noreferrer" className="hidden lg:flex px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] items-center gap-1 whitespace-nowrap">
-              <Heart className="w-3 h-3 shrink-0" />{t("nav.donate")}
-            </a>
-            <a href="https://github.com/carrilloapps" target="_blank" rel="noopener noreferrer" className="hidden lg:flex px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] items-center gap-1 whitespace-nowrap">
-              <User className="w-3 h-3 shrink-0" />{t("nav.author")}
-            </a>
+            <ProjectMenu />
             <a href="/install" className="px-2 lg:px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1 whitespace-nowrap">
               <Download className="w-3 h-3 shrink-0" />{t("nav.install")}
             </a>
@@ -150,7 +143,37 @@ export default function Navbar() {
             <DrawerLink href="/" icon={Shield} label={t("nav.home")} onClick={close} />
             <DrawerLink href="/how" icon={Lock} label={t("nav.how")} onClick={close} />
             <DrawerLink href="/device" icon={Cpu} label={t("nav.device")} onClick={close} />
-            <DrawerLink href="/project" icon={Code} label={t("nav.project")} onClick={close} />
+            {/* Proyecto accordion: project + donate + author */}
+            <button
+              type="button"
+              onClick={() => setProjOpen(!projOpen)}
+              aria-expanded={projOpen}
+              aria-controls="drawer-project-group"
+              className="drawer-row w-full flex items-center gap-3 px-4 h-12 text-[15px] theme-text cursor-pointer active:bg-[var(--glass-bg-hover)] transition-colors duration-100"
+            >
+              <Code className="w-[18px] h-[18px] text-primary shrink-0" />
+              <span className="flex-1 text-left leading-tight">{t("nav.project")}</span>
+              <ChevronDown className={`w-3.5 h-3.5 theme-faint shrink-0 transition-transform duration-200 ${projOpen ? "rotate-180" : ""}`} />
+            </button>
+            {projOpen && (
+              <div id="drawer-project-group" className="animate-in">
+                <a href="/project" onClick={close} className="drawer-row flex items-center gap-3 pl-12 pr-4 h-11 text-sm theme-muted cursor-pointer active:bg-[var(--glass-bg-hover)] transition-colors duration-100">
+                  <Code className="w-4 h-4 text-primary shrink-0" />
+                  <span className="flex-1">{t("nav.project")}</span>
+                  <ChevronRight className="w-3.5 h-3.5 theme-faint shrink-0" />
+                </a>
+                <a href="https://www.buymeacoffee.com/carrilloapps" target="_blank" rel="noopener noreferrer" onClick={close} className="drawer-row flex items-center gap-3 pl-12 pr-4 h-11 text-sm theme-muted cursor-pointer active:bg-[var(--glass-bg-hover)] transition-colors duration-100">
+                  <Heart className="w-4 h-4 text-primary shrink-0" />
+                  <span className="flex-1">{t("nav.donate")}</span>
+                  <ExternalLink className="w-3.5 h-3.5 theme-faint shrink-0" />
+                </a>
+                <a href="https://github.com/carrilloapps" target="_blank" rel="noopener noreferrer" onClick={close} className="drawer-row flex items-center gap-3 pl-12 pr-4 h-11 text-sm theme-muted cursor-pointer active:bg-[var(--glass-bg-hover)] transition-colors duration-100">
+                  <User className="w-4 h-4 text-primary shrink-0" />
+                  <span className="flex-1">{t("nav.author")}</span>
+                  <ExternalLink className="w-3.5 h-3.5 theme-faint shrink-0" />
+                </a>
+              </div>
+            )}
           </div>
 
           <p className="drawer-stagger text-[10px] font-mono theme-muted uppercase tracking-wider px-4 mb-1.5 mt-1" style={{ "--stagger": "0.11s" } as React.CSSProperties}>{t("nav.tools")}</p>
@@ -171,10 +194,6 @@ export default function Navbar() {
             <DrawerLink href="/conduct" icon={Users} label={t("nav.conduct")} onClick={close} />
           </div>
 
-          <div className="drawer-group drawer-stagger" style={{ "--stagger": "0.27s" } as React.CSSProperties}>
-            <DrawerLink href="https://www.buymeacoffee.com/carrilloapps" icon={Heart} label={t("nav.donate")} external onClick={close} />
-            <DrawerLink href="https://github.com/carrilloapps" icon={User} label={t("nav.author")} external onClick={close} />
-          </div>
         </div>
 
         {/* Bottom bar */}
@@ -190,6 +209,54 @@ export default function Navbar() {
         <div className="nav-mobile-safe-bottom" />
       </div>
     </>
+  );
+}
+
+/** Desktop "Proyecto" dropdown grouping project, donate and author links */
+function ProjectMenu() {
+  const { t } = useLanguage();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const itemCls = "w-full flex items-center gap-2.5 px-3 py-2.5 text-xs theme-muted hover:theme-heading hover:bg-[var(--glass-bg)] transition-colors duration-150 cursor-pointer whitespace-nowrap";
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-label={t("nav.project")}
+        className="px-2 lg:px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1 whitespace-nowrap"
+      >
+        <Code className="w-3 h-3 shrink-0" />{t("nav.project")}
+        <ChevronDown className={`w-3 h-3 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div role="menu" className="absolute left-0 top-full mt-2 w-48 shadow-2xl z-50 !rounded-xl overflow-hidden animate-in border border-[var(--glass-border)]" style={{ background: "var(--glass-solid)" }}>
+          <a href="/project" role="menuitem" onClick={() => setOpen(false)} className={itemCls}>
+            <Code className="w-3.5 h-3.5 text-primary shrink-0" />{t("nav.project")}
+          </a>
+          <a href="https://www.buymeacoffee.com/carrilloapps" target="_blank" rel="noopener noreferrer" role="menuitem" onClick={() => setOpen(false)} className={itemCls}>
+            <Heart className="w-3.5 h-3.5 text-primary shrink-0" />{t("nav.donate")}
+            <ExternalLink className="w-3 h-3 theme-faint ml-auto" />
+          </a>
+          <a href="https://github.com/carrilloapps" target="_blank" rel="noopener noreferrer" role="menuitem" onClick={() => setOpen(false)} className={itemCls}>
+            <User className="w-3.5 h-3.5 text-primary shrink-0" />{t("nav.author")}
+            <ExternalLink className="w-3 h-3 theme-faint ml-auto" />
+          </a>
+        </div>
+      )}
+    </div>
   );
 }
 

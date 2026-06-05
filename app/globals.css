@@ -528,6 +528,46 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.08), 0 0 12px rgba(21, 128, 61, 0.03);
 }
 
+/* ── Donate FAB (Buy Me a Coffee) ── */
+
+.donate-fab {
+  right: max(1.25rem, env(safe-area-inset-right));
+  bottom: max(1.25rem, calc(env(safe-area-inset-bottom) + 0.5rem));
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  animation: fabPulse 3.2s ease-in-out infinite;
+}
+
+.donate-fab:hover {
+  transform: scale(1.1);
+  animation-play-state: paused;
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.3),
+    0 0 0 6px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+@keyframes fabPulse {
+  0%, 100% {
+    box-shadow:
+      0 4px 16px rgba(0, 0, 0, 0.25),
+      0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 4px 16px rgba(0, 0, 0, 0.25),
+      0 0 0 8px color-mix(in srgb, var(--primary) 0%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .donate-fab {
+    animation: none;
+    transition: none;
+  }
+}
+
 /* ── Info tooltip (hover / focus / tap) ── */
 
 .info-tip {

@@ -30,6 +30,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Scenario labels wrapping** — shortened and truncate-protected; technical detail moved into the scenarios tooltip
 - **Service Worker in development** — now registers only in production, preventing stale-chunk issues while developing
 
+### UI
+
+- **`/how` — password generation explained**: new section documenting the engine (CSPRNG, rejection sampling, 7 alphabets, analysis/scoring with attack scenarios and compliance, advanced options) with a link to `/generator`
+- **"Proyecto" dropdown**: project, donate and author links consolidated into a modern dropdown on desktop and an accordion row inside the mobile drawer (aria-expanded/haspopup, outside-click close)
+- **Donations FAB**: floating Buy Me a Coffee button (safe-area aware, pulsing glow via `color-mix`, reduced-motion safe) on every page
+
 ### Testing
 
 - **36 new unit tests for the password engine** (`app/lib/passwords.ts` added to the coverage gates): charsets and modes, unbiased generation (including the rejection-sampling branch via a mocked CSPRNG), advanced options, analysis warnings and scoring bands, crack-time buckets (no `Infinity`), compliance checks and superscript formatting — suite grows from 125 to 161 tests, 100% line coverage maintained

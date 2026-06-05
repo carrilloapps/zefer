@@ -119,6 +119,36 @@ export default function HowContent() {
         </div>
       </GlassCard>
 
+      {/* Password generation engine */}
+      <GlassCard className="mb-8">
+        <h2 className="text-sm font-semibold theme-heading mb-2 flex items-center gap-2">
+          <KeyRound className="w-4 h-4 text-primary" />{t("how.gen.title")}
+        </h2>
+        <p className="text-xs theme-muted mb-5 leading-relaxed">{t("how.gen.intro")}</p>
+        <div className="space-y-4">
+          {([
+            ["how.gen.csprng.title", "how.gen.csprng.desc"],
+            ["how.gen.rejection.title", "how.gen.rejection.desc"],
+            ["how.gen.modes.title", "how.gen.modes.desc"],
+            ["how.gen.analysis.title", "how.gen.analysis.desc"],
+            ["how.gen.options.title", "how.gen.options.desc"],
+          ] as const).map(([titleKey, descKey], i) => (
+            <div key={titleKey} className="flex items-start gap-3">
+              <span className="text-[10px] font-mono text-primary theme-primary-faint theme-primary-border border rounded-md px-1.5 py-0.5 shrink-0 mt-0.5">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <h3 className="text-xs font-medium theme-heading mb-0.5">{t(titleKey)}</h3>
+                <p className="text-[11px] theme-muted leading-relaxed">{t(descKey)}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <a href="/generator" className="inline-flex items-center gap-1.5 mt-5 text-xs text-primary hover:opacity-80 transition-opacity cursor-pointer">
+          {t("gen.title")} <ArrowRight className="w-3.5 h-3.5" />
+        </a>
+      </GlassCard>
+
       {/* CTA */}
       <GlassCard glow className="text-center">
         <h2 className="text-lg font-semibold theme-heading mb-2">{t("how.cta")}</h2>
