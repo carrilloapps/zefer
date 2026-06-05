@@ -5,7 +5,7 @@ import { Sparkles, Copy, Check, RefreshCw, Hash } from "lucide-react";
 import { useLanguage } from "@/app/components/LanguageProvider";
 import { notifySuccess } from "@/app/lib/notify";
 
-import { CHARSETS, generateValue, type KeygenMode } from "@/app/lib/passwords";
+import { CHARSETS, MODES, generateValue, type KeygenMode } from "@/app/lib/passwords";
 
 type Mode = KeygenMode;
 
@@ -18,14 +18,6 @@ interface Props {
   onModeChange?: (mode: Mode) => void;
   onLengthChange?: (length: number) => void;
 }
-
-const MODES: { key: Mode; labelKey: string }[] = [
-  { key: "unicode", labelKey: "keygen.unicode" },
-  { key: "secure", labelKey: "keygen.secure" },
-  { key: "alpha", labelKey: "keygen.alpha" },
-  { key: "hex", labelKey: "keygen.hex" },
-  { key: "uuid", labelKey: "keygen.uuid" },
-];
 
 export default function KeyGenerator({ onSelect, savedMode, savedLength, onModeChange, onLengthChange }: Props) {
   const { t } = useLanguage();

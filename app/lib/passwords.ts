@@ -1,6 +1,6 @@
 // ─── Password generation & analysis (100% client-side, no DOM) ───
 
-export type KeygenMode = "unicode" | "secure" | "alpha" | "hex" | "uuid";
+export type KeygenMode = "unicode" | "secure" | "alpha" | "hex" | "base58" | "pin" | "uuid";
 
 // ─── Character pools ───
 
@@ -47,7 +47,22 @@ export const CHARSETS: Record<Exclude<KeygenMode, "uuid">, string> = {
   secure: LATIN + SYMBOLS + ACCENTED,
   alpha: LATIN,
   hex: "0123456789abcdef",
+  // Base58 (Bitcoin alphabet): no 0/O/1/l/I — safe to read aloud or hand-copy
+  base58: "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
+  // Numeric PIN: devices, cards, safes
+  pin: "0123456789",
 };
+
+/** Canonical mode list shared by the home popover and the /generator page */
+export const MODES: { key: KeygenMode; labelKey: string }[] = [
+  { key: "unicode", labelKey: "keygen.unicode" },
+  { key: "secure", labelKey: "keygen.secure" },
+  { key: "alpha", labelKey: "keygen.alpha" },
+  { key: "hex", labelKey: "keygen.hex" },
+  { key: "base58", labelKey: "keygen.base58" },
+  { key: "pin", labelKey: "keygen.pin" },
+  { key: "uuid", labelKey: "keygen.uuid" },
+];
 
 // ─── Generation (rejection sampling: no modulo bias) ───
 

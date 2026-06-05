@@ -2657,8 +2657,17 @@ const translations = {
   "nav.generator": { es: "Generador", en: "Generator", pt: "Gerador" },
   "nav.analyzer": { es: "Analizador", en: "Analyzer", pt: "Analisador" },
 
+  // ─── Extra keygen modes ───
+  "keygen.base58": { es: "Legible", en: "Readable", pt: "Legível" },
+  "keygen.pin": { es: "PIN", en: "PIN", pt: "PIN" },
+
   // ─── Generator page ───
   "gen.badge": { es: "GENERADOR DE CLAVES", en: "PASSWORD GENERATOR", pt: "GERADOR DE CHAVES" },
+  "gen.tab.generate": { es: "Generador", en: "Generator", pt: "Gerador" },
+  "gen.tab.analyze": { es: "Analizador", en: "Analyzer", pt: "Analisador" },
+  "gen.config.title": { es: "Análisis de esta configuración", en: "Analysis of this configuration", pt: "Análise desta configuração" },
+  "gen.config.desc": { es: "Lo que un atacante enfrentaría con cada clave generada con estos ajustes:", en: "What an attacker would face with each key generated with these settings:", pt: "O que um atacante enfrentaria com cada chave gerada com estes ajustes:" },
+  "gen.sorted": { es: "Ordenadas de mayor a menor puntuación", en: "Sorted from highest to lowest score", pt: "Ordenadas da maior para a menor pontuação" },
   "gen.title": { es: "Generador avanzado de contraseñas", en: "Advanced password generator", pt: "Gerador avançado de senhas" },
   "gen.subtitle": { es: "Genera claves criptográficamente seguras y analiza la resistencia de cualquier contraseña. Todo ocurre en tu navegador.", en: "Generate cryptographically secure keys and analyze the strength of any password. Everything happens in your browser.", pt: "Gere chaves criptograficamente seguras e analise a resistência de qualquer senha. Tudo acontece no seu navegador." },
   "gen.mode": { es: "Tipo de clave", en: "Key type", pt: "Tipo de chave" },

@@ -26,7 +26,7 @@ const DEFAULTS: Preferences = {
   tab: "encrypt",
   keygenMode: "secure",
   keygenLength: 64,
-  keygenCount: 5,
+  keygenCount: 1,
 };
 
 function load(): Preferences {
