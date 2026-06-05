@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   FileSearch, Upload, ShieldCheck, ShieldAlert, Lock, FileText,
   Layers, Gauge, KeyRound, MessageSquare, Unlock, RefreshCw,
@@ -9,6 +10,7 @@ import {
 import { PageLayout, PageHeader, InfoTip } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
 import { parseFile, type ParsedFile } from "@/app/lib/zefer";
+import { setPendingDecryptFile } from "@/app/lib/file-handoff";
 import { crackBucketFor, toSuperscript } from "@/app/lib/passwords";
 import type { TranslationKey } from "@/app/lib/i18n";
 
@@ -81,6 +83,7 @@ interface Observation {
 }
 
 interface Report {
+  file: File;
   fileName: string;
   fileSize: number;
   parsed: ParsedFile;
@@ -153,6 +156,7 @@ const OBS_STYLE = {
 
 export default function AnalyzerContent() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [report, setReport] = useState<Report | null>(null);
   const [invalid, setInvalid] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -182,6 +186,7 @@ export default function AnalyzerContent() {
     }
     const deep = await deepAnalyze(rawBytes, parsed);
     setReport({
+      file,
       fileName: file.name,
       fileSize: rawBytes.byteLength,
       parsed,
@@ -448,9 +453,17 @@ export default function AnalyzerContent() {
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-2">
-            <a href="/?t=decrypt" className="btn-primary flex-1">
+            <button
+              type="button"
+              onClick={() => {
+                // Hand the analyzed file to the decrypt form via client navigation
+                setPendingDecryptFile(report.file);
+                router.push("/?t=decrypt");
+              }}
+              className="btn-primary flex-1"
+            >
               <Unlock className="w-4 h-4" />{t("anlz.decrypt.cta")}
-            </a>
+            </button>
             <button
               type="button"
               onClick={reset}

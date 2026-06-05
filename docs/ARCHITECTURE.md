@@ -207,7 +207,22 @@ Uses browser APIs to estimate safe file limits:
 | `WEBGL_debug_renderer_info` | GPU model + vendor | Most |
 | `navigator.userAgentData` | CPU architecture | Chrome 90+ |
 
-Formula: `maxFile = (heapLimit x 50% / 3) x 80%`
+Limit model (tiered): the V8 heap limit is capped at ~4 GB on every desktop
+regardless of physical RAM (and ArrayBuffers live outside the V8 heap), so the
+limit is derived from `navigator.deviceMemory` + core count instead:
+
+| Signals | Max file |
+|---|---|
+| RAM >= 64 GB | 10 GB |
+| RAM >= 32 GB | 8-10 GB (20+ threads -> 10 GB) |
+| RAM >= 16 GB | 6-8 GB |
+| RAM >= 8 GB (may be the privacy clamp) | 2-10 GB by core count (20+ threads -> 10 GB) |
+| RAM >= 4 GB | 1-2 GB |
+| Unknown (Firefox/Safari) | 1-4 GB by core count |
+| Mobile | 256 MB - 1.5 GB by RAM |
+
+Memory peak during encrypt/decrypt ~= 1.2x the file (2.2x with compression):
+1x input ArrayBuffer + one active 16 MB chunk + browser-managed Blob output.
 
 ## Component Tree
 

@@ -29,6 +29,7 @@ import { createDecryptTracker, type ProgressState } from "@/app/lib/progress";
 import CryptoProgress from "@/app/components/CryptoProgress";
 import { useLanguage } from "@/app/components/LanguageProvider";
 import { notifySuccess, notifyError } from "@/app/lib/notify";
+import { takePendingDecryptFile } from "@/app/lib/file-handoff";
 
 export default function DecryptForm() {
   const { t } = useLanguage();
@@ -43,6 +44,13 @@ export default function DecryptForm() {
   // Device limits
   const [limits, setLimits] = useState<DeviceLimits | null>(null);
   useEffect(() => { setLimits(analyzeDevice()); }, []);
+
+  // File handed over from /analyzer ("Decrypt this file")
+  useEffect(() => {
+    const pending = takePendingDecryptFile();
+    if (pending) processFile(pending);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Auth
   const [passphrase, setPassphrase] = useState("");
@@ -130,6 +138,11 @@ export default function DecryptForm() {
         if (textParsed) setHeader(textParsed.header);
       };
       textReader.readAsText(file);
+    };
+    // Very large files can fail to allocate — fail gracefully
+    bufReader.onerror = () => {
+      setError(t("form.error.file.read"));
+      if (fileInputRef.current) fileInputRef.current.value = "";
     };
     bufReader.readAsArrayBuffer(file);
   }

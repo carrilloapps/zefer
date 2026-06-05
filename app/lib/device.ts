@@ -112,49 +112,61 @@ export function analyzeDevice(): DeviceLimits {
   // Kick off async CPU arch detection (non-blocking)
   detectCpuArch().then((arch) => { profile.cpuArch = arch; }).catch(() => {});
 
-  // ─── Estimate available memory in bytes ───
-
-  let estimatedRamBytes = 0;
-
-  if (perfMemory?.jsHeapSizeLimit) {
-    // jsHeapSizeLimit is the max the JS heap can grow to.
-    // Use 50% of it — the rest is for the page, DOM, etc.
-    estimatedRamBytes = perfMemory.jsHeapSizeLimit * 0.5;
-  }
-  // Method 2: navigator.deviceMemory
-  else if (deviceMemoryGb > 0) {
-    // Device reports total RAM. Browser can typically use ~25-50% of total.
-    // Use 30% as a conservative estimate for a single tab.
-    estimatedRamBytes = deviceMemoryGb * 1024 * 1024 * 1024 * 0.3;
-  }
-  // Method 3: Heuristic from cores
-  else {
-    // No memory APIs available (Firefox/Safari).
-    // Estimate: ~512MB per core as a rough baseline.
-    const estimatedGb = Math.min(cores * 0.5, 16);
-    estimatedRamBytes = estimatedGb * 1024 * 1024 * 1024 * 0.3;
-  }
-
-  // With chunked encryption and Blob-based decryption:
+  // ─── Tiered limit model ───
   //
-  // ENCRYPT: 1x original file (FileReader) + ~32MB active chunk + Blob output
-  // DECRYPT: 1x .zefer file (FileReader) + ~32MB active chunk + Blob output
+  // Why not derive the limit from jsHeapSizeLimit: V8 caps the JS heap at
+  // ~4 GB on every desktop regardless of physical RAM (a 128 GB workstation
+  // reports the same limit as an 8 GB laptop — that is why the old formula
+  // froze every machine at ~1.5 GB). ArrayBuffers also live OUTSIDE the V8
+  // heap, so the heap is the wrong proxy altogether.
   //
-  // Both paths use the same memory model: the input file in an ArrayBuffer
-  // plus one active chunk. The output accumulates as Blob parts which the
-  // browser manages outside the JS heap.
+  // navigator.deviceMemory is clamped to 8 by Chromium for privacy, so
+  // "ram >= 8" means "8 GB OR MORE — possibly far more". Core count is the
+  // best available proxy to separate workstations (i9/Ryzen 9/Threadripper,
+  // 20+ threads) from 8 GB ultrabooks.
   //
-  // The bottleneck is FileReader loading the full input file into heap.
-  // Formula: (available heap - 64MB overhead) × 80% safety
-  const overhead = 64 * 1024 * 1024;
-  const maxFileSize = Math.floor(Math.max(estimatedRamBytes - overhead, 0) * 0.8);
+  // Memory model during encrypt/decrypt: 1× input ArrayBuffer (off-heap)
+  // + one active 16 MB chunk + output accumulated as browser-managed Blob
+  // parts ⇒ peak ≈ 1.2× the file size (2.2× when compression is enabled).
+  const GB = 1024 * 1024 * 1024;
+  const MB = 1024 * 1024;
 
-  // Clamp: minimum 10 MB, no upper cap
-  const finalMax = Math.max(maxFileSize, 10 * 1024 * 1024);
+  let maxFileSize: number;
+
+  if (mobile) {
+    if (deviceMemoryGb >= 6) maxFileSize = 1.5 * GB;
+    else if (deviceMemoryGb >= 4) maxFileSize = 1 * GB;
+    else if (deviceMemoryGb >= 2) maxFileSize = 512 * MB;
+    else maxFileSize = 256 * MB;
+  } else if (deviceMemoryGb >= 64) {
+    // Verified high-memory workstation (some Chromium builds report real RAM)
+    maxFileSize = 10 * GB;
+  } else if (deviceMemoryGb >= 32) {
+    maxFileSize = cores >= 20 ? 10 * GB : 8 * GB;
+  } else if (deviceMemoryGb >= 16) {
+    maxFileSize = cores >= 16 ? 8 * GB : 6 * GB;
+  } else if (deviceMemoryGb >= 8) {
+    // "8" may be the privacy clamp (8 GB OR more) — use cores to separate
+    // workstations (i9/Ryzen 9, 20+ threads) from 8 GB ultrabooks
+    if (cores >= 20) maxFileSize = 10 * GB;
+    else if (cores >= 16) maxFileSize = 6 * GB;
+    else if (cores >= 12) maxFileSize = 4 * GB;
+    else if (cores >= 8) maxFileSize = 3 * GB;
+    else maxFileSize = 2 * GB;
+  } else if (deviceMemoryGb >= 4) {
+    maxFileSize = cores >= 8 ? 2 * GB : 1 * GB;
+  } else if (deviceMemoryGb > 0) {
+    maxFileSize = 512 * MB;
+  } else {
+    // No deviceMemory API (Firefox/Safari) — fall back to core count
+    if (cores >= 16) maxFileSize = 4 * GB;
+    else if (cores >= 8) maxFileSize = 2 * GB;
+    else maxFileSize = 1 * GB;
+  }
 
   return {
-    maxFileSize: finalMax,
-    maxFileSizeLabel: formatBytes(finalMax),
+    maxFileSize,
+    maxFileSizeLabel: formatBytes(maxFileSize),
     profile,
   };
 }

@@ -282,6 +282,11 @@ export default function EncryptForm() {
         setFileSize(file.size);
       }
     };
+    // Very large files can fail to allocate — fail gracefully
+    reader.onerror = () => {
+      setError(t("form.error.file.read"));
+      if (fileRef.current) fileRef.current.value = "";
+    };
     reader.readAsArrayBuffer(file);
   }
 

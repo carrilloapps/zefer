@@ -17,8 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Plain-language tooltips** — 12 explanations (es/en/pt) for entropy, scenarios, each framework check, keyspace, post-quantum bits and the average comparison
 - **Deep .zefer analysis** (`/analyzer`) — structural integrity (chunk-framing walk, corruption/truncation detection, chunk count, estimated content size), ciphertext randomness via Shannon entropy, salt/IV hex, full-file SHA-256 fingerprint, KDF resistance table (per-GPU guess rate from the file's iterations + crack times for typical passphrase strengths vs a 1,000-GPU fleet) and severity-tagged security observations (weak KDF, public hint/note, reveal-key surface, compression side-channel, low entropy, broken structure)
 
+### Changed
+
+- **Realistic file-size limits** — the old formula derived the limit from the V8 heap cap (~4 GB on every desktop, freezing all machines at ~1.5 GB). Limits are now tiered by reported RAM + CPU threads: workstations (20+ threads or 64+ GB RAM) reach **10 GB**, mid-range desktops 2–8 GB, mobile 256 MB–1.5 GB. `/device` page explanation updated accordingly; file reads now fail gracefully with a clear message if the browser cannot allocate
+
 ### Fixed
 
+- **"Decrypt this file"** on `/analyzer` now hands the analyzed file directly to the decrypt form (client-side navigation handoff) instead of landing on an empty form
 - **"Infinity years"** — crack times are computed in log space (`2^bits` overflows `Number` past ~1024 bits); extreme configs now render `≈10ⁿ years` with Unicode superscripts
 - **Checked toggles never turned green** — Tailwind cannot variant plain CSS classes; native `.peer:checked ~` selectors now style the track and knob (also fixes the home dual-key toggles)
 - **Saved keygen preferences were never applied** — local state initialized before `localStorage` hydration; the popover now adopts preferences when they arrive

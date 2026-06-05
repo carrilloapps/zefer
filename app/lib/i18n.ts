@@ -79,6 +79,12 @@ const translations = {
     pt: "Privacidade",
   },
 
+  "form.error.file.read": {
+    es: "No se pudo leer el archivo — puede exceder la memoria disponible del navegador",
+    en: "Could not read the file — it may exceed the browser's available memory",
+    pt: "Não foi possível ler o arquivo — pode exceder a memória disponível do navegador",
+  },
+
   // ─── Accessibility labels ───
   "aria.showpass": {
     es: "Mostrar frase clave",
@@ -549,9 +555,9 @@ const translations = {
     pt: "Como o limite é calculado?",
   },
   "devicepage.formula.desc": {
-    es: "El navegador necesita aproximadamente 3 veces el tamaño del archivo en memoria RAM durante el cifrado: una copia para los bytes del archivo original, otra para la salida cifrada y otra para el procesamiento intermedio (base64, compresión). Se usa el 50% del heap limit del proceso JavaScript como memoria disponible, y se aplica un margen de seguridad del 80% para evitar que el navegador se quede sin memoria.",
-    en: "The browser needs approximately 3 times the file size in RAM during encryption: one copy for the original file bytes, another for the encrypted output, and another for intermediate processing (base64, compression). 50% of the JavaScript process heap limit is used as available memory, and an 80% safety margin is applied to prevent the browser from running out of memory.",
-    pt: "O navegador precisa de aproximadamente 3 vezes o tamanho do arquivo em memória RAM durante a criptografia: uma cópia para os bytes do arquivo original, outra para a saída criptografada e outra para o processamento intermediário (base64, compressão). 50% do heap limit do processo JavaScript é usado como memória disponível, e uma margem de segurança de 80% é aplicada para evitar que o navegador fique sem memória.",
+    es: "El límite se calcula por niveles según la RAM reportada por el navegador y el número de núcleos del procesador. El heap de JavaScript está limitado a ~4 GB en cualquier equipo (por eso no sirve como referencia), pero los datos del archivo viven fuera de ese heap: con el cifrado por bloques de 16 MB, el pico de memoria es ~1.2 veces el tamaño del archivo (~2.2 con compresión). Una estación de trabajo (20+ hilos o 64+ GB de RAM) alcanza 10 GB por archivo; equipos medios, entre 2 y 8 GB; móviles, entre 256 MB y 1.5 GB.",
+    en: "The limit is tiered by the RAM the browser reports and the CPU core count. The JavaScript heap is capped at ~4 GB on any machine (which is why it is not used as the reference), but file data lives outside that heap: with 16 MB chunked encryption, peak memory is ~1.2× the file size (~2.2× with compression). A workstation (20+ threads or 64+ GB RAM) reaches 10 GB per file; mid-range machines, 2–8 GB; mobile devices, 256 MB–1.5 GB.",
+    pt: "O limite é calculado por níveis conforme a RAM reportada pelo navegador e o número de núcleos do processador. O heap de JavaScript é limitado a ~4 GB em qualquer máquina (por isso não serve como referência), mas os dados do arquivo vivem fora desse heap: com a criptografia em blocos de 16 MB, o pico de memória é ~1.2 vez o tamanho do arquivo (~2.2 com compressão). Uma estação de trabalho (20+ threads ou 64+ GB de RAM) chega a 10 GB por arquivo; máquinas intermediárias, entre 2 e 8 GB; celulares, entre 256 MB e 1.5 GB.",
   },
   "devicepage.sources.title": {
     es: "Fuentes de datos",
