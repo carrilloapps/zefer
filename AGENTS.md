@@ -207,7 +207,14 @@ Standalone tool page, 100% client-side, two tabs:
 
 ### .zefer file analyzer (`/analyzer`)
 
-Drop any `.zefer` file to inspect its **public header without the passphrase** (same data as `zefer info` in the CLI): format (ZEFB3/ZEFR3/legacy), content mode, PBKDF2 iterations + KDF level, compression, sizes, reveal-key presence, public hint/note. The file is read locally with the File API — nothing is uploaded.
+Drop any `.zefer` file for a **deep security report without the passphrase** (superset of `zefer info` in the CLI). The file is read locally with the File API — nothing is uploaded:
+
+- **Public header**: format (ZEFB3/ZEFR3/legacy), content mode, PBKDF2 iterations + KDF level, compression, sizes, reveal-key presence, public hint/note
+- **Structural integrity**: walks the chunk framing (4-byte length prefixes after salt+IV) and flags corrupted/truncated files; shows encrypted chunk count and estimated content size (ciphertext − 16-byte GCM tags)
+- **Ciphertext randomness**: Shannon entropy over a 64 KB sample (proper AES ≈ 8.0 bits/byte; low values flag corruption or fake ciphertext)
+- **Cryptographic identifiers**: salt and base IV in hex (public by design), full-file SHA-256 fingerprint for out-of-band integrity verification
+- **KDF resistance table**: per-GPU guess rate derived from the file's PBKDF2 iterations (10¹⁰ SHA-256/s ÷ 2·iterations) and crack times for typical passphrase strengths (28/45/72/400 bits) against a 1,000-GPU fleet
+- **Security observations**: severity-tagged findings (weak KDF level, public hint/note exposure, reveal-key access surface, compression side-channel, low entropy, broken structure)
 
 ---
 

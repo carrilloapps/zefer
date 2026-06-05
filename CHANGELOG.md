@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Stop-slider controls** — length (presets 16–1024 + custom up to 2048) and quantity (1–50, default 1) use a horizontal slider with dot markers mathematically centered on the thumb path, plus a manual input
 - **Security report** (`SecurityInsights`, shared by the config panel and the analyzer tab): 4 attack scenarios (10²–10¹⁵ guesses/s), cybersecurity framework checks (NIST SP 800-63B, OWASP ≥64 bits, long-term ≥100 bits, AES-128 ≥128 bits, post-quantum Grover), total keyspace, post-quantum entropy, and comparison vs an average human password (~40 bits) — collapsible on the generator tab
 - **Plain-language tooltips** — 12 explanations (es/en/pt) for entropy, scenarios, each framework check, keyspace, post-quantum bits and the average comparison
+- **Deep .zefer analysis** (`/analyzer`) — structural integrity (chunk-framing walk, corruption/truncation detection, chunk count, estimated content size), ciphertext randomness via Shannon entropy, salt/IV hex, full-file SHA-256 fingerprint, KDF resistance table (per-GPU guess rate from the file's iterations + crack times for typical passphrase strengths vs a 1,000-GPU fleet) and severity-tagged security observations (weak KDF, public hint/note, reveal-key surface, compression side-channel, low entropy, broken structure)
 
 ### Fixed
 

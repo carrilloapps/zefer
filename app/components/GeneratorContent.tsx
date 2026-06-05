@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import {
   KeyRound, Copy, Check, RefreshCw, Download, Hash, Eye, EyeOff,
   ShieldCheck, AlertTriangle, Gauge, Layers, ScanSearch, Shield,
-  ChevronUp, ChevronDown, Ban, SquareAsterisk, X, Atom, User, Crosshair, Info,
+  ChevronUp, ChevronDown, Ban, SquareAsterisk, X, Atom, User, Crosshair,
 } from "lucide-react";
-import { PageLayout, PageHeader } from "@/app/components/ui";
+import { PageLayout, PageHeader, InfoTip } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
 import { notifySuccess } from "@/app/lib/notify";
 import { usePreferences } from "@/app/lib/preferences";
@@ -112,29 +112,6 @@ function formatCrack(bits: number, gps: number, t: TFn): string {
   if (bucket === "instant") return t("time.instant");
   if (bucket === "yearsExp") return `≈10${toSuperscript(value)} ${t("time.years")}`;
   return `${value.toLocaleString()} ${t(`time.${bucket}` as TranslationKey)}`;
-}
-
-/** Small (i) trigger with a plain-language explanation. Hover, keyboard focus
- *  and tap all open it; the visual icon is small but the hit area is ~36px. */
-function InfoTip({ tipKey, align }: { tipKey: TranslationKey; align?: "left" | "right" }) {
-  const { t } = useLanguage();
-  const [open, setOpen] = useState(false);
-  return (
-    <span className={`info-tip ${open ? "info-tip-open" : ""}`} onMouseLeave={() => setOpen(false)}>
-      <button
-        type="button"
-        onClick={(e) => { setOpen(!open); e.currentTarget.focus(); }}
-        onBlur={() => setOpen(false)}
-        aria-label={t("tip.aria")}
-        className="relative w-4 h-4 flex items-center justify-center rounded-full theme-faint hover:text-primary transition-colors cursor-help before:content-[''] before:absolute before:-inset-2.5"
-      >
-        <Info className="w-3 h-3" aria-hidden="true" />
-      </button>
-      <span role="tooltip" className={`info-tip-bubble ${align === "left" ? "tip-left" : ""}${align === "right" ? "tip-right" : ""}`}>
-        {t(tipKey)}
-      </span>
-    </span>
-  );
 }
 
 const FRAME_TIPS: Record<string, TranslationKey> = {

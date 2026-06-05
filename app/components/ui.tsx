@@ -2,9 +2,36 @@
 
 import { useState, useRef, useEffect, type ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Info } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
+import { useLanguage } from "@/app/components/LanguageProvider";
+import type { TranslationKey } from "@/app/lib/i18n";
+
+// ─── Info tooltip (hover / focus / tap) ───
+
+/** Small (i) trigger with a plain-language explanation. The visual icon is
+ *  small but the hit area is ~36px. */
+export function InfoTip({ tipKey, align }: { tipKey: TranslationKey; align?: "left" | "right" }) {
+  const { t } = useLanguage();
+  const [open, setOpen] = useState(false);
+  return (
+    <span className={`info-tip ${open ? "info-tip-open" : ""}`} onMouseLeave={() => setOpen(false)}>
+      <button
+        type="button"
+        onClick={(e) => { setOpen(!open); e.currentTarget.focus(); }}
+        onBlur={() => setOpen(false)}
+        aria-label={t("tip.aria")}
+        className="relative w-4 h-4 flex items-center justify-center rounded-full theme-faint hover:text-primary transition-colors cursor-help before:content-[''] before:absolute before:-inset-2.5"
+      >
+        <Info className="w-3 h-3" aria-hidden="true" />
+      </button>
+      <span role="tooltip" className={`info-tip-bubble ${align === "left" ? "tip-left" : ""}${align === "right" ? "tip-right" : ""}`}>
+        {t(tipKey)}
+      </span>
+    </span>
+  );
+}
 
 // ─── Page layout wrapper ───
 
