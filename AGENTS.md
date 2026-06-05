@@ -161,6 +161,19 @@ keygen [options]
 info <input>            Show public header without decrypting
 ```
 
+### MCP server (`zefer mcp`)
+
+zefer-cli doubles as a **Model Context Protocol server** (stdio, dependency-free), so AI agents can use every capability directly:
+
+```jsonc
+{ "mcpServers": { "zefer": { "command": "zefer", "args": ["mcp"] } } }
+```
+
+- Tools: `zefer_encrypt`, `zefer_decrypt`, `zefer_keygen`, `zefer_analyze_password`, `zefer_inspect`
+- Smart detection: `zefer mcp` explicit; no args + piped stdin (how MCP clients spawn servers) auto-starts MCP; TTY terminals always get the regular CLI
+- Works with the npm install, `npx zefer-cli mcp`, and the standalone binaries
+- Per-tool setup guides (Claude Code/Desktop, Cursor, Windsurf, VS Code, Zed): https://zefer.carrillo.app/mcp
+
 ---
 
 ## Using Zefer from the Web App

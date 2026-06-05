@@ -5,6 +5,17 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **`/mcp` page** — zefer-cli as a Model Context Protocol server: 2-step setup, smart-detection explanation, the 5 exposed tools, an example JSON-RPC call, and **per-tool accordions** with copy-ready configs for Claude Code, Claude Desktop, Cursor, Windsurf, VS Code (Copilot), Zed and generic stdio clients. Linked from the navbar, mobile drawer, footer, home resources and `/how`
+- AI-integration docs refreshed everywhere: `llms.txt` and `agents.md` gained an MCP section, AGENTS.md documents `zefer mcp`, README routes/AI sections updated
+
+### Fixed
+
+- "Cómo funciona" → "¿Cómo funciona?" (missing opening question mark in the home resources chip)
+
 ## [0.6.0] - 2026-06-05
 
 ### Added

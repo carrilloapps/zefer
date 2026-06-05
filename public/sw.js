@@ -1,4 +1,4 @@
-const VERSION = "zefer-v5";
+const VERSION = "zefer-v6";
 const STATIC_CACHE = VERSION + "-static";
 const DYNAMIC_CACHE = VERSION + "-dynamic";
 
@@ -7,6 +7,7 @@ const APP_SHELL = [
   "/how",
   "/generator",
   "/analyzer",
+  "/mcp",
   "/project",
   "/device",
   "/install",

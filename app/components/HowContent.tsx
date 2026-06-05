@@ -132,6 +132,7 @@ export default function HowContent() {
             ["how.gen.modes.title", "how.gen.modes.desc"],
             ["how.gen.analysis.title", "how.gen.analysis.desc"],
             ["how.gen.options.title", "how.gen.options.desc"],
+            ["how.gen.mcp.title", "how.gen.mcp.desc"],
           ] as const).map(([titleKey, descKey], i) => (
             <div key={titleKey} className="flex items-start gap-3">
               <span className="text-[10px] font-mono text-primary theme-primary-faint theme-primary-border border rounded-md px-1.5 py-0.5 shrink-0 mt-0.5">

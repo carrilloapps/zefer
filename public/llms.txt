@@ -328,6 +328,26 @@ All security metadata lives inside the encrypted payload (invisible without the 
 
 ---
 
+## MCP Server (for AI agents)
+
+zefer-cli ships a built-in Model Context Protocol server: `zefer mcp` (stdio, newline-delimited JSON-RPC 2.0, dependency-free — works with the npm install and the standalone binaries). Launching the binary with no arguments and piped stdin (how MCP clients spawn servers) also starts MCP mode automatically; human terminals always get the regular CLI.
+
+Client configuration (Claude Code, Claude Desktop, Cursor, Windsurf, VS Code, Zed, any stdio MCP client):
+
+    { "mcpServers": { "zefer": { "command": "zefer", "args": ["mcp"] } } }
+
+Exposed tools:
+
+- `zefer_encrypt` — encrypt text or files into .zefer with every option (dual key, reveal key, TTL, secret question, compression, IP allowlist)
+- `zefer_decrypt` — decrypt .zefer files (text returned inline, files written to disk)
+- `zefer_keygen` — generate scored keys: 7 modes + advanced options, sorted strongest first
+- `zefer_analyze_password` — full strength report: entropy, 4 attack scenarios (10^2-10^15 guesses/s), NIST SP 800-63B / OWASP / AES-128 / post-quantum compliance
+- `zefer_inspect` — deep .zefer analysis without the passphrase: structure, entropy, SHA-256, KDF resistance, observations
+
+Everything runs locally: no network, no telemetry. Full guide with per-tool configs: https://zefer.carrillo.app/mcp
+
+---
+
 ## Docs
 
 - [How It Works](https://zefer.carrillo.app/how): 7-step encryption process, technical specs

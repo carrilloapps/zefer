@@ -110,6 +110,7 @@ app/
 | `/how` | Static | index, follow | 7 steps + 5 features + 12 specs + FAQPage schema |
 | `/generator` | Static | index, follow | Password lab, 2 tabs: generator (7 modes, stop-slider 16–1024 + custom ≤2048, qty ≤50, advanced opts, per-key score sorted desc) + analyzer (entropy, 4 attack scenarios, NIST/OWASP/AES-128/post-quantum checks, avg-password comparison, plain-language tooltips) |
 | `/analyzer` | Static | index, follow | .zefer public-header inspector (format, KDF level, compression — no passphrase needed) |
+| `/mcp` | Static | index, follow | zefer-cli as MCP server: setup, smart detection, 5 tools, example call |
 | `/privacy` | Static | noindex, follow | Privacy policy — 9 sections + GDPR/CCPA/LGPD compliance |
 | `/terms` | Static | noindex, follow | 12 sections + MIT + Colombia Law 1581 |
 | `/project` | Static | index, follow | Repo, stack, creator (GitHub API), donate |

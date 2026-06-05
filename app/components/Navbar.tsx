@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Shield, User, Code, Download, BookOpen, Cpu,
   Lock, Scale, Users, ShieldAlert, ChevronRight, ExternalLink,
-  KeyRound, FileSearch, ChevronDown,
+  KeyRound, FileSearch, ChevronDown, Plug,
 } from "lucide-react";
 import LanguageSelector from "@/app/components/LanguageSelector";
 import ThemeToggle from "@/app/components/ThemeToggle";
@@ -93,6 +93,9 @@ export default function Navbar() {
             <a href="/analyzer" className="px-2 lg:px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1 whitespace-nowrap">
               <FileSearch className="w-3 h-3 shrink-0" />{t("nav.analyzer")}
             </a>
+            <a href="/mcp" className="px-2 lg:px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1 whitespace-nowrap">
+              <Plug className="w-3 h-3 shrink-0" />{t("nav.mcp")}
+            </a>
             <ProjectMenu />
             <a href="/install" className="px-2 lg:px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1 whitespace-nowrap">
               <Download className="w-3 h-3 shrink-0" />{t("nav.install")}
@@ -175,6 +178,7 @@ export default function Navbar() {
           <div className="drawer-group drawer-stagger mb-3" style={{ "--stagger": "0.13s" } as React.CSSProperties}>
             <DrawerLink href="/generator" icon={KeyRound} label={t("nav.generator")} onClick={close} />
             <DrawerLink href="/analyzer" icon={FileSearch} label={t("nav.analyzer")} onClick={close} />
+            <DrawerLink href="/mcp" icon={Plug} label={t("nav.mcp")} onClick={close} />
           </div>
 
           <div className="drawer-group drawer-stagger mb-3" style={{ "--stagger": "0.17s" } as React.CSSProperties}>

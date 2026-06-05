@@ -213,6 +213,9 @@ export default function HomeContent() {
             <Link href="/device" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">
               <Cpu className="w-3 h-3" />{t("home.device")}
             </Link>
+            <Link href="/mcp" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">
+              <Bot className="w-3 h-3" />{t("nav.mcp")}
+            </Link>
             <a href="/llms.txt" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">
               <Bot className="w-3 h-3" />llms.txt
             </a>

@@ -263,6 +263,7 @@ public/
 | `/how` | Static | Yes | How it works — 7 steps + features + specs |
 | `/generator` | Static | Yes | Advanced password generator + analyzer — entropy, attack scenarios, security framework, copy/download |
 | `/analyzer` | Static | Yes | `.zefer` file inspector — public header without the passphrase |
+| `/mcp` | Static | Yes | zefer-cli as MCP server — setup, per-tool accordions, 5 tools, example call |
 | `/project` | Static | Yes | Project info, tech stack, creator, donate |
 | `/device` | Static | Yes | Device detection details + optimization guide |
 | `/install` | Static | Yes | Usage guide, self-hosting, PWA, native apps |
@@ -376,7 +377,9 @@ HTTPS is required — Web Crypto API is only available in secure contexts. See t
 
 ## AI Integration
 
-Zefer publishes [`/llms.txt`](https://zefer.carrillo.app/llms.txt) following the [llmstxt.org](https://llmstxt.org/) standard. Any AI tool can use it as context:
+**MCP server** — [zefer-cli](https://github.com/carrilloapps/zefer-cli) doubles as a [Model Context Protocol](https://modelcontextprotocol.io) server: `{ "mcpServers": { "zefer": { "command": "zefer", "args": ["mcp"] } } }` gives any agent (Claude Code/Desktop, Cursor, Windsurf, VS Code, Zed…) five local tools: `zefer_encrypt`, `zefer_decrypt`, `zefer_keygen`, `zefer_analyze_password`, `zefer_inspect`. Per-tool setup guides: [zefer.carrillo.app/mcp](https://zefer.carrillo.app/mcp).
+
+Zefer also publishes [`/llms.txt`](https://zefer.carrillo.app/llms.txt) following the [llmstxt.org](https://llmstxt.org/) standard. Any AI tool can use it as context:
 
 | Tool | Usage |
 |---|---|
