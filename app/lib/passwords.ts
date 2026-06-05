@@ -358,8 +358,9 @@ export function bucketCrackTime(seconds: number): { bucket: CrackBucket; value: 
 
 /** 0-9 → Unicode superscript digits, for ≈10ⁿ rendering */
 export function toSuperscript(n: number): string {
+  if (!Number.isFinite(n)) return "⁹⁹⁹⁺";
   const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
-  return String(n).split("").map((d) => SUP[Number(d)] ?? d).join("");
+  return String(Math.floor(n)).split("").map((d) => SUP[Number(d)] ?? d).join("");
 }
 
 // ─── Attack scenarios (guesses per second) ───
@@ -375,6 +376,19 @@ export const ATTACK_SCENARIOS: { key: ScenarioKey; gps: number; expLabel: string
 
 export function crackSecondsAt(bits: number, gps: number): number {
   return Math.pow(2, bits - 1) / gps;
+}
+
+/** Crack-time bucket computed in log space — never overflows to Infinity,
+ *  even for multi-thousand-bit keys (2^bits overflows Number at ~1024 bits). */
+export function crackBucketFor(bits: number, gps: number): { bucket: CrackBucket; value: number } {
+  const log10Seconds = (bits - 1) * Math.log10(2) - Math.log10(gps);
+  // Small enough to compute numerically with full precision
+  if (log10Seconds < 9) {
+    return bucketCrackTime(Math.pow(10, log10Seconds));
+  }
+  const log10Years = log10Seconds - Math.log10(86400 * 365);
+  if (log10Years < 6) return { bucket: "years", value: Math.round(Math.pow(10, log10Years)) };
+  return { bucket: "yearsExp", value: Math.floor(log10Years) };
 }
 
 // ─── Security framework checks ───

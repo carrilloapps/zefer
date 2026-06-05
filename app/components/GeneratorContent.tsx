@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   KeyRound, Copy, Check, RefreshCw, Download, Hash, Eye, EyeOff,
   ShieldCheck, AlertTriangle, Gauge, Layers, ScanSearch, Shield,
-  ChevronUp, ChevronDown, Ban, SquareAsterisk, X, Atom, User, Crosshair,
+  ChevronUp, ChevronDown, Ban, SquareAsterisk, X, Atom, User, Crosshair, Info,
 } from "lucide-react";
 import { PageLayout, PageHeader } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
@@ -12,8 +12,8 @@ import { notifySuccess } from "@/app/lib/notify";
 import { usePreferences } from "@/app/lib/preferences";
 import type { TranslationKey } from "@/app/lib/i18n";
 import {
-  MODES, charsetFor, generateWithOptions, analyzePassword, bucketCrackTime,
-  toSuperscript, ATTACK_SCENARIOS, crackSecondsAt, complianceOf,
+  MODES, charsetFor, generateWithOptions, analyzePassword,
+  toSuperscript, ATTACK_SCENARIOS, crackBucketFor, complianceOf,
   keyspaceExponent, AVERAGE_HUMAN_BITS,
   type PasswordAnalysis, type PasswordWarning,
 } from "@/app/lib/passwords";
@@ -106,12 +106,44 @@ const SCORE_TEXT = ["theme-danger", "theme-danger", "theme-warning", "text-prima
 
 type TFn = (key: TranslationKey) => string;
 
-function formatCrack(seconds: number, t: TFn): string {
-  const { bucket, value } = bucketCrackTime(seconds);
+// Log-space computation: never shows "Infinity" even for multi-thousand-bit keys
+function formatCrack(bits: number, gps: number, t: TFn): string {
+  const { bucket, value } = crackBucketFor(bits, gps);
   if (bucket === "instant") return t("time.instant");
   if (bucket === "yearsExp") return `≈10${toSuperscript(value)} ${t("time.years")}`;
   return `${value.toLocaleString()} ${t(`time.${bucket}` as TranslationKey)}`;
 }
+
+/** Small (i) trigger with a plain-language explanation. Hover, keyboard focus
+ *  and tap all open it; the visual icon is small but the hit area is ~36px. */
+function InfoTip({ tipKey, align }: { tipKey: TranslationKey; align?: "left" | "right" }) {
+  const { t } = useLanguage();
+  const [open, setOpen] = useState(false);
+  return (
+    <span className={`info-tip ${open ? "info-tip-open" : ""}`} onMouseLeave={() => setOpen(false)}>
+      <button
+        type="button"
+        onClick={(e) => { setOpen(!open); e.currentTarget.focus(); }}
+        onBlur={() => setOpen(false)}
+        aria-label={t("tip.aria")}
+        className="relative w-4 h-4 flex items-center justify-center rounded-full theme-faint hover:text-primary transition-colors cursor-help before:content-[''] before:absolute before:-inset-2.5"
+      >
+        <Info className="w-3 h-3" aria-hidden="true" />
+      </button>
+      <span role="tooltip" className={`info-tip-bubble ${align === "left" ? "tip-left" : ""}${align === "right" ? "tip-right" : ""}`}>
+        {t(tipKey)}
+      </span>
+    </span>
+  );
+}
+
+const FRAME_TIPS: Record<string, TranslationKey> = {
+  nist: "tip.nist",
+  owasp: "tip.owasp",
+  longterm: "tip.longterm",
+  aes128: "tip.aes128",
+  quantum: "tip.quantum",
+};
 
 const FRAME_LABELS: Record<string, TranslationKey> = {
   nist: "gen.frame.nist",
@@ -146,6 +178,7 @@ function SecurityInsights({ bits, length, subjectKey }: { bits: number; length: 
       <div>
         <p className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
           <Crosshair className="w-3 h-3" />{t("gen.scen.title")}
+          <InfoTip tipKey="tip.scenarios" />
         </p>
         <div className="grid grid-cols-1 min-[440px]:grid-cols-2 lg:grid-cols-4 gap-2">
           {ATTACK_SCENARIOS.map((s) => (
@@ -154,7 +187,7 @@ function SecurityInsights({ bits, length, subjectKey }: { bits: number; length: 
                 {t(SCENARIO_LABELS[s.key])}
               </p>
               <p className="text-[9px] theme-faint font-mono mb-1">{s.expLabel} {t("gen.scen.guesses")}</p>
-              <p className="text-[13px] font-mono text-primary leading-tight">{formatCrack(crackSecondsAt(bits, s.gps), t)}</p>
+              <p className="text-[13px] font-mono text-primary leading-tight">{formatCrack(bits, s.gps, t)}</p>
             </div>
           ))}
         </div>
@@ -174,7 +207,10 @@ function SecurityInsights({ bits, length, subjectKey }: { bits: number; length: 
               ) : (
                 <X className="w-3.5 h-3.5 theme-warning shrink-0" aria-hidden="true" />
               )}
-              <span className="text-[11px] theme-text flex-1 leading-snug">{t(FRAME_LABELS[c.key])}</span>
+              <span className="text-[11px] theme-text flex-1 leading-snug">
+                {t(FRAME_LABELS[c.key])}{" "}
+                <InfoTip tipKey={FRAME_TIPS[c.key]} />
+              </span>
               <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full border shrink-0 ${
                 c.pass ? "theme-primary-faint theme-primary-border text-primary" : "theme-warning-faint theme-warning"
               }`}>
@@ -187,12 +223,14 @@ function SecurityInsights({ bits, length, subjectKey }: { bits: number; length: 
           <div className="glass !rounded-lg px-3 py-2.5">
             <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5 flex items-center gap-1">
               <Hash className="w-2.5 h-2.5" />{t("gen.frame.keyspace")}
+              <InfoTip tipKey="tip.keyspace" align="left" />
             </p>
             <p className="text-sm font-mono theme-heading">≈10{toSuperscript(ksExp)}</p>
           </div>
           <div className="glass !rounded-lg px-3 py-2.5">
             <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5 flex items-center gap-1">
               <Atom className="w-2.5 h-2.5" />{t("gen.frame.quantumbits")}
+              <InfoTip tipKey="tip.quantumbits" align="right" />
             </p>
             <p className="text-sm font-mono theme-heading">{quantumBits} <span className="text-[10px] theme-muted">{t("gen.metric.bits")}</span></p>
           </div>
@@ -203,6 +241,7 @@ function SecurityInsights({ bits, length, subjectKey }: { bits: number; length: 
       <div>
         <p className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
           <User className="w-3 h-3" />{t("gen.avg.title")}
+          <InfoTip tipKey="tip.avg" />
         </p>
         <div className="glass !rounded-lg px-3 py-3 space-y-2.5">
           <div>
@@ -569,11 +608,17 @@ export default function GeneratorContent() {
             <p className="text-[11px] theme-muted mb-3">{t("gen.config.desc")}</p>
             <div className="grid grid-cols-2 gap-2 mb-4">
               <div className="glass !rounded-lg px-3 py-2.5">
-                <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5">{t("gen.metric.pool")}</p>
+                <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                  {t("gen.metric.pool")}
+                  <InfoTip tipKey="tip.pool" align="left" />
+                </p>
                 <p className="text-sm font-mono theme-heading">{poolSize.toLocaleString()} <span className="text-[10px] theme-muted">{t("gen.metric.symbols")}</span></p>
               </div>
               <div className="glass !rounded-lg px-3 py-2.5">
-                <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5">{t("gen.metric.entropy")}</p>
+                <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                  {t("gen.metric.entropy")}
+                  <InfoTip tipKey="tip.entropy" align="right" />
+                </p>
                 <p className="text-sm font-mono theme-heading">~{bits.toLocaleString()} <span className="text-[10px] theme-muted">{t("gen.metric.bits")}</span></p>
               </div>
             </div>
@@ -683,14 +728,17 @@ export default function GeneratorContent() {
 
               {/* Metrics grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {[
-                  { label: t("gen.metric.length"), value: `${analysis.length}`, unit: t("gen.metric.chars") },
-                  { label: t("gen.metric.pool"), value: `${analysis.poolSize}`, unit: t("gen.metric.symbols") },
-                  { label: t("gen.metric.entropy"), value: `${analysis.entropyBits}`, unit: t("gen.metric.bits") },
-                  { label: t("gen.metric.effective"), value: `${analysis.effectiveBits}`, unit: t("gen.metric.bits") },
-                ].map((m) => (
+                {([
+                  { label: t("gen.metric.length"), value: `${analysis.length}`, unit: t("gen.metric.chars"), tip: null, align: undefined },
+                  { label: t("gen.metric.pool"), value: `${analysis.poolSize}`, unit: t("gen.metric.symbols"), tip: "tip.pool" as TranslationKey, align: "right" as const },
+                  { label: t("gen.metric.entropy"), value: `${analysis.entropyBits}`, unit: t("gen.metric.bits"), tip: "tip.entropy" as TranslationKey, align: "left" as const },
+                  { label: t("gen.metric.effective"), value: `${analysis.effectiveBits}`, unit: t("gen.metric.bits"), tip: "tip.effective" as TranslationKey, align: "right" as const },
+                ]).map((m) => (
                   <div key={m.label} className="glass !rounded-lg px-3 py-2.5">
-                    <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5">{m.label}</p>
+                    <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                      {m.label}
+                      {m.tip && <InfoTip tipKey={m.tip} align={m.align} />}
+                    </p>
                     <p className="text-sm font-mono theme-heading">{m.value} <span className="text-[10px] theme-muted">{m.unit}</span></p>
                   </div>
                 ))}

@@ -528,6 +528,66 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.08), 0 0 12px rgba(21, 128, 61, 0.03);
 }
 
+/* ── Info tooltip (hover / focus / tap) ── */
+
+.info-tip {
+  position: relative;
+  display: inline-flex;
+}
+
+.info-tip-bubble {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 230px;
+  max-width: 72vw;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.625rem;
+  background: var(--glass-solid);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--foreground);
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  font-family: var(--font-geist-sans), sans-serif;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0s 0.15s;
+  z-index: 60;
+  pointer-events: none;
+  white-space: normal;
+}
+
+.info-tip:hover .info-tip-bubble,
+.info-tip:focus-within .info-tip-bubble,
+.info-tip.info-tip-open .info-tip-bubble {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.15s ease;
+}
+
+/* Keep the bubble on screen when the trigger sits near the viewport edges */
+.info-tip-bubble.tip-left {
+  left: 0;
+  transform: none;
+}
+
+.info-tip-bubble.tip-right {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .info-tip-bubble {
+    transition: none;
+  }
+}
+
 /* ── Range slider (generator length) ── */
 
 .range-slider {
