@@ -38,6 +38,9 @@ const BASE_FEATURES: Feature[] = [
   { key: "vs.feat.iprestrict", icon: Globe, zefer: "yes", other: "no" },
   { key: "vs.feat.maxattempts", icon: Shield, zefer: "yes", other: "no" },
   { key: "vs.feat.compression", icon: Zap, zefer: "yes", other: "no" },
+  { key: "vs.feat.passwordtools", icon: KeyRound, zefer: "yes", other: "no" },
+  { key: "vs.feat.fileanalyzer", icon: Eye, zefer: "yes", other: "no" },
+  { key: "vs.feat.mcp", icon: Zap, zefer: "yes", other: "no" },
 ];
 
 const COMPETITORS: Record<string, CompetitorData> = {
@@ -47,7 +50,7 @@ const COMPETITORS: Record<string, CompetitorData> = {
     features: [
       ...BASE_FEATURES,
       { key: "vs.feat.browseronly", icon: Globe, zefer: "yes", other: "no" },
-      { key: "vs.feat.cli", icon: Monitor, zefer: "no", other: "yes" },
+      { key: "vs.feat.cli", icon: Monitor, zefer: "yes", other: "yes" },
       { key: "vs.feat.offline", icon: HardDrive, zefer: "partial", other: "yes" },
     ],
     sections: [
@@ -77,6 +80,9 @@ const COMPETITORS: Record<string, CompetitorData> = {
       { key: "vs.feat.iprestrict", icon: Globe, zefer: "yes", other: "no" },
       { key: "vs.feat.vaultintegration", icon: Key, zefer: "no", other: "yes" },
       { key: "vs.feat.auditlog", icon: FileText, zefer: "no", other: "yes" },
+      { key: "vs.feat.passwordtools", icon: KeyRound, zefer: "yes", other: "partial" },
+      { key: "vs.feat.fileanalyzer", icon: Eye, zefer: "yes", other: "no" },
+      { key: "vs.feat.mcp", icon: Zap, zefer: "yes", other: "partial" },
     ],
     sections: [
       { icon: Users, titleKey: "vs.bw.section.account", descKey: "vs.bw.account.desc" },
@@ -180,6 +186,8 @@ export default function VsContent({ competitor }: { competitor: keyof typeof COM
             <li><span className="font-mono text-primary">AES-256-GCM</span> + PBKDF2-SHA256</li>
             <li>{t("vs.hatsh.zefer.iterations")}</li>
             <li>{t("vs.hatsh.zefer.features")}</li>
+            <li>{t("vs.zefer.tools")}</li>
+            <li>{t("vs.zefer.mcp")}</li>
             <li>{t("vs.hatsh.zefer.a11y")}</li>
           </ul>
         </GlassCard>

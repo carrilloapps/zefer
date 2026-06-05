@@ -1942,9 +1942,9 @@ const translations = {
 
   // ─── Install: Usage guide ───
   "install.usage.title": {
-    es: "Cómo usar Zefer",
+    es: "¿Cómo usar Zefer?",
     en: "How to Use Zefer",
-    pt: "Como usar o Zefer",
+    pt: "Como usar o Zefer?",
   },
   "install.usage.desc": {
     es: "Guía completa para cifrar y descifrar archivos con Zefer.",
@@ -2466,7 +2466,7 @@ const translations = {
   "conduct.level.4.title": { es: "Expulsión permanente", en: "Permanent Ban", pt: "Expulsão permanente" },
   "conduct.level.4.impact": { es: "Patrón de violación de estándares, acoso o agresión sostenida.", en: "Pattern of violation, sustained harassment or aggression.", pt: "Padrão de violação de padrões, assédio ou agressão contínua." },
   "conduct.level.4.consequence": { es: "Expulsión permanente de cualquier interacción pública dentro de la comunidad.", en: "A permanent ban from any public interaction within the community.", pt: "Expulsão permanente de qualquer interação pública dentro da comunidade." },
-  "conduct.reporting.title": { es: "Cómo reportar", en: "How to report", pt: "Como reportar" },
+  "conduct.reporting.title": { es: "¿Cómo reportar?", en: "How to report", pt: "Como reportar?" },
   "conduct.reporting.desc": { es: "Las instancias de comportamiento abusivo, acosador o inaceptable pueden reportarse al mantenedor del proyecto:", en: "Instances of abusive, harassing, or unacceptable behavior may be reported to the project maintainer:", pt: "Instâncias de comportamento abusivo, assediador ou inaceitável podem ser reportadas ao mantenedor do projeto:" },
   "conduct.attribution": { es: "Este código de conducta es una adaptación del Contributor Covenant, versión 2.1.", en: "This Code of Conduct is adapted from the Contributor Covenant, version 2.1.", pt: "Este código de conduta é uma adaptação do Contributor Covenant, versão 2.1." },
 
@@ -2477,7 +2477,7 @@ const translations = {
   "secpol.reporting.title": { es: "Reportar una vulnerabilidad", en: "Reporting a Vulnerability", pt: "Reportar uma vulnerabilidade" },
   "secpol.reporting.desc": { es: "No abras un issue público para vulnerabilidades de seguridad. Reporta de forma responsable:", en: "Please do not open a public issue for security vulnerabilities. Report responsibly:", pt: "Não abra uma issue pública para vulnerabilidades de segurança. Reporte de forma responsável:" },
   "secpol.reporting.advisory": { es: "Reportar vulnerabilidad", en: "Report a vulnerability", pt: "Reportar vulnerabilidade" },
-  "secpol.include.title": { es: "Qué incluir en el reporte", en: "What to include", pt: "O que incluir" },
+  "secpol.include.title": { es: "¿Qué incluir en el reporte?", en: "What to include", pt: "O que incluir?" },
   "secpol.include.1": { es: "Descripción de la vulnerabilidad", en: "Description of the vulnerability", pt: "Descrição da vulnerabilidade" },
   "secpol.include.2": { es: "Pasos para reproducir", en: "Steps to reproduce", pt: "Passos para reproduzir" },
   "secpol.include.3": { es: "Componente afectado (ej: crypto.ts, zefer.ts)", en: "Affected component (e.g., crypto.ts, zefer.ts)", pt: "Componente afetado (ex: crypto.ts, zefer.ts)" },
@@ -2659,7 +2659,7 @@ const translations = {
   "vs.vc.link.repo": { es: "Repositorio en GitHub", en: "GitHub repository", pt: "Repositório no GitHub" },
 
   // ─── How: password generation ───
-  "how.gen.title": { es: "Cómo se generan las contraseñas", en: "How passwords are generated", pt: "Como as senhas são geradas" },
+  "how.gen.title": { es: "¿Cómo se generan las contraseñas?", en: "How passwords are generated", pt: "Como as senhas são geradas?" },
   "how.gen.intro": { es: "El generador (en el formulario de cifrado y en /generator) produce claves con garantías criptográficas reales, 100% en tu dispositivo:", en: "The generator (in the encrypt form and at /generator) produces keys with real cryptographic guarantees, 100% on your device:", pt: "O gerador (no formulário de criptografia e em /generator) produz chaves com garantias criptográficas reais, 100% no seu dispositivo:" },
   "how.gen.csprng.title": { es: "Azar criptográfico (CSPRNG)", en: "Cryptographic randomness (CSPRNG)", pt: "Aleatoriedade criptográfica (CSPRNG)" },
   "how.gen.csprng.desc": { es: "Cada carácter proviene de crypto.getRandomValues, el generador seguro del sistema operativo — nunca de Math.random().", en: "Every character comes from crypto.getRandomValues, the operating system's secure generator — never from Math.random().", pt: "Cada caractere vem de crypto.getRandomValues, o gerador seguro do sistema operacional — nunca de Math.random()." },
@@ -2700,6 +2700,11 @@ const translations = {
   "mcp.tool.keygen.returns": { es: "lista de claves ordenadas de mayor a menor fuerza, cada una con puntuación, etiqueta y bits efectivos", en: "list of keys sorted strongest first, each with score, label and effective bits", pt: "lista de chaves ordenadas da mais forte, cada uma com pontuação, rótulo e bits efetivos" },
   "mcp.tool.analyze.returns": { es: "informe completo: puntuación, alfabeto estimado, entropías, keyspace, bits post-cuánticos, tiempos por escenario, cumplimiento, debilidades y comparación vs clave humana promedio", en: "full report: score, estimated alphabet, entropies, keyspace, post-quantum bits, per-scenario times, compliance, weaknesses and the vs-average-human comparison", pt: "relatório completo: pontuação, alfabeto estimado, entropias, keyspace, bits pós-quânticos, tempos por cenário, conformidade, fraquezas e comparação vs senha humana média" },
   "mcp.tool.inspect.returns": { es: "cabecera pública, integridad estructural, chunks, entropía del cifrado, sal/IV, SHA-256, tabla de resistencia KDF y observaciones con severidad", en: "public header, structural integrity, chunks, ciphertext entropy, salt/IV, SHA-256, KDF resistance table and severity-tagged observations", pt: "cabeçalho público, integridade estrutural, chunks, entropia da cifra, salt/IV, SHA-256, tabela de resistência KDF e observações com severidade" },
+  "vs.feat.passwordtools": { es: "Generador y análisis de contraseñas", en: "Password generator & analysis", pt: "Gerador e análise de senhas" },
+  "vs.feat.fileanalyzer": { es: "Inspector de archivos cifrados", en: "Encrypted-file inspector", pt: "Inspetor de arquivos criptografados" },
+  "vs.feat.mcp": { es: "Integración IA (servidor MCP)", en: "AI integration (MCP server)", pt: "Integração IA (servidor MCP)" },
+  "vs.zefer.tools": { es: "Generador/analizador de contraseñas e inspector .zefer integrados", en: "Built-in password generator/analyzer and .zefer inspector", pt: "Gerador/analisador de senhas e inspetor .zefer integrados" },
+  "vs.zefer.mcp": { es: "CLI con servidor MCP para agentes de IA", en: "CLI with an MCP server for AI agents", pt: "CLI com servidor MCP para agentes de IA" },
   "mcp.example.title": { es: "Ejemplo: lo que tu agente envía", en: "Example: what your agent sends", pt: "Exemplo: o que seu agente envia" },
   "mcp.example.desc": { es: "Una llamada de herramienta JSON-RPC por stdio. La respuesta incluye la ruta del archivo cifrado, su tamaño y formato:", en: "A JSON-RPC tool call over stdio. The response includes the encrypted file path, size and format:", pt: "Uma chamada de ferramenta JSON-RPC via stdio. A resposta inclui o caminho do arquivo criptografado, tamanho e formato:" },
   "mcp.privacy": { es: "Todo se ejecuta localmente: sin red, sin telemetría. Las frases clave nunca salen de tu máquina ni pasan por ningún servidor.", en: "Everything runs locally: no network, no telemetry. Passphrases never leave your machine nor touch any server.", pt: "Tudo é executado localmente: sem rede, sem telemetria. As frases-chave nunca saem da sua máquina nem passam por servidor algum." },
