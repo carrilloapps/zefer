@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Coffee, X, Heart, ArrowRight } from "lucide-react";
+import { Coffee, X } from "lucide-react";
 import { useLanguage } from "@/app/components/LanguageProvider";
 
 const BMC_URL = "https://www.buymeacoffee.com/carrilloapps";
@@ -53,19 +53,15 @@ export default function DonateFab() {
                 <Coffee className="w-4 h-4 text-primary" aria-hidden="true" />
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold theme-heading flex items-center gap-1.5">
-                  <Heart className="w-3 h-3 text-primary" aria-hidden="true" />
-                  {t("fab.bubble.title")}
-                </p>
+                <p className="text-xs font-semibold theme-heading">{t("fab.bubble.title")}</p>
                 <a
                   href={BMC_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setBubble(false)}
-                  className="inline-flex items-center gap-1 mt-1.5 text-[11px] font-medium text-primary hover:opacity-80 transition-opacity cursor-pointer"
+                  className="inline-block mt-1.5 text-[11px] font-medium text-primary underline underline-offset-2 hover:opacity-80 transition-opacity cursor-pointer"
                 >
                   {t("fab.bubble.cta")}
-                  <ArrowRight className="w-3 h-3" aria-hidden="true" />
                 </a>
               </div>
               <button

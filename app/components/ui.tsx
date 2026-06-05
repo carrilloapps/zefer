@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, type ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
-import { ChevronDown, Info } from "lucide-react";
+import { ChevronDown, Info, Copy, Check } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import { useLanguage } from "@/app/components/LanguageProvider";
@@ -30,6 +30,85 @@ export function InfoTip({ tipKey, align }: { tipKey: TranslationKey; align?: "le
         {t(tipKey)}
       </span>
     </span>
+  );
+}
+
+// ─── Code block with lightweight syntax highlighting + copy ───
+
+type CodeLang = "json" | "bash";
+
+/** Dependency-free tokenizer: JSON keys/strings/numbers/booleans/comments,
+ *  bash commands/flags/strings/comments. Colors come from theme variables. */
+export function highlightCode(code: string, lang: CodeLang): ReactNode[] {
+  const out: ReactNode[] = [];
+  let k = 0;
+  const push = (text: string, cls?: string) => {
+    out.push(cls ? <span key={k++} className={cls}>{text}</span> : <span key={k++}>{text}</span>);
+  };
+
+  if (lang === "bash") {
+    code.split("\n").forEach((line, li) => {
+      if (li > 0) push("\n");
+      if (/^\s*#/.test(line)) {
+        push(line, "tok-cmt");
+        return;
+      }
+      const re = /("(?:[^"\\]|\\.)*")|(--?[\w-]+)|(\$\w+)|([^\s"$-][^\s"]*)|(\s+)/g;
+      let m: RegExpExecArray | null;
+      let firstWord = true;
+      while ((m = re.exec(line)) !== null) {
+        if (m[1]) push(m[1], "tok-str");
+        else if (m[2]) push(m[2], "tok-flag");
+        else if (m[3]) push(m[3], "tok-num");
+        else if (m[4]) { push(m[4], firstWord ? "tok-cmd" : undefined); firstWord = false; }
+        else push(m[0]);
+      }
+    });
+    return out;
+  }
+
+  // json / jsonc
+  const re = /(\/\/[^\n]*)|("(?:[^"\\]|\\.)*")(\s*:)?|(-?\b\d+(?:\.\d+)?\b)|(\btrue\b|\bfalse\b|\bnull\b)/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(code)) !== null) {
+    if (m.index > last) push(code.slice(last, m.index));
+    if (m[1]) push(m[1], "tok-cmt");
+    else if (m[2] && m[3]) { push(m[2], "tok-key"); push(m[3]); }
+    else if (m[2]) push(m[2], "tok-str");
+    else if (m[4]) push(m[4], "tok-num");
+    else if (m[5]) push(m[5], "tok-bool");
+    last = re.lastIndex;
+  }
+  if (last < code.length) push(code.slice(last));
+  return out;
+}
+
+export function CodeBlock({ code, lang = "json" }: { code: string; lang?: CodeLang }) {
+  const { t } = useLanguage();
+  const [copied, setCopied] = useState(false);
+
+  async function copy() {
+    await navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+
+  return (
+    <div className="code-block relative group">
+      <pre className="overflow-x-auto text-[11px] font-mono leading-relaxed whitespace-pre">
+        <code>{highlightCode(code, lang)}</code>
+      </pre>
+      <button
+        type="button"
+        onClick={copy}
+        aria-label={t("aria.copy")}
+        title={t("aria.copy")}
+        className="absolute top-1.5 right-1.5 w-9 h-9 flex items-center justify-center rounded-lg theme-faint hover:theme-text hover:bg-[var(--glass-bg)] transition-all cursor-pointer opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+      >
+        {copied ? <Check className="w-3.5 h-3.5 text-primary" aria-hidden="true" /> : <Copy className="w-3.5 h-3.5" aria-hidden="true" />}
+      </button>
+    </div>
   );
 }
 

@@ -3,9 +3,9 @@
 import { useState } from "react";
 import {
   Plug, Terminal, Wand2, Wrench, Lock, Unlock, KeyRound, ScanSearch,
-  FileSearch, ShieldCheck, ExternalLink, ArrowRight, ChevronDown, Blocks,
+  FileSearch, ShieldCheck, ExternalLink, ArrowRight, ChevronDown, Blocks, Download,
 } from "lucide-react";
-import { PageLayout, PageHeader } from "@/app/components/ui";
+import { PageLayout, PageHeader, CodeBlock } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
 import type { TranslationKey } from "@/app/lib/i18n";
 
@@ -21,7 +21,8 @@ const NPX_CONFIG = `{
   }
 }`;
 
-const NPX_SNIPPET = `"command": "npx", "args": ["-y", "zefer-cli", "mcp"]`;
+const STD_GLOBAL = CLIENT_CONFIG;
+const STD_NPX = NPX_CONFIG;
 
 const EXAMPLE_CALL = `{"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
   "name": "zefer_encrypt",
@@ -34,54 +35,112 @@ const EXAMPLE_CALL = `{"jsonrpc": "2.0", "id": 1, "method": "tools/call", "param
   }
 }}`;
 
-function CodeBlock({ code }: { code: string }) {
-  return (
-    <pre className="glass !rounded-xl p-4 overflow-x-auto text-[11px] font-mono theme-text leading-relaxed whitespace-pre">
-      {code}
-    </pre>
-  );
+// One-click install deep links (npx form: no install required)
+const NPX_SERVER = { command: "npx", args: ["-y", "zefer-cli", "mcp"] };
+const CURSOR_DEEPLINK = `cursor://anysphere.cursor-deeplink/mcp/install?name=zefer&config=${btoa(JSON.stringify(NPX_SERVER))}`;
+const VSCODE_DEEPLINK = `vscode:mcp/install?${encodeURIComponent(JSON.stringify({ name: "zefer", ...NPX_SERVER }))}`;
+
+interface ClientEntry {
+  name: string;
+  descKey: TranslationKey;
+  /** Config with a global install (command: zefer) */
+  global?: { code: string; lang: "json" | "bash" };
+  /** Config via npx (no install) */
+  npx?: { code: string; lang: "json" | "bash" };
+  /** Extra terminal alternative */
+  extra?: { code: string; lang: "bash" };
+  deeplink?: { href: string; label: string };
 }
 
-const STD_CONFIG = `{
-  "mcpServers": {
-    "zefer": { "command": "zefer", "args": ["mcp"] }
-  }
-}`;
+const CLIENTS: ClientEntry[] = [
+  {
+    name: "Claude Code",
+    descKey: "mcp.client.claudecode",
+    global: { code: STD_GLOBAL, lang: "json" },
+    npx: { code: STD_NPX, lang: "json" },
+    extra: {
+      lang: "bash",
+      code: `# global install
+claude mcp add zefer -- zefer mcp
 
-const CLIENTS: { name: string; descKey: TranslationKey; config: string }[] = [
-  { name: "Claude Code", descKey: "mcp.client.claudecode", config: STD_CONFIG },
-  { name: "Claude Desktop", descKey: "mcp.client.claudedesktop", config: STD_CONFIG },
-  { name: "Cursor", descKey: "mcp.client.cursor", config: STD_CONFIG },
-  { name: "Windsurf", descKey: "mcp.client.windsurf", config: STD_CONFIG },
+# via npx (no install)
+claude mcp add zefer -- npx -y zefer-cli mcp`,
+    },
+  },
+  {
+    name: "Claude Desktop",
+    descKey: "mcp.client.claudedesktop",
+    global: { code: STD_GLOBAL, lang: "json" },
+    npx: { code: STD_NPX, lang: "json" },
+  },
+  {
+    name: "Cursor",
+    descKey: "mcp.client.cursor",
+    global: { code: STD_GLOBAL, lang: "json" },
+    npx: { code: STD_NPX, lang: "json" },
+    deeplink: { href: CURSOR_DEEPLINK, label: "Cursor" },
+  },
+  {
+    name: "Windsurf",
+    descKey: "mcp.client.windsurf",
+    global: { code: STD_GLOBAL, lang: "json" },
+    npx: { code: STD_NPX, lang: "json" },
+  },
   {
     name: "VS Code (Copilot)",
     descKey: "mcp.client.vscode",
-    config: `{
+    global: {
+      lang: "json",
+      code: `{
   "servers": {
     "zefer": { "type": "stdio", "command": "zefer", "args": ["mcp"] }
   }
 }`,
+    },
+    npx: {
+      lang: "json",
+      code: `{
+  "servers": {
+    "zefer": { "type": "stdio", "command": "npx", "args": ["-y", "zefer-cli", "mcp"] }
+  }
+}`,
+    },
+    deeplink: { href: VSCODE_DEEPLINK, label: "VS Code" },
   },
   {
     name: "Zed",
     descKey: "mcp.client.zed",
-    config: `{
+    global: {
+      lang: "json",
+      code: `{
   "context_servers": {
     "zefer": { "command": { "path": "zefer", "args": ["mcp"] } }
   }
 }`,
+    },
+    npx: {
+      lang: "json",
+      code: `{
+  "context_servers": {
+    "zefer": { "command": { "path": "npx", "args": ["-y", "zefer-cli", "mcp"] } }
+  }
+}`,
+    },
   },
   {
     name: "Otra herramienta / Other",
     descKey: "mcp.client.generic",
-    config: `# npm install
+    extra: {
+      lang: "bash",
+      code: `# global install
 zefer mcp
 
-# without installing
-npx zefer-cli mcp
+# via npx (no install)
+npx -y zefer-cli mcp
 
 # standalone binary (no Node.js)
 ./zefer-linux-x64 mcp`,
+    },
   },
 ];
 
@@ -92,7 +151,7 @@ function ClientAccordion() {
   return (
     <div className="space-y-2">
       {CLIENTS.map((c, i) => (
-        <div key={c.name} className="glass !rounded-xl overflow-hidden">
+        <div key={c.name} className="border border-[var(--glass-border)] !rounded-xl overflow-hidden">
           <button
             type="button"
             onClick={() => setOpen(open === i ? null : i)}
@@ -107,9 +166,40 @@ function ClientAccordion() {
             <ChevronDown className={`w-3.5 h-3.5 theme-faint shrink-0 transition-transform duration-200 ${open === i ? "rotate-180" : ""}`} />
           </button>
           {open === i && (
-            <div id={`mcp-client-${i}`} className="px-4 pb-4 animate-in">
-              <p className="text-[11px] theme-muted mb-2 leading-relaxed">{t(c.descKey)}</p>
-              <CodeBlock code={c.config} />
+            <div id={`mcp-client-${i}`} className="px-4 pb-4 animate-in space-y-3">
+              <p className="text-[11px] theme-muted leading-relaxed">{t(c.descKey)}</p>
+
+              {c.deeplink && (
+                <div>
+                  <p className="text-[10px] theme-faint mb-1.5">{t("mcp.client.oneclick")}</p>
+                  <a
+                    href={c.deeplink.href}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[11px] font-medium bg-[var(--primary)] text-[var(--btn-text)] hover:opacity-90 transition-opacity cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" aria-hidden="true" />
+                    {c.deeplink.label}
+                  </a>
+                </div>
+              )}
+
+              {c.global && (
+                <div>
+                  <p className="text-[10px] theme-faint mb-1.5">{t("mcp.setup.optionA")}</p>
+                  <CodeBlock code={c.global.code} lang={c.global.lang} />
+                </div>
+              )}
+              {c.npx && (
+                <div>
+                  <p className="text-[10px] theme-faint mb-1.5">{t("mcp.setup.optionB")}</p>
+                  <CodeBlock code={c.npx.code} lang={c.npx.lang} />
+                </div>
+              )}
+              {c.extra && (
+                <div>
+                  <p className="text-[10px] theme-faint mb-1.5">{t("mcp.client.orcli")}</p>
+                  <CodeBlock code={c.extra.code} lang={c.extra.lang} />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -192,7 +282,7 @@ export default function McpContent() {
               <span className="text-[10px] font-mono text-primary theme-primary-faint theme-primary-border border rounded-md px-1.5 py-0.5">01</span>
               {t("mcp.setup.step1")}
             </p>
-            <CodeBlock code="npm install -g zefer-cli" />
+            <CodeBlock code="npm install -g zefer-cli" lang="bash" />
           </div>
           <div>
             <p className="text-xs theme-text mb-2 flex items-center gap-2">
@@ -200,9 +290,9 @@ export default function McpContent() {
               {t("mcp.setup.step2")}
             </p>
             <p className="text-[10px] theme-faint mb-1.5">{t("mcp.setup.optionA")}</p>
-            <CodeBlock code={CLIENT_CONFIG} />
+            <CodeBlock code={CLIENT_CONFIG} lang="json" />
             <p className="text-[10px] theme-faint mb-1.5 mt-3">{t("mcp.setup.optionB")}</p>
-            <CodeBlock code={NPX_CONFIG} />
+            <CodeBlock code={NPX_CONFIG} lang="json" />
           </div>
         </div>
       </div>
@@ -214,10 +304,6 @@ export default function McpContent() {
         </h2>
         <p className="text-[11px] theme-muted mb-4 leading-relaxed">{t("mcp.clients.desc")}</p>
         <ClientAccordion />
-        <div className="mt-4">
-          <p className="text-[11px] theme-muted mb-1.5 leading-relaxed">{t("mcp.clients.npxnote")}</p>
-          <CodeBlock code={NPX_SNIPPET} />
-        </div>
       </div>
 
       {/* Smart detection */}
@@ -240,9 +326,9 @@ export default function McpContent() {
         <h2 className="text-sm font-semibold theme-heading mb-4 flex items-center gap-2">
           <Wrench className="w-4 h-4 text-primary" />{t("mcp.tools.title")}
         </h2>
-        <div className="space-y-3">
-          {TOOLS.map((tool) => (
-            <div key={tool.name} className="glass !rounded-xl px-4 py-3.5">
+        <div>
+          {TOOLS.map((tool, i) => (
+            <div key={tool.name} className={`py-4 ${i > 0 ? "border-t border-[var(--border-subtle)]" : "pt-0"}`}>
               <div className="flex items-start gap-3 mb-2.5">
                 <span className="w-8 h-8 rounded-lg theme-primary-faint theme-primary-border border flex items-center justify-center shrink-0">
                   <tool.icon className="w-4 h-4 text-primary" aria-hidden="true" />
@@ -262,7 +348,7 @@ export default function McpContent() {
                     className={`px-2 py-0.5 rounded-full text-[9px] font-mono border ${
                       p.endsWith("*")
                         ? "theme-primary-faint theme-primary-border text-primary"
-                        : "glass theme-muted"
+                        : "border-[var(--glass-border)] theme-muted"
                     }`}
                   >
                     {p.replace("*", "")}{p.endsWith("*") && <span aria-hidden="true"> •</span>}
@@ -271,15 +357,13 @@ export default function McpContent() {
               </div>
 
               {/* Returns */}
-              <p className="text-[10px] theme-faint leading-relaxed mb-2">
+              <p className="text-[10px] theme-faint leading-relaxed mb-2.5">
                 <span className="uppercase tracking-wider text-[9px]">{t("mcp.tools.returns")}: </span>
                 <span className="theme-muted">{t(tool.returnsKey)}</span>
               </p>
 
               {/* Example */}
-              <code className="block glass !rounded-lg px-3 py-2 text-[10px] font-mono text-primary overflow-x-auto whitespace-nowrap">
-                {tool.example}
-              </code>
+              <CodeBlock code={tool.example} lang="bash" />
             </div>
           ))}
         </div>
@@ -291,7 +375,7 @@ export default function McpContent() {
           <Terminal className="w-4 h-4 text-primary" />{t("mcp.example.title")}
         </h2>
         <p className="text-[11px] theme-muted mb-3 leading-relaxed">{t("mcp.example.desc")}</p>
-        <CodeBlock code={EXAMPLE_CALL} />
+        <CodeBlock code={EXAMPLE_CALL} lang="json" />
       </div>
 
       {/* Privacy + CTAs */}
@@ -313,7 +397,7 @@ export default function McpContent() {
             href="https://modelcontextprotocol.io"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl text-xs font-medium glass theme-muted hover:theme-text transition-colors cursor-pointer"
+            className="flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl text-xs font-medium border border-[var(--glass-border)] theme-muted hover:theme-text hover:bg-[var(--glass-bg)] transition-colors cursor-pointer"
           >
             {t("mcp.cta.spec")} <ExternalLink className="w-3 h-3" />
           </a>

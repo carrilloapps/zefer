@@ -528,6 +528,44 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.08), 0 0 12px rgba(21, 128, 61, 0.03);
 }
 
+/* ── Code blocks: syntax-highlight tokens ── */
+
+[data-theme="dark"] {
+  --code-key: #7cc7ff;
+  --code-str: #4ade80;
+  --code-num: #fbbf24;
+  --code-bool: #f0abfc;
+  --code-cmt: #94a3b8;
+  --code-cmd: #e2e8f0;
+  --code-flag: #c4b5fd;
+}
+
+[data-theme="light"] {
+  --code-key: #075985;
+  --code-str: #15803d;
+  --code-num: #92400e;
+  --code-bool: #86198f;
+  --code-cmt: #64748b;
+  --code-cmd: #0f172a;
+  --code-flag: #5b21b6;
+}
+
+.code-block pre {
+  background: var(--input-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+  color: var(--text-muted);
+}
+
+.tok-key { color: var(--code-key); }
+.tok-str { color: var(--code-str); }
+.tok-num { color: var(--code-num); }
+.tok-bool { color: var(--code-bool); }
+.tok-cmt { color: var(--code-cmt); font-style: italic; }
+.tok-cmd { color: var(--code-cmd); font-weight: 600; }
+.tok-flag { color: var(--code-flag); }
+
 /* ── Donate FAB (Buy Me a Coffee) ── */
 
 .donate-fab-wrap {

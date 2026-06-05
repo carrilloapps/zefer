@@ -7,7 +7,7 @@ import {
   Terminal, Copy, Check,
 } from "lucide-react";
 import Link from "next/link";
-import { PageLayout, PageHeader, GlassCard, IconBox } from "@/app/components/ui";
+import { PageLayout, PageHeader, GlassCard, IconBox, highlightCode } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
 
 const FEATURES = [
@@ -257,8 +257,10 @@ function CopyButton({ text }: { text: string }) {
 
 function CodeBlock({ code }: { code: string }) {
   return (
-    <div className="flex items-start gap-2 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-xl px-3 py-2.5">
-      <pre className="flex-1 text-[11px] font-mono text-primary overflow-x-auto whitespace-pre leading-relaxed">{code}</pre>
+    <div className="flex items-start gap-2 bg-[var(--input-bg)] border border-[var(--glass-border)] rounded-xl px-3 py-2.5">
+      <pre className="flex-1 text-[11px] font-mono overflow-x-auto whitespace-pre leading-relaxed">
+        <code>{highlightCode(code, "bash")}</code>
+      </pre>
       <CopyButton text={code} />
     </div>
   );
