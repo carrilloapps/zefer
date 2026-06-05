@@ -16,6 +16,15 @@
         "chrome-devtools-mcp@1.1.1",
         "--isolated"
       ]
+    },
+    "skill-rules": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "skill-rules@0.3.0",
+        "mcp"
+      ]
     }
   }
 }

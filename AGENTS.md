@@ -295,11 +295,22 @@ Zefer publishes `/llms.txt` following the llmstxt.org standard. Any AI tool can 
 - Typical use in this repo: verify dark/light themes, WCAG contrast, encrypt/decrypt flows, and URL params against `http://localhost:3000` (`npm run dev`)
 - Avoid browsing arbitrary third-party sites with it — page content is a prompt-injection surface
 
-### skill-rules — skill sync across IDEs
+### skill-rules — skill sync across IDEs (CLI + MCP)
 
 [skill-rules](https://www.npmjs.com/package/skill-rules) keeps agent skills in sync between `.claude/skills/` and `.agents/skills/` and manages per-stage skill activation.
 
 - Run via `npx skill-rules@0.3.0` (do NOT add as a project dependency — it bundles React 18/Ink, this app uses React 19)
-- `skills-lock.json` (versioned) records each skill's source repo and content hash
+- MCP server configured in `.mcp.json` via `npx -y skill-rules@0.3.0 mcp` (stdio) — lets agents query and manage skills/stages directly
+- `skills-lock.json` (versioned) records each skill's source repo and content hash — the source of truth; skill directories are gitignored and reinstalled from it
 - `skills.rules` (versioned) defines per-stage skill activation (`skill-rules use <stage>`)
 - Common commands: `npx skill-rules` (sync), `skill-rules add` (assign stages), `skill-rules list`
+
+### MCP servers summary (`.mcp.json`, all stdio + local)
+
+| Server | Command | Purpose |
+|---|---|---|
+| `codegraph` | `codegraph serve --mcp` | Query the pre-indexed symbol/call graph instead of re-scanning files |
+| `chrome-devtools` | `npx -y chrome-devtools-mcp@1.1.1 --isolated` | Drive a real Chrome: screenshots, console, performance, UI verification |
+| `skill-rules` | `npx -y skill-rules@0.3.0 mcp` | Inspect and manage agent skills and stages |
+
+All versions are pinned. None of these touch `package.json` or ship with the app — they are development tooling only. Claude Code prompts for approval of project-scoped MCP servers on first use.

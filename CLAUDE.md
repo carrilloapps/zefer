@@ -259,4 +259,21 @@ When releasing a new version, ALL of these must be updated together:
 - PWA offline: Service Worker caches all 17 pages + static assets + `/api/author`. Network-first for pages (fresh online, cached offline), cache-first for static. Offline fallback to cached home. Never use stale-while-revalidate for pages (causes skeleton persistence after deploys)
 - No custom Cache-Control on `/_next/static/*` — Next.js manages its own static asset caching
 
+## Agent Tooling
+
+Three project-scoped MCP servers are configured in `.mcp.json` (all stdio, 100% local, pinned versions, dev-only — never part of the app bundle). Full details and CLI usage in `AGENTS.md` → "Agent Tooling".
+
+| Tool | Use it to |
+|---|---|
+| `codegraph` | Look up symbols, callers, and call graphs across the repo before grepping or reading whole files — cheaper and faster than re-scanning |
+| `chrome-devtools` | Visually verify changes against `localhost:3000`: dark/light themes, WCAG contrast, encrypt/decrypt flows, console errors, performance traces. Runs Chrome with `--isolated` (throwaway profile). Do not browse untrusted third-party sites with it |
+| `skill-rules` | Inspect or manage agent skills and stages (`skills-lock.json` is the source of truth; skill directories are gitignored and reinstalled from it) |
+
+Workflow guidance:
+
+- Prefer `codegraph` queries over broad file scans when exploring the codebase; re-index with `codegraph init` if the graph looks stale
+- After UI/CSS changes, verify both themes in Chrome via `chrome-devtools` before considering the task done (Critical Rules 1, 5)
+- Skills live outside git: install/sync them with `npx skill-rules@0.3.0`, never commit `.claude/skills/` or `.agents/skills/`
+- `.codegraph/` and `.claude/settings.local.json` are machine-local and gitignored — never commit them
+
 @AGENTS.md
