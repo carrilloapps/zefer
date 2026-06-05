@@ -2716,6 +2716,7 @@ const translations = {
   "nav.projectinfo": { es: "Sobre el proyecto", en: "About the project", pt: "Sobre o projeto" },
   "nav.dev": { es: "Desarrollo", en: "Development", pt: "Desenvolvimento" },
   "nav.mcp": { es: "MCP", en: "MCP", pt: "MCP" },
+  "fab.bubble": { es: "¿Te sirve Zefer? ¡Invítame un café! ☕", en: "Enjoying Zefer? Buy me a coffee! ☕", pt: "Curtindo o Zefer? Me pague um café! ☕" },
   "nav.generator": { es: "Generador", en: "Generator", pt: "Gerador" },
   "nav.analyzer": { es: "Analizador", en: "Analyzer", pt: "Analisador" },
 

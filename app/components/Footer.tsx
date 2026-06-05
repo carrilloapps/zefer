@@ -30,8 +30,6 @@ export default function Footer() {
               {t("footer.product")}
             </p>
             <ul className="space-y-2.5">
-              <li><a href="/" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("footer.product.home")}</a></li>
-              <li><a href="/how" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("footer.product.how")}</a></li>
               <li><a href="/generator" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("nav.generator")}</a></li>
               <li><a href="/analyzer" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("nav.analyzer")}</a></li>
               <li><a href="/mcp" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("nav.mcp")}</a></li>

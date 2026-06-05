@@ -530,9 +530,12 @@ select:focus {
 
 /* ── Donate FAB (Buy Me a Coffee) ── */
 
-.donate-fab {
+.donate-fab-wrap {
   right: max(1.25rem, env(safe-area-inset-right));
   bottom: max(1.25rem, calc(env(safe-area-inset-bottom) + 0.5rem));
+}
+
+.donate-fab {
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.25),
     0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent);
