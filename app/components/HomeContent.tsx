@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { Lock, Unlock, BookOpen, Bot, Download, Shield, Code, Cpu } from "lucide-react";
+import { Lock, Unlock, BookOpen, Bot, Download, Shield, Code, Cpu, KeyRound, FileSearch } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
@@ -194,6 +194,12 @@ export default function HomeContent() {
           <div className="flex flex-wrap items-center justify-center gap-2">
             <Link href="/how" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">
               <Shield className="w-3 h-3" />{t("home.how")}
+            </Link>
+            <Link href="/generator" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">
+              <KeyRound className="w-3 h-3" />{t("nav.generator")}
+            </Link>
+            <Link href="/analyzer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">
+              <FileSearch className="w-3 h-3" />{t("nav.analyzer")}
             </Link>
             <Link href="/install/guide" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">
               <BookOpen className="w-3 h-3" />{t("home.guide")}

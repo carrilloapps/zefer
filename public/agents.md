@@ -80,6 +80,11 @@ Decrypt params: `passphrase/p`, `passphrase2/p2`, `dual/d`, `answer/a`
 
 Sensitive params (p, p2, r, a) are auto-cleared from the URL after reading.
 
+## Tool Pages
+
+- **`/generator`** — password lab, 2 tabs. Generator: 7 key types (Unicode, Secure, Alphanumeric, Hex, Base58 readable, PIN, UUID v7), length slider 16–1024 + custom up to 2048, quantity 1–50, advanced options (exclude ambiguous/custom characters, guarantee all classes, no consecutive repeats, dash grouping); every key is scored and sorted high → low, with copy-all and `.txt` download. Analyzer: effective entropy, 4 attack scenarios (10²–10¹⁵ guesses/s), NIST/OWASP/AES-128/post-quantum compliance, keyspace, comparison vs an average human password.
+- **`/analyzer`** — inspect a `.zefer` file's public header without the passphrase (like `zefer info`): format, mode, iterations + KDF level, compression, sizes, reveal-key presence, hint/note. Read locally, never uploaded.
+
 ## Binary File Format
 
 - **ZEFB3**: single-key files (magic: `0x5A 0x45 0x46 0x42 0x33`)

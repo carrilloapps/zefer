@@ -113,7 +113,9 @@ zefer info secret.zefer
 
 **Developer Experience**
 - URL parameters for workflow automation
-- Secure key generator (Unicode, alpha, hex, UUID v7)
+- Secure key generator — 7 modes (Unicode, Secure, Alphanumeric, Hex, Base58 readable, PIN, UUID v7)
+- [`/generator`](https://zefer.carrillo.app/generator) — advanced password lab: batch generation (up to 50), per-key scoring, attack scenarios, NIST/OWASP/post-quantum compliance, copy/download `.txt`
+- [`/analyzer`](https://zefer.carrillo.app/analyzer) — `.zefer` file inspector: public header, KDF level, compression — no passphrase needed
 - Real-time progress bar with device benchmarking
 - Drag-and-drop file upload
 - 125 tests, 100% line coverage
@@ -259,12 +261,17 @@ public/
 |---|---|---|---|
 | `/` | Static | Yes | Home — encrypt/decrypt forms |
 | `/how` | Static | Yes | How it works — 7 steps + features + specs |
+| `/generator` | Static | Yes | Advanced password generator + analyzer — entropy, attack scenarios, security framework, copy/download |
+| `/analyzer` | Static | Yes | `.zefer` file inspector — public header without the passphrase |
 | `/project` | Static | Yes | Project info, tech stack, creator, donate |
 | `/device` | Static | Yes | Device detection details + optimization guide |
 | `/install` | Static | Yes | Usage guide, self-hosting, PWA, native apps |
 | `/install/guide` | Static | Yes | Step-by-step usage guide for AI assistants |
+| `/vs/*` | Static | Yes | Comparisons: Hat.sh, Picocrypt, Bitwarden Send, Cryptomator, VeraCrypt |
 | `/privacy` | Static | No | Privacy policy + GDPR/CCPA/LGPD compliance |
 | `/terms` | Static | No | Terms, conditions, MIT license, legal compliance |
+| `/security` | Static | No | Security policy — vulnerability reporting |
+| `/conduct` | Static | No | Code of Conduct — Contributor Covenant 2.1 |
 | `/api/author` | Dynamic | — | GitHub profile data (cached 1h) |
 | `/llms.txt` | Static | Yes | LLM context file |
 

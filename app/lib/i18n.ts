@@ -1575,9 +1575,9 @@ const translations = {
     pt: "Criptografia do lado do cliente",
   },
   "privacy.clientside.desc": {
-    es: "Utilizamos la Web Crypto API nativa del navegador, que proporciona implementaciones criptográficas verificadas y optimizadas por hardware. No dependemos de bibliotecas de terceros, lo que elimina riesgos en la cadena de suministro.",
-    en: "We use the browser's native Web Crypto API, which provides hardware-optimized and verified cryptographic implementations. We do not rely on third-party libraries, eliminating supply chain risks.",
-    pt: "Utilizamos a Web Crypto API nativa do navegador, que fornece implementações criptográficas verificadas e otimizadas por hardware. Não dependemos de bibliotecas de terceiros, o que elimina riscos na cadeia de suprimentos.",
+    es: "Utilizamos la Web Crypto API nativa del navegador, que proporciona implementaciones criptográficas verificadas y optimizadas por hardware. No dependemos de bibliotecas de terceros, lo que elimina riesgos en la cadena de suministro. Esto aplica también a las herramientas del sitio: el generador y analizador de contraseñas y el analizador de archivos .zefer procesan todo localmente — ninguna contraseña generada, analizada o archivo inspeccionado sale de tu dispositivo.",
+    en: "We use the browser's native Web Crypto API, which provides hardware-optimized and verified cryptographic implementations. We do not rely on third-party libraries, eliminating supply chain risks. This also applies to the site's tools: the password generator and analyzer and the .zefer file analyzer process everything locally — no generated or analyzed password, nor any inspected file, ever leaves your device.",
+    pt: "Utilizamos a Web Crypto API nativa do navegador, que fornece implementações criptográficas verificadas e otimizadas por hardware. Não dependemos de bibliotecas de terceiros, o que elimina riscos na cadeia de suprimentos. Isso também se aplica às ferramentas do site: o gerador e analisador de senhas e o analisador de arquivos .zefer processam tudo localmente — nenhuma senha gerada, analisada ou arquivo inspecionado sai do seu dispositivo.",
   },
   "privacy.whatwestore.title": {
     es: "Lo que almacenamos vs. lo que NO almacenamos",

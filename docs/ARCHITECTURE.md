@@ -166,10 +166,34 @@ The following settings are saved to `localStorage` so they persist between sessi
 | Expiration | `ttl` | `1440` | Minutes (0 = never) |
 | PBKDF2 iterations | `iterations` | `600000` | 300000-1000000 |
 | Compression | `compression` | `none` | `none`, `gzip`, `deflate` |
-| Key generator mode | `keygenMode` | `secure` | `unicode`, `secure`, `alpha`, `hex`, `uuid` |
-| Key generator length | `keygenLength` | `64` | 64, 128, 256, 512, 1024 |
+| Key generator mode | `keygenMode` | `secure` | `unicode`, `secure`, `alpha`, `hex`, `base58`, `pin`, `uuid` |
+| Key generator length | `keygenLength` | `64` | 1-2048 (slider presets 16-1024) |
+| Key generator quantity | `keygenCount` | `1` | 1-50 |
+| Generator advanced opts | `keygenAdvanced` | all off | `excludeAmbiguous`, `excludeChars`, `requireAllClasses`, `noRepeats`, `groupSize` |
 
-Stored under the `zefer-prefs` key as a single JSON object.
+Stored under the `zefer-prefs` key as a single JSON object. Preferences are shared
+between the home key-generator popover and the `/generator` page.
+
+## Password Engine (`app/lib/passwords.ts`)
+
+Shared by the home `KeyGenerator` popover and the `/generator` page:
+
+- **Charsets** for 7 modes — `unicode`, `secure`, `alpha`, `hex`, `base58`
+  (no `0O1lI`, safe to dictate), `pin` (digits), `uuid` (v7, RFC 9562)
+- **Generation** via `crypto.getRandomValues` with rejection sampling (no modulo
+  bias); `generateWithOptions()` adds exclusions, class guarantees, no-repeat
+  sampling and cosmetic dash grouping
+- **Analysis** (`analyzePassword`) — character classes, pool estimate, max and
+  effective entropy (penalties for leaked-list matches, sequences, keyboard
+  patterns, repeats, embedded years), 0-4 score
+- **Attack scenarios** — 10^2 (throttled login), 10^6 (cloud vs PBKDF2),
+  10^12 (GPU farm vs fast hash), 10^15 (nation-state) guesses/s
+- **Crack times in log space** (`crackBucketFor`) — `2^bits` overflows `Number`
+  past ~1024 bits, so times are derived from `log10` math and rendered as
+  `~10^N years` with Unicode superscripts when they exceed 10^6 years
+- **Compliance checks** (`complianceOf`) — NIST SP 800-63B length, OWASP >=64
+  bits, long-term >=100 bits, AES-128 equivalence >=128 bits, post-quantum
+  Grover (>=128 bits after halving)
 
 ## Device Detection
 
@@ -194,15 +218,19 @@ RootLayout
               +-- LegalBanner (consent, localStorage)
               +-- ToastProvider (Sonner)
               +-- Page Content
-                    +-- Navbar (nav links, theme toggle, language selector)
+                    +-- Navbar (scroll-aware mobile header, morphing burger,
+                    |          staggered drawer, theme toggle, language selector)
                     +-- [Page-specific content]
                     |     +-- EncryptForm -> CryptoProgress -> Success
                     |     +-- DecryptForm -> CryptoProgress -> Revealed
-                    |     +-- KeyGenerator (popover)
+                    |     +-- KeyGenerator (popover, shares prefs with /generator)
+                    |     +-- GeneratorContent (/generator: tabs, StopSlider,
+                    |     |                     SecurityInsights, InfoTip)
+                    |     +-- AnalyzerContent (/analyzer: .zefer header report)
                     +-- Footer
 ```
 
-24 client components total.
+32 client components total.
 
 ## Theming
 

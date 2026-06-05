@@ -5,6 +5,29 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-06-05
+
+### Added
+
+- **Generator/Analyzer tabs** — `/generator` is now a two-tab password lab; every generated key gets its own strength meter, score and effective bits, sorted highest → lowest
+- **2 new key types** — Base58 *Readable* (no `0O1lI`, safe to dictate or hand-copy) and *PIN* (digits only), shared with the home popover via the canonical `MODES` list
+- **Advanced generation options** (collapsible panel, persisted): exclude ambiguous characters, exclude custom characters, guarantee all character classes, no consecutive repeats, dash grouping every 4/6/8
+- **Stop-slider controls** — length (presets 16–1024 + custom up to 2048) and quantity (1–50, default 1) use a horizontal slider with dot markers mathematically centered on the thumb path, plus a manual input
+- **Security report** (`SecurityInsights`, shared by the config panel and the analyzer tab): 4 attack scenarios (10²–10¹⁵ guesses/s), cybersecurity framework checks (NIST SP 800-63B, OWASP ≥64 bits, long-term ≥100 bits, AES-128 ≥128 bits, post-quantum Grover), total keyspace, post-quantum entropy, and comparison vs an average human password (~40 bits) — collapsible on the generator tab
+- **Plain-language tooltips** — 12 explanations (es/en/pt) for entropy, scenarios, each framework check, keyspace, post-quantum bits and the average comparison
+
+### Fixed
+
+- **"Infinity years"** — crack times are computed in log space (`2^bits` overflows `Number` past ~1024 bits); extreme configs now render `≈10ⁿ years` with Unicode superscripts
+- **Checked toggles never turned green** — Tailwind cannot variant plain CSS classes; native `.peer:checked ~` selectors now style the track and knob (also fixes the home dual-key toggles)
+- **Saved keygen preferences were never applied** — local state initialized before `localStorage` hydration; the popover now adopts preferences when they arrive
+- **Scenario labels wrapping** — shortened and truncate-protected; technical detail moved into the scenarios tooltip
+- **Service Worker in development** — now registers only in production, preventing stale-chunk issues while developing
+
+### Documentation
+
+- README, AGENTS.md, CLAUDE.md, `docs/ARCHITECTURE.md`, `public/llms.txt` and `public/agents.md` updated with the generator/analyzer pages, the password engine API, new preferences and design-system classes; privacy policy now states explicitly that the tools process everything locally
+
 ## [0.5.0] - 2026-06-05
 
 ### Added

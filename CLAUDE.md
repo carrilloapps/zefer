@@ -96,8 +96,8 @@ app/
     i18n.ts                -- ~600 translation keys x 3 languages
     ip.ts                  -- IP detection + allowlist check
     notify.ts              -- Toast notification helpers
-    passwords.ts           -- Charsets, unbiased keygen, entropy + password analysis
-    preferences.ts         -- Persisted user preferences (ttl, iterations, compression, inputMode, tab, keygenMode, keygenLength)
+    passwords.ts           -- Charsets (7 modes incl. base58/pin), unbiased keygen + advanced opts (exclusions, classes, grouping), entropy/analysis, attack scenarios, compliance checks, log-space crack times
+    preferences.ts         -- Persisted user preferences (ttl, iterations, compression, inputMode, tab, keygenMode, keygenLength, keygenCount, keygenAdvanced)
     progress.ts            -- Encryption/decryption progress tracking
   globals.css              -- Design system (liquid glass, 2 themes, animations)
 ```
@@ -108,7 +108,7 @@ app/
 |---|---|---|---|
 | `/` | Static | index, follow | Home — encrypt/decrypt tabs, typewriter hero |
 | `/how` | Static | index, follow | 7 steps + 5 features + 12 specs + FAQPage schema |
-| `/generator` | Static | index, follow | Advanced password generator + strength analyzer (entropy, crack time, weaknesses, copy/download .txt) |
+| `/generator` | Static | index, follow | Password lab, 2 tabs: generator (7 modes, stop-slider 16–1024 + custom ≤2048, qty ≤50, advanced opts, per-key score sorted desc) + analyzer (entropy, 4 attack scenarios, NIST/OWASP/AES-128/post-quantum checks, avg-password comparison, plain-language tooltips) |
 | `/analyzer` | Static | index, follow | .zefer public-header inspector (format, KDF level, compression — no passphrase needed) |
 | `/privacy` | Static | noindex, follow | Privacy policy — 9 sections + GDPR/CCPA/LGPD compliance |
 | `/terms` | Static | noindex, follow | 12 sections + MIT + Colombia Law 1581 |
@@ -187,6 +187,11 @@ Semantic: `theme-danger`, `theme-warning`, `text-primary`
 Buttons: `btn-primary`, `chip-select`
 Animations: `animate-in`, `animate-in-down`, `animate-scale-in`, `reveal-content`, `error-shake`, `success-icon`, `glow-pulse`, `progress-bar-animated`, `skeleton-shimmer`
 View transition: `theme-circle-reveal` — Telegram-style expanding circle from toggle position (View Transitions API)
+Mobile header: `nav-mobile-header` (transparent at top) + `nav-elevated` (frosted glass on scroll/drawer-open), `nav-burger`/`nav-burger-line` (morphing hamburger → X)
+Drawer motion: `drawer-stagger` + `--stagger` delay var (staggered reveal, reduced-motion safe)
+Sliders: `range-slider` (webkit/moz themed, 28px touch target, `color-mix` focus ring) — pair with absolutely-centered stop markers (`StopSlider` in GeneratorContent)
+Tooltips: `info-tip` + `info-tip-bubble` (hover/focus/tap, `tip-left`/`tip-right` edge alignment)
+Toggles: checked styles come from native `.peer:checked ~ .toggle-track/.toggle-knob` selectors in globals.css — Tailwind cannot variant plain CSS classes (`peer-checked:toggle-track-checked` generates nothing)
 
 ## Security Features (all inside encrypted payload)
 
@@ -260,6 +265,7 @@ When releasing a new version, ALL of these must be updated together:
 - Theme toggle: View Transitions API with circle reveal (1.4s, cubic-bezier(0.22,1,0.36,1)). Button blocked with `pointer-events-none` during transition, unblocked on `transition.finished`
 - Overflow: `overflow-x: hidden` on html+body. `overflow: hidden` on `.hero-glow`. Blobs use `min(400px, 100vw)`. No `-mx-*` on scrollable children
 - PWA offline: Service Worker caches all 19 pages + static assets + `/api/author`. Network-first for pages (fresh online, cached offline), cache-first for static. Offline fallback to cached home. Never use stale-while-revalidate for pages (causes skeleton persistence after deploys)
+- Service Worker registers **only in production** (`process.env.NODE_ENV` check in layout.tsx) — in dev it serves stale chunks from the static cache. If dev styles/JS look stale anyway, delete `.next/` (Turbopack incremental cache) and restart
 - No custom Cache-Control on `/_next/static/*` — Next.js manages its own static asset caching
 
 ## Agent Tooling

@@ -197,6 +197,18 @@ All params: `passphrase/p`, `passphrase2/p2`, `dual/d`, `reveal/r`, `mode/m`, `t
 
 Sensitive params (`p`, `p2`, `r`, `a`) are auto-cleared from the URL after reading.
 
+### Password generator & analyzer (`/generator`)
+
+Standalone tool page, 100% client-side, two tabs:
+
+- **Generator tab**: 7 key types (Unicode, Secure, Alphanumeric, Hex, Base58 readable, PIN, UUID v7), length slider with preset stops (16–1024) + custom input (max 2048), quantity 1–50 (default 1). Advanced options (persisted in `zefer-prefs`): exclude ambiguous chars (`0O1lI`), exclude custom chars, guarantee all character classes, no consecutive repeats, group with dashes every 4/6/8. Every generated key is scored and sorted highest → lowest; per-key copy, copy-all, download as `.txt`
+- **Analyzer tab**: paste any password for a live report — effective entropy, 4 attack scenarios (10²–10¹⁵ guesses/s), cybersecurity framework checks (NIST SP 800-63B, OWASP ≥64 bits, long-term ≥100 bits, AES-128 ≥128 bits, post-quantum Grover), total keyspace, comparison vs an average human password (~40 bits)
+- Settings are shared with the home key-generator popover (same `localStorage` preferences)
+
+### .zefer file analyzer (`/analyzer`)
+
+Drop any `.zefer` file to inspect its **public header without the passphrase** (same data as `zefer info` in the CLI): format (ZEFB3/ZEFR3/legacy), content mode, PBKDF2 iterations + KDF level, compression, sizes, reveal-key presence, public hint/note. The file is read locally with the File API — nothing is uploaded.
+
 ---
 
 ## Binary File Format (cross-compatible web ↔ CLI)
