@@ -104,9 +104,16 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://api.github.com" />
-        {process.env.NODE_ENV === "production" && (
-          <script dangerouslySetInnerHTML={{ __html: `if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js"))` }} />
-        )}
+        {/* SW registers only in production; in dev, actively remove any
+            previously-registered SW so it cannot serve stale chunks */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              process.env.NODE_ENV === "production"
+                ? `if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js"))`
+                : `if("serviceWorker"in navigator)navigator.serviceWorker.getRegistrations().then(r=>r.forEach(x=>x.unregister()))`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
