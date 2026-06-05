@@ -2663,6 +2663,8 @@ const translations = {
   "gen.subtitle": { es: "Genera claves criptográficamente seguras y analiza la resistencia de cualquier contraseña. Todo ocurre en tu navegador.", en: "Generate cryptographically secure keys and analyze the strength of any password. Everything happens in your browser.", pt: "Gere chaves criptograficamente seguras e analise a resistência de qualquer senha. Tudo acontece no seu navegador." },
   "gen.mode": { es: "Tipo de clave", en: "Key type", pt: "Tipo de chave" },
   "gen.count": { es: "Cantidad", en: "Quantity", pt: "Quantidade" },
+  "gen.custom.length": { es: "Longitud personalizada (1–2048)", en: "Custom length (1–2048)", pt: "Comprimento personalizado (1–2048)" },
+  "gen.custom.count": { es: "Cantidad personalizada (1–100)", en: "Custom quantity (1–100)", pt: "Quantidade personalizada (1–100)" },
   "gen.generate": { es: "Generar claves", en: "Generate keys", pt: "Gerar chaves" },
   "gen.results": { es: "Claves generadas", en: "Generated keys", pt: "Chaves geradas" },
   "gen.copyall": { es: "Copiar todas", en: "Copy all", pt: "Copiar todas" },

@@ -495,6 +495,7 @@ body {
 textarea,
 input[type="text"],
 input[type="password"],
+input[type="number"],
 select {
   background: var(--input-bg);
   border: 1px solid var(--input-border);
@@ -511,6 +512,7 @@ select {
 textarea:focus,
 input[type="text"]:focus,
 input[type="password"]:focus,
+input[type="number"]:focus,
 select:focus {
   border-color: var(--input-border-focus);
   background: var(--input-bg-focus);
@@ -521,8 +523,21 @@ select:focus {
 [data-theme="light"] textarea:focus,
 [data-theme="light"] input[type="text"]:focus,
 [data-theme="light"] input[type="password"]:focus,
+[data-theme="light"] input[type="number"]:focus,
 [data-theme="light"] select:focus {
   box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.08), 0 0 12px rgba(21, 128, 61, 0.03);
+}
+
+/* Compact number inputs: no native spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 textarea::placeholder,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   KeyRound, Copy, Check, RefreshCw, Download, Hash, Eye, EyeOff,
   ShieldCheck, AlertTriangle, Gauge, Layers,
@@ -8,6 +8,7 @@ import {
 import { PageLayout, PageHeader } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
 import { notifySuccess } from "@/app/lib/notify";
+import { usePreferences } from "@/app/lib/preferences";
 import {
   generateValue, entropyOf, analyzePassword, bucketCrackTime,
   type KeygenMode, type PasswordWarning,
@@ -21,8 +22,15 @@ const MODES: { key: KeygenMode; labelKey: string }[] = [
   { key: "uuid", labelKey: "keygen.uuid" },
 ];
 
-const LENGTHS = [16, 24, 32, 64, 128, 256];
-const COUNTS = [1, 5, 10, 25];
+// Same presets as the home KeyGenerator, plus shorter passphrase sizes
+const LENGTHS = [16, 32, 64, 128, 256, 512, 1024];
+const COUNTS = [1, 5, 10, 25, 50];
+
+const MAX_LENGTH = 2048;
+const MAX_COUNT = 100;
+
+const clampLength = (n: number) => Math.min(MAX_LENGTH, Math.max(1, Math.floor(n)));
+const clampCount = (n: number) => Math.min(MAX_COUNT, Math.max(1, Math.floor(n)));
 
 const WARNING_KEYS: Record<PasswordWarning, string> = {
   tooShort: "gen.warn.tooShort",
@@ -42,13 +50,30 @@ const SCORE_TEXT = ["theme-danger", "theme-danger", "theme-warning", "text-prima
 export default function GeneratorContent() {
   const { t } = useLanguage();
 
-  // ── Generator state ──
-  const [mode, setMode] = useState<KeygenMode>("secure");
-  const [length, setLength] = useState(32);
-  const [count, setCount] = useState(5);
+  // ── Generator state — same persisted preferences the home KeyGenerator uses ──
+  const {
+    keygenMode: mode, keygenLength: length, keygenCount: count,
+    setKeygenMode: setMode, setKeygenLength: setLength, setKeygenCount: setCount,
+  } = usePreferences();
   const [keys, setKeys] = useState<string[]>([]);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [genTick, setGenTick] = useState(0);
+
+  // Free-typing buffers for the custom inputs, synced from persisted values
+  const [lengthInput, setLengthInput] = useState(String(length));
+  const [countInput, setCountInput] = useState(String(count));
+  useEffect(() => setLengthInput(String(length)), [length]);
+  useEffect(() => setCountInput(String(count)), [count]);
+
+  function commitLength(raw: string) {
+    const n = parseInt(raw, 10);
+    if (!isNaN(n)) setLength(clampLength(n));
+  }
+
+  function commitCount(raw: string) {
+    const n = parseInt(raw, 10);
+    if (!isNaN(n)) setCount(clampCount(n));
+  }
 
   // ── Analyzer state ──
   const [candidate, setCandidate] = useState("");
@@ -59,7 +84,9 @@ export default function GeneratorContent() {
   const bits = entropyOf(mode, length);
 
   function generate() {
-    setKeys(Array.from({ length: count }, () => generateValue(mode, length)));
+    const safeCount = clampCount(count);
+    const safeLength = clampLength(length);
+    setKeys(Array.from({ length: safeCount }, () => generateValue(mode, safeLength)));
     setCopiedIdx(null);
     setGenTick((k) => k + 1);
   }
@@ -131,11 +158,11 @@ export default function GeneratorContent() {
             </div>
           </div>
 
-          {/* Count */}
+          {/* Count: presets + custom (max 100) */}
           <div>
-            <p className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+            <label htmlFor="gen-count" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
               <Layers className="w-3 h-3" />{t("gen.count")}
-            </p>
+            </label>
             <div className="flex gap-1" role="group" aria-label={t("gen.count")}>
               {COUNTS.map((c) => (
                 <button
@@ -150,30 +177,62 @@ export default function GeneratorContent() {
                   {c}
                 </button>
               ))}
+              <input
+                id="gen-count"
+                name="gen-count"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={MAX_COUNT}
+                value={countInput}
+                onChange={(e) => { setCountInput(e.target.value); commitCount(e.target.value); }}
+                onBlur={() => setCountInput(String(count))}
+                aria-label={t("gen.custom.count")}
+                title={t("gen.custom.count")}
+                className={`w-16 shrink-0 !py-2 !px-2 text-center !rounded-md text-[11px] font-mono font-medium ${
+                  !COUNTS.includes(count) ? "theme-primary-border text-primary" : ""
+                }`}
+              />
             </div>
           </div>
         </div>
 
-        {/* Length */}
+        {/* Length: presets + custom (max 2048) */}
         {!isUuid && (
           <div className="mb-4">
-            <p className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+            <label htmlFor="gen-length" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
               <Hash className="w-3 h-3" />{t("keygen.length")}
-            </p>
-            <div className="flex gap-1" role="group" aria-label={t("keygen.length")}>
+            </label>
+            <div className="flex gap-1 flex-wrap" role="group" aria-label={t("keygen.length")}>
               {LENGTHS.map((l) => (
                 <button
                   key={l}
                   type="button"
                   onClick={() => setLength(l)}
                   aria-pressed={length === l}
-                  className={`flex-1 py-2 rounded-md text-[11px] font-mono font-medium chip-select cursor-pointer border ${
+                  className={`flex-1 min-w-[3rem] py-2 rounded-md text-[11px] font-mono font-medium chip-select cursor-pointer border ${
                     length === l ? "bg-[var(--primary)] text-[var(--btn-text)] border-transparent" : "glass theme-muted hover:theme-text"
                   }`}
                 >
                   {l}
                 </button>
               ))}
+              <input
+                id="gen-length"
+                name="gen-length"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={MAX_LENGTH}
+                value={lengthInput}
+                onChange={(e) => { setLengthInput(e.target.value); commitLength(e.target.value); }}
+                onBlur={() => setLengthInput(String(length))}
+                aria-label={t("gen.custom.length")}
+                title={t("gen.custom.length")}
+                className={`w-20 shrink-0 !py-2 !px-2 text-center !rounded-md text-[11px] font-mono font-medium ${
+                  !LENGTHS.includes(length) ? "theme-primary-border text-primary" : ""
+                }`}
+              />
             </div>
           </div>
         )}

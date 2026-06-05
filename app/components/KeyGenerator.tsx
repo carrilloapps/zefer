@@ -40,6 +40,10 @@ export default function KeyGenerator({ onSelect, savedMode, savedLength, onModeC
   const setLength = (v: number) => { setLengthLocal(v); onLengthChange?.(v); };
   const ref = useRef<HTMLDivElement>(null);
 
+  // Preferences hydrate from localStorage after mount — adopt them when they arrive
+  useEffect(() => { if (savedMode) setModeLocal(savedMode); }, [savedMode]);
+  useEffect(() => { if (savedLength) setLengthLocal(savedLength); }, [savedLength]);
+
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);

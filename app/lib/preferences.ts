@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import type { CompressionMethod } from "./compression";
+import type { KeygenMode } from "./passwords";
 
 const STORAGE_KEY = "zefer-prefs";
 
 type InputMode = "text" | "file";
 type Tab = "encrypt" | "decrypt";
-
-type KeygenMode = "unicode" | "secure" | "alpha" | "hex" | "uuid";
 
 interface Preferences {
   ttl: number;
@@ -16,6 +15,7 @@ interface Preferences {
   tab: Tab;
   keygenMode: KeygenMode;
   keygenLength: number;
+  keygenCount: number;
 }
 
 const DEFAULTS: Preferences = {
@@ -26,6 +26,7 @@ const DEFAULTS: Preferences = {
   tab: "encrypt",
   keygenMode: "secure",
   keygenLength: 64,
+  keygenCount: 5,
 };
 
 function load(): Preferences {
@@ -70,7 +71,9 @@ export function usePreferences() {
     setTab: (v: Tab) => update({ tab: v }),
     keygenMode: prefs.keygenMode,
     keygenLength: prefs.keygenLength,
+    keygenCount: prefs.keygenCount,
     setKeygenMode: (v: KeygenMode) => update({ keygenMode: v }),
     setKeygenLength: (v: number) => update({ keygenLength: v }),
+    setKeygenCount: (v: number) => update({ keygenCount: v }),
   };
 }
