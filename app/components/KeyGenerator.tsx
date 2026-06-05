@@ -5,54 +5,9 @@ import { Sparkles, Copy, Check, RefreshCw, Hash } from "lucide-react";
 import { useLanguage } from "@/app/components/LanguageProvider";
 import { notifySuccess } from "@/app/lib/notify";
 
-type Mode = "unicode" | "secure" | "alpha" | "hex" | "uuid";
+import { CHARSETS, generateValue, type KeygenMode } from "@/app/lib/passwords";
 
-// ─── Character pools ───
-
-const LATIN = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-const SYMBOLS = "!@#$%^&*-_=+<>?{}[]|~`()/:;,.\\\"'";
-
-const ACCENTED =
-  "áàâãäåæçèéêëìíîïðñòóôõöùúûüýþÿ" +
-  "ÁÀÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖÙÚÛÜÝÞ" +
-  "ąćęłńóśźżĄĆĘŁŃÓŚŹŻ" +
-  "ščřžťďňěůŠČŘŽŤĎŇĚŮ";
-
-// Arabic: common letters
-const ARABIC = "ابتثجحخدذرزسشصضطظعغفقكلمنهوي";
-
-// Japanese: Hiragana + Katakana ranges
-const HIRAGANA = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん";
-const KATAKANA = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン";
-
-// Chinese: common CJK characters (high frequency)
-const CHINESE = "的一是不了人我在有他这中大来上个国到说们为子和你地出会也时要就以下对生能过么当然学着没对好看起发成事只作把多那些头让";
-
-// Korean: common Hangul syllables
-const KOREAN = "가나다라마바사아자차카타파하거너더러머버서어저처커터퍼허고노도로모보소오조초코토포호";
-
-// Greek
-const GREEK = "αβγδεζηθικλμνξοπρστυφχψωΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ";
-
-// Cyrillic
-const CYRILLIC = "абвгдежзийклмнопрстуфхцчшщъыьэюяАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
-
-// Math & misc symbols
-const MATH_SYMBOLS = "±×÷√∞≠≤≥≈∑∏∫∂∇∈∉⊂⊃∪∩∧∨¬∀∃∅⊕⊗";
-
-// Currency
-const CURRENCY = "€£¥₹₽₿¢₩₪₺₴";
-
-// Emoji (common)
-const EMOJI = "🔐🛡️🔑🔒🔓💀⚡🌍🎲🧬🚀✨🔥💎🌀⚙️🧩📡🏴‍☠️";
-
-const CHARSETS: Record<Exclude<Mode, "uuid">, string> = {
-  unicode: LATIN + SYMBOLS + ACCENTED + ARABIC + HIRAGANA + KATAKANA + CHINESE + KOREAN + GREEK + CYRILLIC + MATH_SYMBOLS + CURRENCY + EMOJI,
-  secure: LATIN + SYMBOLS + ACCENTED,
-  alpha: LATIN,
-  hex: "0123456789abcdef",
-};
+type Mode = KeygenMode;
 
 const LENGTHS = [64, 128, 256, 512, 1024];
 
@@ -62,38 +17,6 @@ interface Props {
   savedLength?: number;
   onModeChange?: (mode: Mode) => void;
   onLengthChange?: (length: number) => void;
-}
-
-function generateValue(mode: Mode, length: number): string {
-  if (mode === "uuid") {
-    const now = Date.now();
-    const bytes = crypto.getRandomValues(new Uint8Array(16));
-    bytes[0] = (now / 2 ** 40) & 0xff;
-    bytes[1] = (now / 2 ** 32) & 0xff;
-    bytes[2] = (now / 2 ** 24) & 0xff;
-    bytes[3] = (now / 2 ** 16) & 0xff;
-    bytes[4] = (now / 2 ** 8) & 0xff;
-    bytes[5] = now & 0xff;
-    bytes[6] = (bytes[6] & 0x0f) | 0x70;
-    bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
-  }
-
-  // Rejection sampling: eliminates modulo bias for perfectly uniform distribution
-  const charset = [...CHARSETS[mode]];
-  const pool = charset.length;
-  const limit = Math.floor(0x100000000 / pool) * pool; // largest multiple of pool that fits in uint32
-  const result: string[] = [];
-  while (result.length < length) {
-    const batch = crypto.getRandomValues(new Uint32Array(Math.min(length - result.length + 16, 256)));
-    for (let i = 0; i < batch.length && result.length < length; i++) {
-      if (batch[i] < limit) {
-        result.push(charset[batch[i] % pool]);
-      }
-    }
-  }
-  return result.join("");
 }
 
 const MODES: { key: Mode; labelKey: string }[] = [

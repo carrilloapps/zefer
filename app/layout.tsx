@@ -134,6 +134,8 @@ export default function RootLayout({
                 "Secret question protection",
                 "Gzip/Deflate compression",
                 "Progressive Web App",
+                "Advanced password generator and analyzer",
+                ".zefer file inspector",
               ],
               screenshot: "https://zefer.carrillo.app/opengraph-image",
               author: {
@@ -152,7 +154,7 @@ export default function RootLayout({
                 url: "https://carrillo.app",
               },
               license: "https://opensource.org/licenses/MIT",
-              softwareVersion: "0.4.1",
+              softwareVersion: "0.5.0",
               inLanguage: ["en", "es", "pt"],
               isAccessibleForFree: true,
               installUrl: "https://zefer.carrillo.app/install",
@@ -170,8 +172,10 @@ export default function RootLayout({
         <div className="blob-accent" aria-hidden="true" />
         <ThemeProvider>
           <LanguageProvider>
-            <div className="relative z-10 flex flex-col flex-1">{children}</div>
-            <LegalBanner />
+            <div className="relative z-10 flex flex-col flex-1">
+              {children}
+              <LegalBanner />
+            </div>
             <ToastProvider />
           </LanguageProvider>
         </ThemeProvider>

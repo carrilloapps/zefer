@@ -5,6 +5,28 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-06-05
+
+### Added
+
+- **Password generator page (`/generator`)** — Advanced standalone generator: 5 modes (Unicode, Secure, Alphanumeric, Hex, UUID v7), configurable length (16–256) and quantity (1–25), per-key copy, copy-all, and `.txt` download. Generation via `crypto.getRandomValues` with rejection sampling
+- **Password analyzer** — Live analysis of any password on `/generator`: estimated alphabet, maximum and effective entropy, brute-force crack-time for online (10⁴/s) and offline GPU (10¹²/s) attackers, character-class breakdown, and structural weakness detection (leaked-list match, sequences, keyboard patterns, repeats, embedded years)
+- **`.zefer` file analyzer page (`/analyzer`)** — Inspect the public header of any `.zefer` file without the passphrase: format (ZEFB3/ZEFR3/legacy), content mode, PBKDF2 iterations with KDF level, compression, sizes, reveal-key presence, public hint/note. 100% client-side via the File API
+- **Shared password library (`app/lib/passwords.ts`)** — Charsets, unbiased generation, entropy and analysis extracted from KeyGenerator for reuse
+
+### Improved
+
+- **Mobile header** — Persistent scroll-aware liquid-glass app bar: transparent over the hero, elevates with blur + hairline + shadow on scroll; logo badge with live E2E pill; morphing hamburger (lines → X); drawer items reveal with staggered spring animation; "Encrypt a secret" CTA and Tools group in the drawer. All motion respects `prefers-reduced-motion`
+- **Navigation** — Generator and Analyzer links in desktop nav, mobile drawer, and footer
+
+### Fixed
+
+- **Legal banner stacking** — The banner no longer paints above the open mobile drawer or page content; it now lives inside the main stacking context
+- **Desktop popovers clipped** — Language dropdown (`.glass-nav`), key generator popover, and expiration select ( `.hero-glow`) are no longer cut off by `overflow: hidden` ancestors
+- **`<html lang>`** — Now follows the active locale (WCAG 3.1.1)
+- **Collapsed advanced panel** — No longer reachable by keyboard or screen readers while hidden; toggle exposes `aria-expanded`/`aria-controls`
+- **Localized aria-labels** — All hardcoded English `aria-label`s replaced with i18n keys (es/en/pt); form fields gained associated labels, `id`/`name`, and proper `autocomplete`
+
 ## [0.4.1] - 2026-04-11
 
 ### Improved

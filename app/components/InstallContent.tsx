@@ -241,13 +241,14 @@ const CLI_STEPS: { titleKey: TranslationKey; descKey: TranslationKey; code: stri
 ];
 
 function CopyButton({ text }: { text: string }) {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
   return (
     <button
       type="button"
       onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1800); }}
       className="shrink-0 text-[10px] theme-faint hover:text-primary transition-colors cursor-pointer"
-      aria-label="Copy"
+      aria-label={t("aria.copy")}
     >
       {copied ? <Check className="w-3 h-3 text-primary" /> : <Copy className="w-3 h-3" />}
     </button>

@@ -86,7 +86,7 @@ passphrase
 ```
 app/
   api/author/route.ts      -- GitHub profile cache (1h TTL)
-  components/              -- 30 client components (incl. VsContent, HatShContent, ConductContent, SecurityPolicyContent)
+  components/              -- 32 client components (incl. VsContent, GeneratorContent, AnalyzerContent, SecurityPolicyContent)
   lib/
     crypto.ts              -- AES-256-GCM, PBKDF2, benchmark, dual key
     zefer.ts               -- ZEFB3/ZEFR3 encode/decode, all security checks
@@ -96,6 +96,7 @@ app/
     i18n.ts                -- ~600 translation keys x 3 languages
     ip.ts                  -- IP detection + allowlist check
     notify.ts              -- Toast notification helpers
+    passwords.ts           -- Charsets, unbiased keygen, entropy + password analysis
     preferences.ts         -- Persisted user preferences (ttl, iterations, compression, inputMode, tab, keygenMode, keygenLength)
     progress.ts            -- Encryption/decryption progress tracking
   globals.css              -- Design system (liquid glass, 2 themes, animations)
@@ -107,6 +108,8 @@ app/
 |---|---|---|---|
 | `/` | Static | index, follow | Home — encrypt/decrypt tabs, typewriter hero |
 | `/how` | Static | index, follow | 7 steps + 5 features + 12 specs + FAQPage schema |
+| `/generator` | Static | index, follow | Advanced password generator + strength analyzer (entropy, crack time, weaknesses, copy/download .txt) |
+| `/analyzer` | Static | index, follow | .zefer public-header inspector (format, KDF level, compression — no passphrase needed) |
 | `/privacy` | Static | noindex, follow | Privacy policy — 9 sections + GDPR/CCPA/LGPD compliance |
 | `/terms` | Static | noindex, follow | 12 sections + MIT + Colombia Law 1581 |
 | `/project` | Static | index, follow | Repo, stack, creator (GitHub API), donate |
@@ -256,7 +259,7 @@ When releasing a new version, ALL of these must be updated together:
 - Advanced panel: CSS `grid-template-rows` transition (not conditional render) for smooth expand/collapse. Uses `border-t` separator inside parent card, never `glass` inside `glass`
 - Theme toggle: View Transitions API with circle reveal (1.4s, cubic-bezier(0.22,1,0.36,1)). Button blocked with `pointer-events-none` during transition, unblocked on `transition.finished`
 - Overflow: `overflow-x: hidden` on html+body. `overflow: hidden` on `.hero-glow`. Blobs use `min(400px, 100vw)`. No `-mx-*` on scrollable children
-- PWA offline: Service Worker caches all 17 pages + static assets + `/api/author`. Network-first for pages (fresh online, cached offline), cache-first for static. Offline fallback to cached home. Never use stale-while-revalidate for pages (causes skeleton persistence after deploys)
+- PWA offline: Service Worker caches all 19 pages + static assets + `/api/author`. Network-first for pages (fresh online, cached offline), cache-first for static. Offline fallback to cached home. Never use stale-while-revalidate for pages (causes skeleton persistence after deploys)
 - No custom Cache-Control on `/_next/static/*` — Next.js manages its own static asset caching
 
 ## Agent Tooling

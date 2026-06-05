@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Shield, Heart, User, Code, Download, Menu, X, BookOpen, Cpu,
+  Shield, Heart, User, Code, Download, BookOpen, Cpu,
   Lock, Scale, Users, ShieldAlert, ChevronRight, ExternalLink,
+  KeyRound, FileSearch,
 } from "lucide-react";
 import LanguageSelector from "@/app/components/LanguageSelector";
 import ThemeToggle from "@/app/components/ThemeToggle";
@@ -12,8 +13,16 @@ import { useLanguage } from "@/app/components/LanguageProvider";
 export default function Navbar() {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   const close = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -36,20 +45,29 @@ export default function Navbar() {
 
   return (
     <>
-      {/* ─── Mobile header (native app bar) ─── */}
-      <nav className="sm:hidden fixed top-0 left-0 right-0 z-50 nav-mobile-header">
+      {/* ─── Mobile header (persistent, scroll-aware liquid glass) ─── */}
+      <nav className={`sm:hidden fixed top-0 left-0 right-0 z-[80] nav-mobile-header ${scrolled || open ? "nav-elevated" : ""}`}>
         <div className="nav-mobile-safe-top" />
         <div className="flex items-center justify-between px-4 h-12">
-          <a href="/" className="flex items-center gap-2.5 cursor-pointer">
-            <Shield className="w-5 h-5 text-primary" />
+          <a href="/" onClick={close} className="flex items-center gap-2.5 cursor-pointer">
+            <span className="w-7 h-7 rounded-lg theme-primary-faint theme-primary-border border flex items-center justify-center">
+              <Shield className="w-3.5 h-3.5 text-primary" />
+            </span>
             <span className="font-semibold theme-heading tracking-tight text-[15px]">Zefer</span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full theme-primary-faint theme-primary-border border" aria-hidden="true">
+              <span className="inline-block w-1 h-1 rounded-full bg-primary animate-pulse" />
+              <span className="text-[8px] text-primary font-mono tracking-widest">E2E</span>
+            </span>
           </a>
           <button
-            onClick={() => setOpen(true)}
-            className="flex items-center justify-center w-10 h-10 -mr-1.5 rounded-full theme-muted active:bg-[var(--glass-bg)] transition-colors duration-100 cursor-pointer"
-            aria-label={t("nav.menu")}
+            onClick={() => setOpen(!open)}
+            className="nav-burger flex items-center justify-center w-10 h-10 -mr-1.5 rounded-full theme-text active:bg-[var(--glass-bg)] transition-colors duration-100 cursor-pointer"
+            aria-label={open ? t("nav.close") : t("nav.menu")}
+            aria-expanded={open}
+            aria-controls="mobile-drawer"
           >
-            <Menu className="w-5 h-5" />
+            <span className="nav-burger-line" aria-hidden="true" />
+            <span className="nav-burger-line" aria-hidden="true" />
           </button>
         </div>
       </nav>
@@ -67,6 +85,12 @@ export default function Navbar() {
           <div className="flex items-center gap-0.5 lg:gap-1 min-w-0">
             <a href="/how" className="px-2 lg:px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] whitespace-nowrap">
               {t("steps.title")}
+            </a>
+            <a href="/generator" className="px-2 lg:px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1 whitespace-nowrap">
+              <KeyRound className="w-3 h-3 shrink-0" />{t("nav.generator")}
+            </a>
+            <a href="/analyzer" className="px-2 lg:px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1 whitespace-nowrap">
+              <FileSearch className="w-3 h-3 shrink-0" />{t("nav.analyzer")}
             </a>
             <a href="/project" className="px-2 lg:px-3 py-1.5 text-xs theme-muted hover:theme-text transition-colors duration-200 cursor-pointer rounded-lg hover:bg-[var(--glass-bg)] flex items-center gap-1 whitespace-nowrap">
               <Code className="w-3 h-3 shrink-0" />{t("nav.project")}
@@ -101,62 +125,60 @@ export default function Navbar() {
       />
 
       <div
-        className={`fixed inset-0 z-[70] drawer-bg flex flex-col transition-transform duration-300 ease-out sm:hidden ${open ? "translate-y-0" : "translate-y-full"}`}
+        id="mobile-drawer"
+        className={`fixed inset-0 z-[70] drawer-bg flex flex-col transition-transform duration-300 ease-out sm:hidden ${open ? "translate-y-0 drawer-open" : "translate-y-full"}`}
         role="dialog"
         aria-modal="true"
         aria-label={t("nav.menu")}
       >
-        {/* Handle + header */}
+        {/* Clearance for the persistent header */}
         <div className="nav-mobile-safe-top" />
-        <div className="flex flex-col items-center pt-2 pb-1 px-4">
-          <div className="w-9 h-1 rounded-full bg-[var(--glass-border)] mb-3" />
-          <div className="w-full flex items-center justify-between h-12">
-            <div className="flex items-center gap-2.5">
-              <Shield className="w-5 h-5 text-primary" />
-              <div>
-                <span className="font-semibold theme-heading text-[15px] block leading-tight">Zefer</span>
-                <span className="text-[10px] text-primary font-mono">{t("nav.encrypted")}</span>
-              </div>
-            </div>
-            <button
-              onClick={close}
-              className="flex items-center justify-center w-10 h-10 -mr-1.5 rounded-full bg-[var(--glass-bg)] theme-muted active:bg-[var(--glass-bg-hover)] transition-colors duration-100 cursor-pointer"
-              aria-label={t("nav.close")}
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+        <div className="h-12 shrink-0" />
 
-        {/* Scrollable links */}
+        {/* Scrollable links — groups reveal with stagger */}
         <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-2" style={{ WebkitOverflowScrolling: "touch" }}>
-          <div className="drawer-group mb-3">
+          <a
+            href="/?t=encrypt"
+            onClick={close}
+            className="drawer-stagger btn-primary mb-4 !h-12"
+            style={{ "--stagger": "0.03s" } as React.CSSProperties}
+          >
+            <Lock className="w-4 h-4" />{t("encrypt.title")}
+          </a>
+
+          <div className="drawer-group drawer-stagger mb-3" style={{ "--stagger": "0.07s" } as React.CSSProperties}>
             <DrawerLink href="/" icon={Shield} label={t("nav.home")} onClick={close} />
             <DrawerLink href="/how" icon={Lock} label={t("nav.how")} onClick={close} />
             <DrawerLink href="/device" icon={Cpu} label={t("nav.device")} onClick={close} />
             <DrawerLink href="/project" icon={Code} label={t("nav.project")} onClick={close} />
           </div>
 
-          <div className="drawer-group mb-3">
+          <p className="drawer-stagger text-[10px] font-mono theme-muted uppercase tracking-wider px-4 mb-1.5 mt-1" style={{ "--stagger": "0.11s" } as React.CSSProperties}>{t("nav.tools")}</p>
+          <div className="drawer-group drawer-stagger mb-3" style={{ "--stagger": "0.13s" } as React.CSSProperties}>
+            <DrawerLink href="/generator" icon={KeyRound} label={t("nav.generator")} onClick={close} />
+            <DrawerLink href="/analyzer" icon={FileSearch} label={t("nav.analyzer")} onClick={close} />
+          </div>
+
+          <div className="drawer-group drawer-stagger mb-3" style={{ "--stagger": "0.17s" } as React.CSSProperties}>
             <DrawerLink href="/install" icon={Download} label={t("nav.install")} badge={t("install.coming")} onClick={close} />
             <DrawerLink href="/install/guide" icon={BookOpen} label={t("nav.guide")} onClick={close} />
           </div>
 
-          <p className="text-[10px] font-mono theme-muted uppercase tracking-wider px-4 mb-1.5 mt-1">{t("footer.legal")}</p>
-          <div className="drawer-group mb-3">
+          <p className="drawer-stagger text-[10px] font-mono theme-muted uppercase tracking-wider px-4 mb-1.5 mt-1" style={{ "--stagger": "0.21s" } as React.CSSProperties}>{t("footer.legal")}</p>
+          <div className="drawer-group drawer-stagger mb-3" style={{ "--stagger": "0.23s" } as React.CSSProperties}>
             <DrawerLink href="/privacy" icon={Scale} label={t("nav.privacy")} onClick={close} />
             <DrawerLink href="/security" icon={ShieldAlert} label={t("footer.securitypolicy")} onClick={close} />
             <DrawerLink href="/conduct" icon={Users} label={t("nav.conduct")} onClick={close} />
           </div>
 
-          <div className="drawer-group">
+          <div className="drawer-group drawer-stagger" style={{ "--stagger": "0.27s" } as React.CSSProperties}>
             <DrawerLink href="https://www.buymeacoffee.com/carrilloapps" icon={Heart} label={t("nav.donate")} external onClick={close} />
             <DrawerLink href="https://github.com/carrilloapps" icon={User} label={t("nav.author")} external onClick={close} />
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="px-4 py-2.5 border-t border-[var(--glass-border)] flex items-center justify-between gap-3">
+        <div className="drawer-stagger px-4 py-2.5 border-t border-[var(--glass-border)] flex items-center justify-between gap-3" style={{ "--stagger": "0.31s" } as React.CSSProperties}>
           <div className="flex items-center gap-1.5">
             <ThemeToggle />
             <LanguageSelector />
