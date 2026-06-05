@@ -334,7 +334,8 @@ zefer-cli ships a built-in Model Context Protocol server: `zefer mcp` (stdio, ne
 
 Client configuration (Claude Code, Claude Desktop, Cursor, Windsurf, VS Code, Zed, any stdio MCP client):
 
-    { "mcpServers": { "zefer": { "command": "zefer", "args": ["mcp"] } } }
+    Global install:  { "mcpServers": { "zefer": { "command": "zefer", "args": ["mcp"] } } }
+    Via npx:         { "mcpServers": { "zefer": { "command": "npx", "args": ["-y", "zefer-cli", "mcp"] } } }
 
 Exposed tools:
 

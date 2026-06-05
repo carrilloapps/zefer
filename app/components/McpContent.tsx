@@ -15,6 +15,14 @@ const CLIENT_CONFIG = `{
   }
 }`;
 
+const NPX_CONFIG = `{
+  "mcpServers": {
+    "zefer": { "command": "npx", "args": ["-y", "zefer-cli", "mcp"] }
+  }
+}`;
+
+const NPX_SNIPPET = `"command": "npx", "args": ["-y", "zefer-cli", "mcp"]`;
+
 const EXAMPLE_CALL = `{"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
   "name": "zefer_encrypt",
   "arguments": {
@@ -156,7 +164,10 @@ export default function McpContent() {
               <span className="text-[10px] font-mono text-primary theme-primary-faint theme-primary-border border rounded-md px-1.5 py-0.5">02</span>
               {t("mcp.setup.step2")}
             </p>
+            <p className="text-[10px] theme-faint mb-1.5">{t("mcp.setup.optionA")}</p>
             <CodeBlock code={CLIENT_CONFIG} />
+            <p className="text-[10px] theme-faint mb-1.5 mt-3">{t("mcp.setup.optionB")}</p>
+            <CodeBlock code={NPX_CONFIG} />
           </div>
         </div>
       </div>
@@ -168,6 +179,10 @@ export default function McpContent() {
         </h2>
         <p className="text-[11px] theme-muted mb-4 leading-relaxed">{t("mcp.clients.desc")}</p>
         <ClientAccordion />
+        <div className="mt-4">
+          <p className="text-[11px] theme-muted mb-1.5 leading-relaxed">{t("mcp.clients.npxnote")}</p>
+          <CodeBlock code={NPX_SNIPPET} />
+        </div>
       </div>
 
       {/* Smart detection */}

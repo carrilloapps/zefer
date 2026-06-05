@@ -87,7 +87,7 @@ Sensitive params (p, p2, r, a) are auto-cleared from the URL after reading.
 
 ## MCP Server
 
-zefer-cli includes a built-in MCP server. Configure `{ "mcpServers": { "zefer": { "command": "zefer", "args": ["mcp"] } } }` in any MCP client (Claude Code, Claude Desktop, Cursor, Windsurf, VS Code, Zed). Tools: `zefer_encrypt`, `zefer_decrypt`, `zefer_keygen`, `zefer_analyze_password`, `zefer_inspect`. Auto-detection: no args + piped stdin starts MCP mode; TTY terminals get the regular CLI. 100% local, dependency-free. Full guide: https://zefer.carrillo.app/mcp
+zefer-cli includes a built-in MCP server. Configure `{ "mcpServers": { "zefer": { "command": "zefer", "args": ["mcp"] } } }` (global install) or `{ "mcpServers": { "zefer": { "command": "npx", "args": ["-y", "zefer-cli", "mcp"] } } }` (no install) in any MCP client (Claude Code, Claude Desktop, Cursor, Windsurf, VS Code, Zed). Tools: `zefer_encrypt`, `zefer_decrypt`, `zefer_keygen`, `zefer_analyze_password`, `zefer_inspect`. Auto-detection: no args + piped stdin starts MCP mode; TTY terminals get the regular CLI. 100% local, dependency-free. Full guide: https://zefer.carrillo.app/mcp
 
 ## Binary File Format
 

@@ -166,7 +166,10 @@ info <input>            Show public header without decrypting
 zefer-cli doubles as a **Model Context Protocol server** (stdio, dependency-free), so AI agents can use every capability directly:
 
 ```jsonc
+// global install
 { "mcpServers": { "zefer": { "command": "zefer", "args": ["mcp"] } } }
+// or via npx, no install required
+{ "mcpServers": { "zefer": { "command": "npx", "args": ["-y", "zefer-cli", "mcp"] } } }
 ```
 
 - Tools: `zefer_encrypt`, `zefer_decrypt`, `zefer_keygen`, `zefer_analyze_password`, `zefer_inspect`
