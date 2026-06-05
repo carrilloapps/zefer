@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import type { CompressionMethod } from "./compression";
-import type { KeygenMode } from "./passwords";
+import type { KeygenMode, GenerateOptions } from "./passwords";
 
 const STORAGE_KEY = "zefer-prefs";
 
@@ -16,6 +16,7 @@ interface Preferences {
   keygenMode: KeygenMode;
   keygenLength: number;
   keygenCount: number;
+  keygenAdvanced: GenerateOptions;
 }
 
 const DEFAULTS: Preferences = {
@@ -27,6 +28,13 @@ const DEFAULTS: Preferences = {
   keygenMode: "secure",
   keygenLength: 64,
   keygenCount: 1,
+  keygenAdvanced: {
+    excludeAmbiguous: false,
+    excludeChars: "",
+    requireAllClasses: false,
+    noRepeats: false,
+    groupSize: 0,
+  },
 };
 
 function load(): Preferences {
@@ -72,8 +80,11 @@ export function usePreferences() {
     keygenMode: prefs.keygenMode,
     keygenLength: prefs.keygenLength,
     keygenCount: prefs.keygenCount,
+    keygenAdvanced: prefs.keygenAdvanced,
     setKeygenMode: (v: KeygenMode) => update({ keygenMode: v }),
     setKeygenLength: (v: number) => update({ keygenLength: v }),
     setKeygenCount: (v: number) => update({ keygenCount: v }),
+    setKeygenAdvanced: (v: Partial<GenerateOptions>) =>
+      update({ keygenAdvanced: { ...prefs.keygenAdvanced, ...v } }),
   };
 }

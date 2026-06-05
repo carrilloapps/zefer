@@ -3,14 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   KeyRound, Copy, Check, RefreshCw, Download, Hash, Eye, EyeOff,
-  ShieldCheck, AlertTriangle, Gauge, Layers, ScanSearch,
+  ShieldCheck, AlertTriangle, Gauge, Layers, ScanSearch, Shield,
+  ChevronUp, ChevronDown, Ban, SquareAsterisk,
 } from "lucide-react";
 import { PageLayout, PageHeader } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
 import { notifySuccess } from "@/app/lib/notify";
 import { usePreferences } from "@/app/lib/preferences";
 import {
-  CHARSETS, MODES, generateValue, entropyOf, analyzePassword, bucketCrackTime,
+  MODES, charsetFor, generateWithOptions, analyzePassword, bucketCrackTime,
   type PasswordAnalysis, type PasswordWarning,
 } from "@/app/lib/passwords";
 
@@ -19,10 +20,71 @@ const LENGTHS = [16, 32, 64, 128, 256, 512, 1024];
 const COUNTS = [1, 5, 10, 25, 50];
 
 const MAX_LENGTH = 2048;
-const MAX_COUNT = 100;
+const MAX_COUNT = 50;
 
 const clampLength = (n: number) => Math.min(MAX_LENGTH, Math.max(1, Math.floor(n)));
 const clampCount = (n: number) => Math.min(MAX_COUNT, Math.max(1, Math.floor(n)));
+
+/** Range slider over discrete stops with dot markers centered on each thumb position.
+ *  The thumb is 20px wide, so its center travels from 10px to (100% - 10px) —
+ *  each marker is absolutely positioned on that exact path. */
+function StopSlider({
+  id, stops, value, onPick, ariaLabel,
+}: {
+  id: string;
+  stops: number[];
+  value: number;
+  onPick: (stop: number) => void;
+  ariaLabel: string;
+}) {
+  let nearest = 0;
+  for (let i = 1; i < stops.length; i++) {
+    if (Math.abs(stops[i] - value) < Math.abs(stops[nearest] - value)) nearest = i;
+  }
+  return (
+    <div className="flex-1 min-w-0">
+      <input
+        id={id}
+        type="range"
+        min={0}
+        max={stops.length - 1}
+        step={1}
+        value={nearest}
+        onChange={(e) => onPick(stops[Number(e.target.value)])}
+        aria-label={ariaLabel}
+        aria-valuetext={`${stops[nearest]}`}
+        className="range-slider"
+      />
+      <div className="relative h-8 -mt-1.5">
+        {stops.map((s, i) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => onPick(s)}
+            aria-pressed={value === s}
+            aria-label={`${ariaLabel}: ${s}`}
+            className="absolute top-0 -translate-x-1/2 flex flex-col items-center gap-1 cursor-pointer group py-0.5"
+            style={{ left: `calc(10px + (100% - 20px) * ${stops.length > 1 ? i / (stops.length - 1) : 0})` }}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                value === s ? "bg-primary" : "bg-[var(--glass-border)] group-hover:bg-[var(--muted)]"
+              }`}
+              aria-hidden="true"
+            />
+            <span
+              className={`text-[9px] font-mono leading-none transition-colors ${
+                value === s ? "text-primary font-semibold" : "theme-faint group-hover:theme-muted"
+              }`}
+            >
+              {s}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const WARNING_KEYS: Record<PasswordWarning, string> = {
   tooShort: "gen.warn.tooShort",
@@ -50,9 +112,10 @@ export default function GeneratorContent() {
 
   // ── Generator state — same persisted preferences the home KeyGenerator uses ──
   const {
-    keygenMode: mode, keygenLength: length, keygenCount: count,
-    setKeygenMode: setMode, setKeygenLength: setLength, setKeygenCount: setCount,
+    keygenMode: mode, keygenLength: length, keygenCount: count, keygenAdvanced: adv,
+    setKeygenMode: setMode, setKeygenLength: setLength, setKeygenCount: setCount, setKeygenAdvanced: setAdv,
   } = usePreferences();
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [keys, setKeys] = useState<GeneratedKey[]>([]);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [genTick, setGenTick] = useState(0);
@@ -63,27 +126,23 @@ export default function GeneratorContent() {
   useEffect(() => setLengthInput(String(length)), [length]);
   useEffect(() => setCountInput(String(count)), [count]);
 
+  // Migrate previously-persisted quantities above the new 50 cap
+  useEffect(() => { if (count > MAX_COUNT) setCount(MAX_COUNT); }, [count, setCount]);
+
   // ── Analyzer state ──
   const [candidate, setCandidate] = useState("");
   const [showCandidate, setShowCandidate] = useState(false);
   const analysis = useMemo(() => analyzePassword(candidate), [candidate]);
 
   const isUuid = mode === "uuid";
-  const bits = entropyOf(mode, length);
-
-  // Slider thumb sits at the nearest preset stop (custom values keep the input highlighted)
-  const sliderIdx = useMemo(() => {
-    let best = 0;
-    for (let i = 1; i < LENGTHS.length; i++) {
-      if (Math.abs(LENGTHS[i] - length) < Math.abs(LENGTHS[best] - length)) best = i;
-    }
-    return best;
-  }, [length]);
-  const poolSize = isUuid ? 16 : [...CHARSETS[mode]].length;
+  // Pool and entropy reflect the active exclusions
+  const poolSize = isUuid ? 16 : Math.max(charsetFor(mode, adv).length, 2);
+  const bits = isUuid ? 122 : Math.floor(Math.log2(poolSize) * length);
   const configCrack = useMemo(
     () => Math.pow(2, bits - 1) / 1e12,
     [bits]
   );
+  const supportsClasses = ["secure", "unicode", "alpha", "base58"].includes(mode);
 
   function commitLength(raw: string) {
     const n = parseInt(raw, 10);
@@ -99,7 +158,7 @@ export default function GeneratorContent() {
     const safeCount = clampCount(count);
     const safeLength = clampLength(length);
     const generated: GeneratedKey[] = Array.from({ length: safeCount }, () => {
-      const value = generateValue(mode, safeLength);
+      const value = generateWithOptions(mode, safeLength, adv);
       return { value, analysis: analyzePassword(value) };
     }).sort((a, b) =>
       b.analysis.score - a.analysis.score || b.analysis.effectiveBits - a.analysis.effectiveBits
@@ -180,65 +239,25 @@ export default function GeneratorContent() {
       {/* ─── Generator tab ─── */}
       {tab === "generate" && (
         <div className="glass glow-green-sm p-6 sm:p-8 animate-in">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            {/* Mode */}
-            <div>
-              <p className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
-                <ShieldCheck className="w-3 h-3" />{t("gen.mode")}
-              </p>
-              <div className="flex gap-0.5 glass !rounded-lg p-0.5 flex-wrap" role="group" aria-label={t("gen.mode")}>
-                {MODES.map((m) => (
-                  <button
-                    key={m.key}
-                    type="button"
-                    onClick={() => setMode(m.key)}
-                    aria-pressed={mode === m.key}
-                    className={`flex-1 min-w-[3.5rem] py-2 text-[10px] font-medium rounded-md chip-select cursor-pointer ${
-                      mode === m.key ? "bg-[var(--primary)] text-[var(--btn-text)]" : "theme-muted hover:theme-text"
-                    }`}
-                  >
-                    {t(m.labelKey as Parameters<typeof t>[0])}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Count: presets + custom (max 100) */}
-            <div>
-              <label htmlFor="gen-count" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
-                <Layers className="w-3 h-3" />{t("gen.count")}
-              </label>
-              <div className="flex gap-1" role="group" aria-label={t("gen.count")}>
-                {COUNTS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setCount(c)}
-                    aria-pressed={count === c}
-                    className={`flex-1 py-2 rounded-md text-[11px] font-mono font-medium chip-select cursor-pointer border ${
-                      count === c ? "bg-[var(--primary)] text-[var(--btn-text)] border-transparent" : "glass theme-muted hover:theme-text"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
-                <input
-                  id="gen-count"
-                  name="gen-count"
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  max={MAX_COUNT}
-                  value={countInput}
-                  onChange={(e) => { setCountInput(e.target.value); commitCount(e.target.value); }}
-                  onBlur={() => setCountInput(String(count))}
-                  aria-label={t("gen.custom.count")}
-                  title={t("gen.custom.count")}
-                  className={`w-16 shrink-0 !py-2 !px-2 text-center !rounded-md text-[11px] font-mono font-medium ${
-                    !COUNTS.includes(count) ? "theme-primary-border text-primary" : ""
+          {/* Mode: all types on a single horizontal row */}
+          <div className="mb-4">
+            <p className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+              <ShieldCheck className="w-3 h-3" />{t("gen.mode")}
+            </p>
+            <div className="flex gap-0.5 glass !rounded-lg p-0.5" role="group" aria-label={t("gen.mode")}>
+              {MODES.map((m) => (
+                <button
+                  key={m.key}
+                  type="button"
+                  onClick={() => setMode(m.key)}
+                  aria-pressed={mode === m.key}
+                  className={`flex-1 min-w-0 py-2 px-0.5 text-[9px] sm:text-[11px] font-medium rounded-md chip-select cursor-pointer truncate ${
+                    mode === m.key ? "bg-[var(--primary)] text-[var(--btn-text)]" : "theme-muted hover:theme-text"
                   }`}
-                />
-              </div>
+                >
+                  {t(m.labelKey as Parameters<typeof t>[0])}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -248,48 +267,14 @@ export default function GeneratorContent() {
               <label htmlFor="gen-length-slider" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
                 <Hash className="w-3 h-3" />{t("keygen.length")}
               </label>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <input
-                    id="gen-length-slider"
-                    type="range"
-                    min={0}
-                    max={LENGTHS.length - 1}
-                    step={1}
-                    value={sliderIdx}
-                    onChange={(e) => setLength(LENGTHS[Number(e.target.value)])}
-                    aria-label={t("keygen.length")}
-                    aria-valuetext={`${LENGTHS[sliderIdx]}`}
-                    className="range-slider"
-                  />
-                  {/* Stop dots + values (clickable) */}
-                  <div className="flex justify-between px-[7px] -mt-1.5">
-                    {LENGTHS.map((l) => (
-                      <button
-                        key={l}
-                        type="button"
-                        onClick={() => setLength(l)}
-                        aria-pressed={length === l}
-                        aria-label={`${t("keygen.length")}: ${l}`}
-                        className="flex flex-col items-center gap-1 cursor-pointer group min-w-0 py-1"
-                      >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                            length === l ? "bg-primary" : "bg-[var(--glass-border)] group-hover:bg-[var(--muted)]"
-                          }`}
-                          aria-hidden="true"
-                        />
-                        <span
-                          className={`text-[9px] font-mono leading-none transition-colors ${
-                            length === l ? "text-primary font-semibold" : "theme-faint group-hover:theme-muted"
-                          }`}
-                        >
-                          {l}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+              <div className="flex items-start gap-3">
+                <StopSlider
+                  id="gen-length-slider"
+                  stops={LENGTHS}
+                  value={length}
+                  onPick={setLength}
+                  ariaLabel={t("keygen.length")}
+                />
                 <input
                   id="gen-length"
                   name="gen-length"
@@ -302,13 +287,157 @@ export default function GeneratorContent() {
                   onBlur={() => setLengthInput(String(length))}
                   aria-label={t("gen.custom.length")}
                   title={t("gen.custom.length")}
-                  className={`w-[4.5rem] shrink-0 self-start !py-2 !px-2 text-center !rounded-md text-[11px] font-mono font-medium ${
+                  className={`w-[4.5rem] shrink-0 !py-2 !px-2 text-center !rounded-md text-[11px] font-mono font-medium ${
                     !LENGTHS.includes(length) ? "theme-primary-border text-primary" : ""
                   }`}
                 />
               </div>
             </div>
           )}
+
+          {/* Advanced options — same collapsible pattern as the home encrypt form */}
+          <button
+            type="button"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="w-full flex items-center justify-between py-2.5 px-3 mb-4 rounded-xl text-xs theme-muted hover:theme-text hover:bg-[var(--glass-bg)] transition-colors duration-200 cursor-pointer"
+            aria-expanded={showAdvanced}
+            aria-controls="gen-advanced"
+          >
+            <span className="flex items-center gap-2">
+              <Shield className="w-3.5 h-3.5" />
+              {t("advanced.title")}
+            </span>
+            {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+
+          <div id="gen-advanced" className={`advanced-panel ${showAdvanced ? "advanced-open" : ""} mb-4`}>
+            <div>
+              <div className="border-t border-[var(--border-subtle)] pt-4 space-y-4">
+                {/* Quantity: slider over preset stops + manual input (1–50, default 1) */}
+                <div>
+                  <label htmlFor="gen-count-slider" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+                    <Layers className="w-3 h-3" />{t("gen.count")}
+                  </label>
+                  <div className="flex items-start gap-3">
+                    <StopSlider
+                      id="gen-count-slider"
+                      stops={COUNTS}
+                      value={count}
+                      onPick={setCount}
+                      ariaLabel={t("gen.count")}
+                    />
+                    <input
+                      id="gen-count"
+                      name="gen-count"
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={MAX_COUNT}
+                      value={countInput}
+                      onChange={(e) => { setCountInput(e.target.value); commitCount(e.target.value); }}
+                      onBlur={() => setCountInput(String(count))}
+                      aria-label={t("gen.custom.count")}
+                      title={t("gen.custom.count")}
+                      className={`w-[4.5rem] shrink-0 !py-2 !px-2 text-center !rounded-md text-[11px] font-mono font-medium ${
+                        !COUNTS.includes(count) ? "theme-primary-border text-primary" : ""
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {!isUuid && (
+                  <>
+                    {/* Exclude ambiguous */}
+                    <div>
+                      <label className="flex items-center gap-3 cursor-pointer group w-fit">
+                        <div className="relative">
+                          <input type="checkbox" checked={!!adv.excludeAmbiguous} onChange={(e) => setAdv({ excludeAmbiguous: e.target.checked })} className="sr-only peer" />
+                          <div className="w-9 h-5 toggle-track rounded-full peer-checked:toggle-track-checked transition-colors duration-200" />
+                          <div className="absolute top-0.5 left-0.5 w-4 h-4 toggle-knob rounded-full peer-checked:translate-x-4 peer-checked:toggle-knob-checked transition-all duration-200" />
+                        </div>
+                        <span className="flex items-center gap-1.5 text-xs theme-muted group-hover:theme-text transition-colors">
+                          <Ban className="w-3.5 h-3.5" />{t("gen.adv.ambiguous")}
+                        </span>
+                      </label>
+                      <p className="text-[10px] theme-faint mt-1 ml-12">{t("gen.adv.ambiguous.help")}</p>
+                    </div>
+
+                    {/* Require all classes */}
+                    {supportsClasses && (
+                      <div>
+                        <label className="flex items-center gap-3 cursor-pointer group w-fit">
+                          <div className="relative">
+                            <input type="checkbox" checked={!!adv.requireAllClasses} onChange={(e) => setAdv({ requireAllClasses: e.target.checked })} className="sr-only peer" />
+                            <div className="w-9 h-5 toggle-track rounded-full peer-checked:toggle-track-checked transition-colors duration-200" />
+                            <div className="absolute top-0.5 left-0.5 w-4 h-4 toggle-knob rounded-full peer-checked:translate-x-4 peer-checked:toggle-knob-checked transition-all duration-200" />
+                          </div>
+                          <span className="flex items-center gap-1.5 text-xs theme-muted group-hover:theme-text transition-colors">
+                            <ShieldCheck className="w-3.5 h-3.5" />{t("gen.adv.requireall")}
+                          </span>
+                        </label>
+                        <p className="text-[10px] theme-faint mt-1 ml-12">{t("gen.adv.requireall.help")}</p>
+                      </div>
+                    )}
+
+                    {/* No consecutive repeats */}
+                    <div>
+                      <label className="flex items-center gap-3 cursor-pointer group w-fit">
+                        <div className="relative">
+                          <input type="checkbox" checked={!!adv.noRepeats} onChange={(e) => setAdv({ noRepeats: e.target.checked })} className="sr-only peer" />
+                          <div className="w-9 h-5 toggle-track rounded-full peer-checked:toggle-track-checked transition-colors duration-200" />
+                          <div className="absolute top-0.5 left-0.5 w-4 h-4 toggle-knob rounded-full peer-checked:translate-x-4 peer-checked:toggle-knob-checked transition-all duration-200" />
+                        </div>
+                        <span className="flex items-center gap-1.5 text-xs theme-muted group-hover:theme-text transition-colors">
+                          <RefreshCw className="w-3.5 h-3.5" />{t("gen.adv.norepeats")}
+                        </span>
+                      </label>
+                      <p className="text-[10px] theme-faint mt-1 ml-12">{t("gen.adv.norepeats.help")}</p>
+                    </div>
+
+                    {/* Exclude custom characters */}
+                    <div>
+                      <label htmlFor="gen-exclude" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+                        <SquareAsterisk className="w-3 h-3" />{t("gen.adv.exclude")}
+                      </label>
+                      <input
+                        id="gen-exclude"
+                        name="gen-exclude"
+                        type="text"
+                        value={adv.excludeChars ?? ""}
+                        onChange={(e) => setAdv({ excludeChars: e.target.value })}
+                        placeholder={t("gen.adv.exclude.placeholder")}
+                        autoComplete="off"
+                        className="w-full text-sm font-mono"
+                      />
+                    </div>
+
+                    {/* Grouping */}
+                    <div>
+                      <p className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+                        <Hash className="w-3 h-3" />{t("gen.adv.group")}
+                      </p>
+                      <div className="flex gap-1" role="group" aria-label={t("gen.adv.group")}>
+                        {[0, 4, 6, 8].map((g) => (
+                          <button
+                            key={g}
+                            type="button"
+                            onClick={() => setAdv({ groupSize: g })}
+                            aria-pressed={(adv.groupSize ?? 0) === g}
+                            className={`flex-1 py-2 rounded-md text-[11px] font-mono font-medium chip-select cursor-pointer border ${
+                              (adv.groupSize ?? 0) === g ? "bg-[var(--primary)] text-[var(--btn-text)] border-transparent" : "glass theme-muted hover:theme-text"
+                            }`}
+                          >
+                            {g === 0 ? t("gen.adv.group.off") : g}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-[10px] theme-faint mt-1">{t("gen.adv.group.help")}</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
 
           {/* Analysis of the current configuration */}
           <div className="glass !rounded-xl p-4 mb-4">

@@ -836,6 +836,17 @@ select option {
 .toggle-knob { background: var(--toggle-knob); }
 .toggle-knob-checked { background: var(--primary); }
 
+/* Tailwind cannot variant plain CSS classes (peer-checked:toggle-*-checked
+   generates nothing) — apply the checked styles with native sibling selectors */
+.peer:checked ~ .toggle-track {
+  background: var(--toggle-checked-bg);
+  border-color: var(--toggle-checked-border);
+}
+
+.peer:checked ~ .toggle-knob {
+  background: var(--primary);
+}
+
 /* ============================================
    KEY GENERATOR POPOVER
    ============================================ */

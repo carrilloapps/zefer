@@ -102,6 +102,96 @@ export function entropyOf(mode: KeygenMode, length: number): number {
   return Math.floor(Math.log2([...CHARSETS[mode]].length) * length);
 }
 
+// ─── Advanced generation options ───
+
+export interface GenerateOptions {
+  /** Drop visually ambiguous characters: 0 O 1 l I */
+  excludeAmbiguous?: boolean;
+  /** Additional characters to exclude */
+  excludeChars?: string;
+  /** Resample until every class available in the charset appears at least once */
+  requireAllClasses?: boolean;
+  /** Never emit the same character twice in a row */
+  noRepeats?: boolean;
+  /** Insert a dash every N characters (0 = off). Purely cosmetic grouping. */
+  groupSize?: number;
+}
+
+export const DEFAULT_GENERATE_OPTIONS: Required<GenerateOptions> = {
+  excludeAmbiguous: false,
+  excludeChars: "",
+  requireAllClasses: false,
+  noRepeats: false,
+  groupSize: 0,
+};
+
+const AMBIGUOUS = new Set([..."0O1lI"]);
+
+/** Charset for a mode after applying exclusions */
+export function charsetFor(mode: KeygenMode, opts?: GenerateOptions): string[] {
+  if (mode === "uuid") return [];
+  let chars = [...CHARSETS[mode]];
+  if (opts?.excludeAmbiguous) chars = chars.filter((c) => !AMBIGUOUS.has(c));
+  if (opts?.excludeChars) {
+    const ex = new Set([...opts.excludeChars]);
+    chars = chars.filter((c) => !ex.has(c));
+  }
+  return chars;
+}
+
+function sampleFrom(charset: string[], length: number, noRepeats: boolean): string {
+  const pool = charset.length;
+  const limit = Math.floor(0x100000000 / pool) * pool;
+  const out: string[] = [];
+  while (out.length < length) {
+    const batch = crypto.getRandomValues(new Uint32Array(Math.min(length - out.length + 16, 256)));
+    for (let i = 0; i < batch.length && out.length < length; i++) {
+      if (batch[i] >= limit) continue;
+      const c = charset[batch[i] % pool];
+      if (noRepeats && out.length > 0 && out[out.length - 1] === c) continue;
+      out.push(c);
+    }
+  }
+  return out.join("");
+}
+
+const CLASS_TESTS: [keyof PasswordAnalysis["classes"], RegExp][] = [
+  ["lower", /[a-z]/],
+  ["upper", /[A-Z]/],
+  ["digits", /[0-9]/],
+  ["symbols", /[!-/:-@[-`{-~]/],
+];
+
+/** Generation with advanced options. Falls back to plain generation when the
+ *  exclusions would leave fewer than 2 characters in the pool. */
+export function generateWithOptions(mode: KeygenMode, length: number, opts: GenerateOptions = {}): string {
+  if (mode === "uuid") return generateValue("uuid", length);
+  const charset = charsetFor(mode, opts);
+  if (charset.length < 2) return generateValue(mode, length);
+
+  // Which classes can the filtered charset actually produce?
+  const producible = CLASS_TESTS.filter(([, re]) => charset.some((c) => re.test(c)));
+
+  let value = sampleFrom(charset, length, !!opts.noRepeats);
+  if (opts.requireAllClasses && producible.length > 1 && length >= producible.length) {
+    for (let attempt = 0; attempt < 64; attempt++) {
+      const ok = producible.every(([, re]) => re.test(value));
+      if (ok) break;
+      value = sampleFrom(charset, length, !!opts.noRepeats);
+    }
+  }
+
+  if (opts.groupSize && opts.groupSize > 0) {
+    const chars = [...value];
+    const parts: string[] = [];
+    for (let i = 0; i < chars.length; i += opts.groupSize) {
+      parts.push(chars.slice(i, i + opts.groupSize).join(""));
+    }
+    value = parts.join("-");
+  }
+  return value;
+}
+
 // ─── Analysis ───
 
 export type CrackSpeed = "online" | "offline";
