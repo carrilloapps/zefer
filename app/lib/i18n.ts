@@ -2674,6 +2674,7 @@ const translations = {
 
   // ─── Tools nav ───
   "nav.tools": { es: "Herramientas", en: "Tools", pt: "Ferramentas" },
+  "nav.projectinfo": { es: "Sobre el proyecto", en: "About the project", pt: "Sobre o projeto" },
   "nav.generator": { es: "Generador", en: "Generator", pt: "Gerador" },
   "nav.analyzer": { es: "Analizador", en: "Analyzer", pt: "Analisador" },
 

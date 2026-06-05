@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
-  Shield, Heart, User, Code, Download, BookOpen, Cpu,
+  Shield, User, Code, Download, BookOpen, Cpu,
   Lock, Scale, Users, ShieldAlert, ChevronRight, ExternalLink,
   KeyRound, FileSearch, ChevronDown,
 } from "lucide-react";
@@ -159,13 +159,8 @@ export default function Navbar() {
               <div id="drawer-project-group" className="animate-in">
                 <a href="/project" onClick={close} className="drawer-row flex items-center gap-3 pl-12 pr-4 h-11 text-sm theme-muted cursor-pointer active:bg-[var(--glass-bg-hover)] transition-colors duration-100">
                   <Code className="w-4 h-4 text-primary shrink-0" />
-                  <span className="flex-1">{t("nav.project")}</span>
+                  <span className="flex-1">{t("nav.projectinfo")}</span>
                   <ChevronRight className="w-3.5 h-3.5 theme-faint shrink-0" />
-                </a>
-                <a href="https://www.buymeacoffee.com/carrilloapps" target="_blank" rel="noopener noreferrer" onClick={close} className="drawer-row flex items-center gap-3 pl-12 pr-4 h-11 text-sm theme-muted cursor-pointer active:bg-[var(--glass-bg-hover)] transition-colors duration-100">
-                  <Heart className="w-4 h-4 text-primary shrink-0" />
-                  <span className="flex-1">{t("nav.donate")}</span>
-                  <ExternalLink className="w-3.5 h-3.5 theme-faint shrink-0" />
                 </a>
                 <a href="https://github.com/carrilloapps" target="_blank" rel="noopener noreferrer" onClick={close} className="drawer-row flex items-center gap-3 pl-12 pr-4 h-11 text-sm theme-muted cursor-pointer active:bg-[var(--glass-bg-hover)] transition-colors duration-100">
                   <User className="w-4 h-4 text-primary shrink-0" />
@@ -242,13 +237,9 @@ function ProjectMenu() {
         <ChevronDown className={`w-3 h-3 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div role="menu" className="absolute left-0 top-full mt-2 w-48 shadow-2xl z-50 !rounded-xl overflow-hidden animate-in border border-[var(--glass-border)]" style={{ background: "var(--glass-solid)" }}>
+        <div role="menu" className="absolute left-0 top-full mt-2 w-52 shadow-2xl z-50 !rounded-xl overflow-hidden animate-in border border-[var(--glass-border)]" style={{ background: "var(--glass-solid)" }}>
           <a href="/project" role="menuitem" onClick={() => setOpen(false)} className={itemCls}>
-            <Code className="w-3.5 h-3.5 text-primary shrink-0" />{t("nav.project")}
-          </a>
-          <a href="https://www.buymeacoffee.com/carrilloapps" target="_blank" rel="noopener noreferrer" role="menuitem" onClick={() => setOpen(false)} className={itemCls}>
-            <Heart className="w-3.5 h-3.5 text-primary shrink-0" />{t("nav.donate")}
-            <ExternalLink className="w-3 h-3 theme-faint ml-auto" />
+            <Code className="w-3.5 h-3.5 text-primary shrink-0" />{t("nav.projectinfo")}
           </a>
           <a href="https://github.com/carrilloapps" target="_blank" rel="noopener noreferrer" role="menuitem" onClick={() => setOpen(false)} className={itemCls}>
             <User className="w-3.5 h-3.5 text-primary shrink-0" />{t("nav.author")}
