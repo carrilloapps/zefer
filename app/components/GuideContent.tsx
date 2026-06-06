@@ -40,6 +40,14 @@ const SELFHOST_STEPS = [
   { cmd: "npm start", key: "install.usage.selfhost.step4" },
 ] as const;
 
+const CLI_USAGE_STEPS = [
+  { cmd: "npm install -g zefer-cli", key: "install.guide.cli.step1" },
+  { cmd: 'zefer encrypt secret.txt -p "passphrase"', key: "install.guide.cli.step2" },
+  { cmd: 'zefer decrypt secret.txt.zefer -p "passphrase"', key: "install.guide.cli.step3" },
+  { cmd: "zefer keygen · zefer analyze · zefer info file.zefer", key: "install.guide.cli.step4" },
+  { cmd: "zefer mcp", key: "install.guide.cli.step5" },
+] as const;
+
 const URL_PARAMS = [
   { param: "passphrase / p", desc: "install.guide.param.passphrase" },
   { param: "passphrase2 / p2", desc: "install.guide.param.passphrase2" },
@@ -174,6 +182,35 @@ export default function GuideContent() {
         <p className="text-[11px] theme-warning mt-3 flex items-center gap-2">
           <Shield className="w-3.5 h-3.5 shrink-0" />
           {t("install.usage.selfhost.note")}
+        </p>
+      </div>
+
+      {/* ─── CLI Usage ─── */}
+      <div id="cli" className="mb-10 scroll-mt-24">
+        <div className="flex items-center gap-2 mb-4">
+          <IconBox icon={Terminal} size="sm" />
+          <div>
+            <h2 className="text-base font-semibold theme-heading">{t("install.guide.cli.title")}</h2>
+            <p className="text-xs theme-muted">{t("install.guide.cli.desc")}</p>
+          </div>
+        </div>
+        <div className="space-y-2">
+          {CLI_USAGE_STEPS.map((s) => (
+            <div key={s.key} className="glass p-4 animate-in">
+              <div className="flex items-center gap-3 mb-2">
+                <Terminal className="w-4 h-4 text-primary shrink-0" />
+                <p className="text-xs theme-text">{t(s.key)}</p>
+              </div>
+              <code className="block text-[11px] font-mono text-primary theme-primary-faint rounded-lg px-3 py-2">{s.cmd}</code>
+            </div>
+          ))}
+        </div>
+        <p className="text-[11px] theme-muted mt-3 flex items-center gap-2">
+          <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+          <span>
+            {t("install.guide.cli.note")}{" "}
+            <Link href="/mcp" className="text-primary hover:opacity-80 transition-opacity cursor-pointer">MCP</Link>
+          </span>
         </p>
       </div>
 

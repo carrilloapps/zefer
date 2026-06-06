@@ -1491,9 +1491,19 @@ const translations = {
     pt: "Como tratamos sua informação e por que não coletamos dados.",
   },
   "privacy.intro": {
-    es: "Zefer fue diseñado desde cero con un único principio: tu información es solo tuya. Todo el cifrado y descifrado ocurre exclusivamente en tu navegador. Ningún dato se envía, almacena ni procesa en nuestros servidores. Es matemáticamente imposible que nosotros, o cualquier tercero, acceda al contenido de tus archivos .zefer.",
-    en: "Zefer was designed from scratch with a single principle: your information is yours alone. All encryption and decryption happens exclusively in your browser. No data is sent, stored, or processed on our servers. It is mathematically impossible for us, or any third party, to access the content of your .zefer files.",
-    pt: "O Zefer foi projetado do zero com um único princípio: sua informação é somente sua. Toda a criptografia e descriptografia acontece exclusivamente no seu navegador. Nenhum dado é enviado, armazenado ou processado em nossos servidores. É matematicamente impossível que nós, ou qualquer terceiro, acessemos o conteúdo dos seus arquivos .zefer.",
+    es: "Zefer fue diseñado desde cero con un único principio: tu información es solo tuya. Todo el cifrado y descifrado ocurre exclusivamente en tu navegador — o en tu propia máquina si usas la CLI oficial (zefer-cli). Ningún dato se envía, almacena ni procesa en nuestros servidores. Es matemáticamente imposible que nosotros, o cualquier tercero, acceda al contenido de tus archivos .zefer. Esta política cubre tanto la aplicación web como la CLI.",
+    en: "Zefer was designed from scratch with a single principle: your information is yours alone. All encryption and decryption happens exclusively in your browser — or on your own machine if you use the official CLI (zefer-cli). No data is sent, stored, or processed on our servers. It is mathematically impossible for us, or any third party, to access the content of your .zefer files. This policy covers both the web application and the CLI.",
+    pt: "O Zefer foi projetado do zero com um único princípio: sua informação é somente sua. Toda a criptografia e descriptografia acontece exclusivamente no seu navegador — ou na sua própria máquina se você usa a CLI oficial (zefer-cli). Nenhum dado é enviado, armazenado ou processado em nossos servidores. É matematicamente impossível que nós, ou qualquer terceiro, acessemos o conteúdo dos seus arquivos .zefer. Esta política cobre tanto a aplicação web quanto a CLI.",
+  },
+  "privacy.cli.title": {
+    es: "La CLI oficial (zefer-cli)",
+    en: "The official CLI (zefer-cli)",
+    pt: "A CLI oficial (zefer-cli)",
+  },
+  "privacy.cli.desc": {
+    es: "zefer-cli aplica los mismos principios: todo el procesamiento criptográfico ocurre localmente en tu máquina, sin telemetría, sin analíticas y sin conexiones de red (la única excepción es la consulta de IP pública si activas la restricción por IP, igual que en la web). El contador de intentos fallidos se guarda únicamente en tu equipo (~/.zefer/attempts.json). La CLI se distribuye como paquete npm de código abierto y como binarios independientes con checksums SHA-256 verificables.",
+    en: "zefer-cli applies the same principles: all cryptographic processing happens locally on your machine, with no telemetry, no analytics, and no network connections (the only exception is the public IP lookup if you enable IP restriction, just like on the web). The failed-attempt counter is stored only on your device (~/.zefer/attempts.json). The CLI is distributed as an open-source npm package and as standalone binaries with verifiable SHA-256 checksums.",
+    pt: "O zefer-cli aplica os mesmos princípios: todo o processamento criptográfico acontece localmente na sua máquina, sem telemetria, sem analíticas e sem conexões de rede (a única exceção é a consulta do IP público se você ativar a restrição por IP, como na web). O contador de tentativas falhas é armazenado apenas no seu dispositivo (~/.zefer/attempts.json). A CLI é distribuída como pacote npm de código aberto e como binários independentes com checksums SHA-256 verificáveis.",
   },
   "privacy.encryption.title": {
     es: "Cifrado AES-256-GCM",
@@ -1668,9 +1678,19 @@ const translations = {
     pt: "Descrição do serviço",
   },
   "terms.service.desc": {
-    es: "Zefer proporciona una herramienta de cifrado del lado del cliente que permite a los usuarios cifrar texto y archivos en formato .zefer utilizando AES-256-GCM. Todo el procesamiento criptográfico ocurre en el navegador del usuario. Zefer no transmite, almacena ni procesa ningún dato del usuario en servidores externos, salvo la consulta de la IP pública del cliente cuando se utiliza la restricción por IP.",
-    en: "Zefer provides a client-side encryption tool that allows users to encrypt text and files into .zefer format using AES-256-GCM. All cryptographic processing occurs in the user's browser. Zefer does not transmit, store, or process any user data on external servers, except for the client's public IP lookup when IP restriction is used.",
-    pt: "O Zefer fornece uma ferramenta de criptografia do lado do cliente que permite aos usuários criptografar texto e arquivos no formato .zefer usando AES-256-GCM. Todo o processamento criptográfico ocorre no navegador do usuário. O Zefer não transmite, armazena nem processa nenhum dado do usuário em servidores externos, exceto a consulta do IP público do cliente quando a restrição por IP é utilizada.",
+    es: "Zefer proporciona una herramienta de cifrado del lado del cliente, disponible como aplicación web y como CLI oficial (zefer-cli), que permite a los usuarios cifrar texto y archivos en formato .zefer utilizando AES-256-GCM. Todo el procesamiento criptográfico ocurre en el navegador del usuario o en su propia máquina. Zefer no transmite, almacena ni procesa ningún dato del usuario en servidores externos, salvo la consulta de la IP pública del cliente cuando se utiliza la restricción por IP.",
+    en: "Zefer provides a client-side encryption tool, available as a web application and as the official CLI (zefer-cli), that allows users to encrypt text and files into .zefer format using AES-256-GCM. All cryptographic processing occurs in the user's browser or on their own machine. Zefer does not transmit, store, or process any user data on external servers, except for the client's public IP lookup when IP restriction is used.",
+    pt: "O Zefer fornece uma ferramenta de criptografia do lado do cliente, disponível como aplicação web e como CLI oficial (zefer-cli), que permite aos usuários criptografar texto e arquivos no formato .zefer usando AES-256-GCM. Todo o processamento criptográfico ocorre no navegador do usuário ou na sua própria máquina. O Zefer não transmite, armazena nem processa nenhum dado do usuário em servidores externos, exceto a consulta do IP público do cliente quando a restrição por IP é utilizada.",
+  },
+  "terms.cli.title": {
+    es: "La CLI oficial",
+    en: "The official CLI",
+    pt: "A CLI oficial",
+  },
+  "terms.cli.desc": {
+    es: "zefer-cli forma parte del mismo proyecto y se rige por estos mismos términos y por la licencia MIT. Se distribuye a través del registro de npm y como binarios independientes publicados en GitHub Releases. Los archivos .zefer producidos por la CLI y por la web son totalmente compatibles entre sí. El usuario es responsable de verificar los checksums SHA-256 de los binarios descargados y de custodiar sus frases clave: sin ellas, el contenido cifrado es irrecuperable.",
+    en: "zefer-cli is part of the same project and is governed by these same terms and the MIT license. It is distributed through the npm registry and as standalone binaries published on GitHub Releases. The .zefer files produced by the CLI and the web are fully compatible with each other. The user is responsible for verifying the SHA-256 checksums of downloaded binaries and for safeguarding their passphrases: without them, encrypted content is unrecoverable.",
+    pt: "O zefer-cli faz parte do mesmo projeto e é regido por estes mesmos termos e pela licença MIT. É distribuído através do registro npm e como binários independentes publicados no GitHub Releases. Os arquivos .zefer produzidos pela CLI e pela web são totalmente compatíveis entre si. O usuário é responsável por verificar os checksums SHA-256 dos binários baixados e por guardar suas frases-chave: sem elas, o conteúdo criptografado é irrecuperável.",
   },
   "terms.security.title": {
     es: "Responsabilidad sobre la seguridad",
@@ -2126,6 +2146,46 @@ const translations = {
     en: "HTTPS is required for the Web Crypto API to work.",
     pt: "HTTPS é necessário para que a Web Crypto API funcione.",
   },
+  "install.guide.cli.title": {
+    es: "¿Cómo usar la CLI?",
+    en: "How to use the CLI",
+    pt: "Como usar a CLI?",
+  },
+  "install.guide.cli.desc": {
+    es: "Todo Zefer desde tu terminal con zefer-cli. Los archivos son 100% compatibles con la web.",
+    en: "All of Zefer from your terminal with zefer-cli. Files are 100% compatible with the web.",
+    pt: "Todo o Zefer no seu terminal com o zefer-cli. Os arquivos são 100% compatíveis com a web.",
+  },
+  "install.guide.cli.step1": {
+    es: "Instala la CLI globalmente desde npm — o úsala sin instalar con npx zefer-cli",
+    en: "Install the CLI globally from npm — or run it without installing via npx zefer-cli",
+    pt: "Instale a CLI globalmente via npm — ou use sem instalar com npx zefer-cli",
+  },
+  "install.guide.cli.step2": {
+    es: "Cifra cualquier archivo o texto con tu frase clave",
+    en: "Encrypt any file or text with your passphrase",
+    pt: "Criptografe qualquer arquivo ou texto com sua frase-chave",
+  },
+  "install.guide.cli.step3": {
+    es: "Descifra archivos .zefer, incluso los creados en la web",
+    en: "Decrypt .zefer files, including those created on the web",
+    pt: "Descriptografe arquivos .zefer, inclusive os criados na web",
+  },
+  "install.guide.cli.step4": {
+    es: "Genera claves seguras, analiza contraseñas e inspecciona archivos sin frase clave",
+    en: "Generate secure keys, analyze passwords, and inspect files without a passphrase",
+    pt: "Gere chaves seguras, analise senhas e inspecione arquivos sem frase-chave",
+  },
+  "install.guide.cli.step5": {
+    es: "Arranca el servidor MCP integrado para agentes de IA",
+    en: "Start the built-in MCP server for AI agents",
+    pt: "Inicie o servidor MCP integrado para agentes de IA",
+  },
+  "install.guide.cli.note": {
+    es: "La CLI también expone todas sus capacidades como servidor MCP. Más detalles en",
+    en: "The CLI also exposes all of its capabilities as an MCP server. More details at",
+    pt: "A CLI também expõe todos os seus recursos como servidor MCP. Mais detalhes em",
+  },
   "install.usage.pwa.title": {
     es: "Instalar como PWA",
     en: "Install as PWA",
@@ -2480,7 +2540,7 @@ const translations = {
 
   // ─── Code of Conduct page ───
   "conduct.title": { es: "Código de conducta", en: "Code of Conduct", pt: "Código de conduta" },
-  "conduct.subtitle": { es: "Nuestro compromiso con una comunidad abierta, acogedora e inclusiva.", en: "Our commitment to an open, welcoming, and inclusive community.", pt: "Nosso compromisso com uma comunidade aberta, acolhedora e inclusiva." },
+  "conduct.subtitle": { es: "Nuestro compromiso con una comunidad abierta, acogedora e inclusiva. Aplica a todos los espacios del proyecto: la web (zefer) y la CLI (zefer-cli).", en: "Our commitment to an open, welcoming, and inclusive community. It applies to all project spaces: the web (zefer) and the CLI (zefer-cli).", pt: "Nosso compromisso com uma comunidade aberta, acolhedora e inclusiva. Aplica-se a todos os espaços do projeto: a web (zefer) e a CLI (zefer-cli)." },
   "conduct.viewOnGithub": { es: "Ver en GitHub", en: "View on GitHub", pt: "Ver no GitHub" },
   "conduct.pledge.title": { es: "Nuestro compromiso", en: "Our Pledge", pt: "Nosso compromisso" },
   "conduct.pledge.desc": { es: "Nosotros, como miembros, contribuidores y líderes, nos comprometemos a hacer de la participación en nuestra comunidad una experiencia libre de acoso para todos, independientemente de la edad, tamaño corporal, discapacidad, etnia, identidad y expresión de género, nivel de experiencia, educación, nivel socioeconómico, nacionalidad, apariencia personal, raza, religión u orientación sexual.", en: "We as members, contributors, and leaders pledge to make participation in our community a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, religion, or sexual identity and orientation.", pt: "Nós, como membros, contribuidores e líderes, nos comprometemos a tornar a participação em nossa comunidade uma experiência livre de assédio para todos, independentemente de idade, tamanho corporal, deficiência, etnia, identidade e expressão de gênero, nível de experiência, educação, status socioeconômico, nacionalidade, aparência pessoal, raça, religião ou orientação sexual." },
@@ -2517,7 +2577,7 @@ const translations = {
 
   // ─── Security Policy page ───
   "secpol.title": { es: "Política de seguridad", en: "Security Policy", pt: "Política de segurança" },
-  "secpol.subtitle": { es: "Cómo reportar vulnerabilidades y nuestra arquitectura de seguridad.", en: "How to report vulnerabilities and our security architecture.", pt: "Como reportar vulnerabilidades e nossa arquitetura de segurança." },
+  "secpol.subtitle": { es: "Cómo reportar vulnerabilidades y nuestra arquitectura de seguridad. Cubre la aplicación web y la CLI oficial (zefer-cli).", en: "How to report vulnerabilities and our security architecture. Covers the web application and the official CLI (zefer-cli).", pt: "Como reportar vulnerabilidades e nossa arquitetura de segurança. Cobre a aplicação web e a CLI oficial (zefer-cli)." },
   "secpol.viewOnGithub": { es: "Ver en GitHub", en: "View on GitHub", pt: "Ver no GitHub" },
   "secpol.reporting.title": { es: "Reportar una vulnerabilidad", en: "Reporting a Vulnerability", pt: "Reportar uma vulnerabilidade" },
   "secpol.reporting.desc": { es: "No abras un issue público para vulnerabilidades de seguridad. Reporta de forma responsable:", en: "Please do not open a public issue for security vulnerabilities. Report responsibly:", pt: "Não abra uma issue pública para vulnerabilidades de segurança. Reporte de forma responsável:" },
@@ -2539,13 +2599,14 @@ const translations = {
   "secpol.scope.in.4": { es: "Fuga de información desde el header público", en: "Information leakage from the public header", pt: "Vazamento de informação do header público" },
   "secpol.scope.in.5": { es: "XSS, inyección u otras vulnerabilidades OWASP Top 10", en: "XSS, injection, or other OWASP Top 10 vulnerabilities", pt: "XSS, injeção ou outras vulnerabilidades OWASP Top 10" },
   "secpol.scope.in.6": { es: "Violaciones de privacidad (transmisión de datos no intencionada)", en: "Privacy violations (unintended data transmission)", pt: "Violações de privacidade (transmissão de dados não intencional)" },
+  "secpol.scope.in.7": { es: "zefer-cli: paquete npm, binarios independientes y servidor MCP", en: "zefer-cli: npm package, standalone binaries, and MCP server", pt: "zefer-cli: pacote npm, binários independentes e servidor MCP" },
   "secpol.scope.out.title": { es: "Fuera de alcance", en: "Out of scope", pt: "Fora do escopo" },
   "secpol.scope.out.1": { es: "Bypass del tracking de intentos en localStorage", en: "localStorage attempt tracking bypass", pt: "Bypass do tracking de tentativas no localStorage" },
   "secpol.scope.out.2": { es: "Bypass de expiración por manipulación del reloj", en: "Expiration bypass via system clock manipulation", pt: "Bypass de expiração por manipulação do relógio" },
   "secpol.scope.out.3": { es: "Bypass de restricción IP por modificación de JavaScript o VPN", en: "IP restriction bypass via JavaScript modification or VPN", pt: "Bypass de restrição IP por modificação de JavaScript ou VPN" },
   "secpol.scope.out.4": { es: "Inspección de memoria del navegador durante sesión activa", en: "Browser memory inspection during active session", pt: "Inspeção de memória do navegador durante sessão ativa" },
   "secpol.architecture.title": { es: "Arquitectura de seguridad", en: "Security Architecture", pt: "Arquitetura de segurança" },
-  "secpol.architecture.desc": { es: "Zefer es una herramienta de cifrado 100% del lado del cliente. Ningún texto plano, frase clave o clave de cifrado sale del navegador.", en: "Zefer is a 100% client-side encryption tool. No plaintext, passphrases, or encryption keys ever leave the browser.", pt: "Zefer é uma ferramenta de criptografia 100% do lado do cliente. Nenhum texto simples, frase-chave ou chave de criptografia sai do navegador." },
+  "secpol.architecture.desc": { es: "Zefer es una herramienta de cifrado 100% del lado del cliente, en la web y en la CLI. Ningún texto plano, frase clave o clave de cifrado sale del navegador ni de tu máquina. Ambas comparten los mismos parámetros criptográficos y el mismo formato binario.", en: "Zefer is a 100% client-side encryption tool, both on the web and in the CLI. No plaintext, passphrases, or encryption keys ever leave the browser or your machine. Both share the same cryptographic parameters and binary format.", pt: "Zefer é uma ferramenta de criptografia 100% do lado do cliente, na web e na CLI. Nenhum texto simples, frase-chave ou chave de criptografia sai do navegador nem da sua máquina. Ambas compartilham os mesmos parâmetros criptográficos e o mesmo formato binário." },
   "secpol.crypto.primitive": { es: "Primitiva", en: "Primitive", pt: "Primitiva" },
   "secpol.crypto.algorithm": { es: "Algoritmo", en: "Algorithm", pt: "Algoritmo" },
   "secpol.crypto.params": { es: "Parámetros", en: "Parameters", pt: "Parâmetros" },

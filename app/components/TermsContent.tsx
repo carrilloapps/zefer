@@ -2,7 +2,7 @@
 
 import {
   FileText, Shield, AlertTriangle, Scale, ArrowLeft,
-  Globe, Award, BookOpen,
+  Globe, Award, BookOpen, Terminal,
 } from "lucide-react";
 import { PageLayout, PageHeader, SectionCard } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
@@ -12,6 +12,7 @@ export default function TermsContent() {
 
   const sections = [
     { icon: FileText, titleKey: "terms.service.title" as const, descKey: "terms.service.desc" as const },
+    { icon: Terminal, titleKey: "terms.cli.title" as const, descKey: "terms.cli.desc" as const },
     { icon: Shield, titleKey: "terms.security.title" as const, descKey: "terms.security.desc" as const },
     { icon: AlertTriangle, titleKey: "terms.liability.title" as const, descKey: "terms.liability.desc" as const },
     { icon: Scale, titleKey: "terms.use.title" as const, descKey: "terms.use.desc" as const },

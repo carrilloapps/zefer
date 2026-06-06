@@ -2,7 +2,7 @@
 
 import {
   Lock, Shield, Clock, Database, Monitor, Key, ArrowLeft,
-  CheckCircle2, XCircle, FileText, Globe, Scale,
+  CheckCircle2, XCircle, FileText, Globe, Scale, Terminal,
 } from "lucide-react";
 import { PageLayout, PageHeader, SectionCard, GlassCard } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
@@ -19,6 +19,7 @@ export default function PrivacyContent() {
     { icon: Globe, titleKey: "privacy.ip.title" as const, descKey: "privacy.ip.desc" as const },
     { icon: Database, titleKey: "privacy.metadata.title" as const, descKey: "privacy.metadata.desc" as const },
     { icon: Monitor, titleKey: "privacy.clientside.title" as const, descKey: "privacy.clientside.desc" as const },
+    { icon: Terminal, titleKey: "privacy.cli.title" as const, descKey: "privacy.cli.desc" as const },
     { icon: Scale, titleKey: "privacy.gdpr.title" as const, descKey: "privacy.gdpr.desc" as const },
   ];
 

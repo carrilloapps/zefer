@@ -13,6 +13,7 @@ const IN_SCOPE = [
   "secpol.scope.in.4",
   "secpol.scope.in.5",
   "secpol.scope.in.6",
+  "secpol.scope.in.7",
 ] as const;
 
 const OUT_SCOPE = [
