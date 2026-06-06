@@ -1784,9 +1784,9 @@ const translations = {
     pt: "Projeto Zefer",
   },
   "project.subtitle": {
-    es: "Herramienta de cifrado de código abierto, 100% del lado del cliente. Licencia MIT.",
-    en: "Open-source encryption tool, 100% client-side. MIT License.",
-    pt: "Ferramenta de criptografia de código aberto, 100% do lado do cliente. Licença MIT.",
+    es: "Herramienta de cifrado de código abierto, 100% del lado del cliente. Web y CLI con licencia MIT.",
+    en: "Open-source encryption tool, 100% client-side. Web and CLI under the MIT License.",
+    pt: "Ferramenta de criptografia de código aberto, 100% do lado do cliente. Web e CLI com licença MIT.",
   },
   "project.repo.desc": {
     es: "Cifrado de extremo a extremo para texto y archivos. Sin servidores, sin rastros, sin cookies.",
@@ -1842,6 +1842,51 @@ const translations = {
     es: "Stack tecnológico",
     en: "Tech stack",
     pt: "Stack tecnológico",
+  },
+  "project.cli.repo.desc": {
+    es: "El mismo cifrado desde tu terminal. Archivos 100% compatibles con la web: mismo formato binario y mismos parámetros criptográficos.",
+    en: "The same encryption from your terminal. Files 100% compatible with the web: same binary format, same cryptographic parameters.",
+    pt: "A mesma criptografia no seu terminal. Arquivos 100% compatíveis com a web: mesmo formato binário e mesmos parâmetros criptográficos.",
+  },
+  "project.cli.title": {
+    es: "La CLI oficial",
+    en: "The official CLI",
+    pt: "A CLI oficial",
+  },
+  "project.cli.desc": {
+    es: "zefer-cli lleva todas las capacidades de Zefer a la terminal: cifrado y descifrado de archivos y texto, generador de contraseñas con 7 modos, análisis de seguridad de contraseñas y archivos .zefer, y un servidor MCP integrado para agentes de IA. Se instala desde npm, se usa sin instalación vía npx, o se descarga como binario independiente sin necesidad de Node.js.",
+    en: "zefer-cli brings every Zefer capability to the terminal: file and text encryption and decryption, a 7-mode password generator, security analysis for passwords and .zefer files, and a built-in MCP server for AI agents. Install it from npm, run it without installing via npx, or download a standalone binary with no Node.js required.",
+    pt: "O zefer-cli leva todos os recursos do Zefer para o terminal: criptografia e descriptografia de arquivos e texto, gerador de senhas com 7 modos, análise de segurança de senhas e arquivos .zefer, e um servidor MCP integrado para agentes de IA. Instale via npm, use sem instalar via npx, ou baixe um binário independente sem precisar de Node.js.",
+  },
+  "project.cli.feat.crosscompat": {
+    es: "Compatibilidad total: un archivo cifrado en la web se descifra en la CLI y viceversa (ZEFB3/ZEFR3, mismos parámetros).",
+    en: "Full cross-compatibility: a file encrypted on the web decrypts in the CLI and vice versa (ZEFB3/ZEFR3, same parameters).",
+    pt: "Compatibilidade total: um arquivo criptografado na web é descriptografado na CLI e vice-versa (ZEFB3/ZEFR3, mesmos parâmetros).",
+  },
+  "project.cli.feat.tools": {
+    es: "Paridad con la web: keygen con 7 modos y opciones avanzadas, analyze para contraseñas e info con análisis profundo de archivos .zefer.",
+    en: "Web parity: keygen with 7 modes and advanced options, analyze for passwords, and info with deep .zefer file analysis.",
+    pt: "Paridade com a web: keygen com 7 modos e opções avançadas, analyze para senhas e info com análise profunda de arquivos .zefer.",
+  },
+  "project.cli.feat.binaries": {
+    es: "Binarios independientes para Linux (x64/ARM64), macOS (Intel/Apple Silicon) y Windows, con checksums SHA-256. Sin Node.js.",
+    en: "Standalone binaries for Linux (x64/ARM64), macOS (Intel/Apple Silicon), and Windows, with SHA-256 checksums. No Node.js.",
+    pt: "Binários independentes para Linux (x64/ARM64), macOS (Intel/Apple Silicon) e Windows, com checksums SHA-256. Sem Node.js.",
+  },
+  "project.cli.feat.mcp": {
+    es: "Servidor MCP integrado: expone cifrado, descifrado, keygen, análisis e inspección como herramientas para agentes de IA.",
+    en: "Built-in MCP server: exposes encryption, decryption, keygen, analysis, and inspection as tools for AI agents.",
+    pt: "Servidor MCP integrado: expõe criptografia, descriptografia, keygen, análise e inspeção como ferramentas para agentes de IA.",
+  },
+  "project.cli.install.title": {
+    es: "Instalación rápida",
+    en: "Quick install",
+    pt: "Instalação rápida",
+  },
+  "project.cli.links.binaries": {
+    es: "Binarios",
+    en: "Binaries",
+    pt: "Binários",
   },
   "project.creator.title": {
     es: "Creador",

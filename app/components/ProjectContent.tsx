@@ -16,9 +16,16 @@ import {
   Calendar,
   Users,
   BookOpen,
+  Terminal,
+  Package,
+  Download,
+  Plug,
+  KeyRound,
+  RefreshCw,
 } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
+import { CodeBlock } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
 
 interface AuthorData {
@@ -54,6 +61,20 @@ export default function ProjectContent() {
     { icon: Globe, key: "project.feat.i18n" as const },
     { icon: Cpu, key: "project.feat.device" as const },
     { icon: Award, key: "project.feat.compliance" as const },
+  ];
+
+  const cliFeatures = [
+    { icon: RefreshCw, key: "project.cli.feat.crosscompat" as const },
+    { icon: KeyRound, key: "project.cli.feat.tools" as const },
+    { icon: Download, key: "project.cli.feat.binaries" as const },
+    { icon: Plug, key: "project.cli.feat.mcp" as const },
+  ];
+
+  const cliLinks = [
+    { icon: Code, label: "GitHub", href: "https://github.com/carrilloapps/zefer-cli", external: true },
+    { icon: Package, label: "npm", href: "https://www.npmjs.com/package/zefer-cli", external: true },
+    { icon: Download, label: t("project.cli.links.binaries"), href: "https://github.com/carrilloapps/zefer-cli/releases/latest", external: true },
+    { icon: Plug, label: "MCP", href: "/mcp", external: false },
   ];
 
   const links = [
@@ -110,6 +131,34 @@ export default function ProjectContent() {
             </div>
           </a>
 
+          {/* CLI repo card */}
+          <a
+            href="https://github.com/carrilloapps/zefer-cli"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block glass glass-hover p-6 sm:p-8 mb-6 transition-all duration-300 cursor-pointer"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl theme-primary-faint theme-primary-border border flex items-center justify-center shrink-0">
+                <Terminal className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h2 className="text-base font-semibold theme-heading">carrilloapps/zefer-cli</h2>
+                  <ExternalLink className="w-3.5 h-3.5 theme-faint" />
+                </div>
+                <p className="text-sm theme-muted mb-3">{t("project.cli.repo.desc")}</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full theme-primary-faint text-primary theme-primary-border border">MIT License</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full glass theme-muted">Node.js ≥ 20</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full glass theme-muted">TypeScript</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full glass theme-muted">MCP Server</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full glass theme-muted">AES-256-GCM</span>
+                </div>
+              </div>
+            </div>
+          </a>
+
           {/* About the project */}
           <div className="glass p-6 sm:p-8 mb-6">
             <h2 className="text-sm font-semibold theme-heading mb-3">{t("project.about.title")}</h2>
@@ -127,6 +176,46 @@ export default function ProjectContent() {
                   </div>
                   <p className="text-xs theme-muted leading-relaxed">{t(feat.key)}</p>
                 </div>
+              ))}
+            </div>
+          </div>
+
+          {/* The official CLI */}
+          <div className="glass p-6 sm:p-8 mb-6">
+            <h2 className="text-sm font-semibold theme-heading mb-3 flex items-center gap-2">
+              <Terminal className="w-4 h-4 text-primary" />
+              {t("project.cli.title")}
+            </h2>
+            <p className="text-[13px] theme-muted leading-relaxed mb-5">{t("project.cli.desc")}</p>
+
+            <div className="border-t border-[var(--border-subtle)]">
+              {cliFeatures.map((feat) => (
+                <div key={feat.key} className="flex items-start gap-3 py-3 border-b border-[var(--border-subtle)]">
+                  <div className="w-8 h-8 rounded-lg theme-primary-faint theme-primary-border border flex items-center justify-center shrink-0">
+                    <feat.icon className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <p className="text-xs theme-muted leading-relaxed">{t(feat.key)}</p>
+                </div>
+              ))}
+            </div>
+
+            <h3 className="text-xs font-semibold theme-heading mt-5 mb-2">{t("project.cli.install.title")}</h3>
+            <CodeBlock
+              lang="bash"
+              code={`npm install -g zefer-cli\nnpx zefer-cli keygen\nzefer encrypt secret.txt -p "passphrase"`}
+            />
+
+            <div className="flex flex-wrap gap-2 mt-4">
+              {cliLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  className="glass !rounded-lg px-3 py-1.5 flex items-center gap-1.5 hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer"
+                >
+                  <link.icon className="w-3 h-3 theme-faint" />
+                  <span className="text-[11px] theme-heading">{link.label}</span>
+                </a>
               ))}
             </div>
           </div>
