@@ -101,7 +101,7 @@ export default function GuideContent() {
             <p className="text-xs theme-muted">{t("install.guide.quickstart.desc")}</p>
           </div>
         </div>
-        <a href="/" className="btn-primary">{t("install.web.cta")} <ArrowRight className="w-4 h-4" /></a>
+        <Link href="/" className="btn-primary">{t("install.web.cta")} <ArrowRight className="w-4 h-4" /></Link>
       </GlassCard>
 
       {/* ─── Encrypt ─── */}

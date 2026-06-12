@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Cpu,
   Monitor,
@@ -191,9 +192,9 @@ export default function DeviceContent() {
 
           {/* CTA */}
           <div className="text-center">
-            <a href="/" className="btn-primary !w-auto inline-flex px-8">
+            <Link href="/" className="btn-primary !w-auto inline-flex px-8">
               {t("how.cta")} <ArrowRight className="w-4 h-4" />
-            </a>
+            </Link>
           </div>
         </div>
       </section>

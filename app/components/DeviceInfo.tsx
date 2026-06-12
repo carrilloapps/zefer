@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Cpu, ChevronDown, ChevronUp, Monitor, Smartphone, ExternalLink } from "lucide-react";
 import { formatBytes, type DeviceLimits } from "@/app/lib/device";
 import { useLanguage } from "@/app/components/LanguageProvider";
@@ -64,9 +65,9 @@ export default function DeviceInfo({ limits }: Props) {
           </table>
           <div className="px-4 pb-3 pt-2">
             <p className="text-[9px] theme-faint leading-relaxed mb-2">{t("device.disclaimer")}</p>
-            <a href="/device" className="inline-flex items-center gap-1 text-[10px] text-primary hover:opacity-80 transition-opacity cursor-pointer">
+            <Link href="/device" className="inline-flex items-center gap-1 text-[10px] text-primary hover:opacity-80 transition-opacity cursor-pointer">
               {t("device.learnmore")} <ExternalLink className="w-2.5 h-2.5" />
-            </a>
+            </Link>
           </div>
         </div>
       )}

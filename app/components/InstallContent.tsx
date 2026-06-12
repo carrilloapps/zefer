@@ -66,7 +66,7 @@ export default function InstallContent() {
               <p className="text-xs theme-muted leading-relaxed">{t("install.web.desc")}</p>
             </div>
           </div>
-          <a href="/" className="btn-primary !w-auto shrink-0 px-6">{t("install.web.cta")} <ArrowRight className="w-4 h-4" /></a>
+          <Link href="/" className="btn-primary !w-auto shrink-0 px-6">{t("install.web.cta")} <ArrowRight className="w-4 h-4" /></Link>
         </div>
       </GlassCard>
 

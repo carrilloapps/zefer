@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Shield, ArrowLeft } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
@@ -20,9 +21,9 @@ export default function NotFoundContent() {
           <p className="text-6xl font-bold theme-heading font-mono mb-2">404</p>
           <h1 className="text-lg font-semibold theme-heading mb-2">{t("notfound.title")}</h1>
           <p className="text-sm theme-muted mb-8 max-w-sm mx-auto">{t("notfound.desc")}</p>
-          <a href="/" className="btn-primary !w-auto inline-flex px-8">
+          <Link href="/" className="btn-primary !w-auto inline-flex px-8">
             <ArrowLeft className="w-4 h-4" /> {t("privacy.back")}
-          </a>
+          </Link>
         </div>
       </section>
       <Footer />

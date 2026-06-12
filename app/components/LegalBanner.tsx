@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Shield, X } from "lucide-react";
 import { useLanguage } from "@/app/components/LanguageProvider";
 
@@ -30,9 +31,9 @@ export default function LegalBanner() {
           <p className="text-xs theme-text leading-relaxed mb-1 font-medium">{t("banner.title")}</p>
           <p className="text-[11px] theme-muted leading-relaxed">
             {t("banner.desc")}{" "}
-            <a href="/privacy" className="text-primary hover:opacity-80 transition-opacity cursor-pointer">{t("footer.privacy")}</a>
+            <Link href="/privacy" className="text-primary hover:opacity-80 transition-opacity cursor-pointer">{t("footer.privacy")}</Link>
             {" · "}
-            <a href="/terms" className="text-primary hover:opacity-80 transition-opacity cursor-pointer">{t("footer.terms")}</a>
+            <Link href="/terms" className="text-primary hover:opacity-80 transition-opacity cursor-pointer">{t("footer.terms")}</Link>
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">

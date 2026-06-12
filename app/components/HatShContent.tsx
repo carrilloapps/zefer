@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Shield, Lock, Clock, Globe, Key, KeyRound, Eye, FileText, Zap,
   CheckCircle2, XCircle, ArrowRight, ExternalLink, HelpCircle, Cpu,
@@ -189,9 +190,9 @@ export default function HatShContent() {
       <GlassCard glow className="text-center">
         <h2 className="text-lg font-semibold theme-heading mb-2">{t("vs.cta.title")}</h2>
         <p className="text-sm theme-muted mb-5">{t("vs.cta.desc")}</p>
-        <a href="/" className="btn-primary !w-auto inline-flex px-8">
+        <Link href="/" className="btn-primary !w-auto inline-flex px-8">
           {t("vs.cta.button")} <ArrowRight className="w-4 h-4" />
-        </a>
+        </Link>
       </GlassCard>
     </PageLayout>
   );

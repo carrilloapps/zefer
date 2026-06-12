@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Lock, Shield, Clock, Database, Monitor, Key, ArrowLeft,
   CheckCircle2, XCircle, FileText, Globe, Scale, Terminal,
@@ -64,15 +65,15 @@ export default function PrivacyContent() {
       <GlassCard className="mb-8">
         <h2 className="text-sm font-semibold theme-heading mb-4">{t("privacy.legal.title")}</h2>
         <p className="text-[13px] theme-muted leading-relaxed mb-4">{t("privacy.legal.desc")}</p>
-        <a href="/terms" className="inline-flex items-center gap-1.5 text-xs text-primary hover:opacity-80 transition-opacity cursor-pointer">
+        <Link href="/terms" className="inline-flex items-center gap-1.5 text-xs text-primary hover:opacity-80 transition-opacity cursor-pointer">
           {t("privacy.legal.terms")} <ArrowLeft className="w-3 h-3 rotate-180" />
-        </a>
+        </Link>
       </GlassCard>
 
       <div className="text-center">
-        <a href="/" className="inline-flex items-center gap-2 text-xs theme-faint hover:theme-muted transition-colors duration-200 cursor-pointer">
+        <Link href="/" className="inline-flex items-center gap-2 text-xs theme-faint hover:theme-muted transition-colors duration-200 cursor-pointer">
           <ArrowLeft className="w-3.5 h-3.5" />{t("privacy.back")}
-        </a>
+        </Link>
       </div>
     </PageLayout>
   );

@@ -5,6 +5,12 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] - 2026-06-12
+
+### Fixed
+
+- **Instant page navigation** — the navbar, footer and in-content links used plain `<a href>`, so every page change triggered a full document reload (network round-trip + re-hydration), felt as a ~10–50 ms blank/delay. Combined with 0.8.0's server-side rendering, each reload also briefly showed the default-language (English) content before the client switched to the saved locale. All 40 internal route links now use Next.js `<Link>` for prefetched client-side transitions: navigation is instant, the language/theme provider stays mounted (no flash), and only `/llms.txt` and external links remain plain anchors.
+
 ## [0.8.0] - 2026-06-12
 
 ### Fixed
