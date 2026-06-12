@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import SecurityPolicyContent from "@/app/components/SecurityPolicyContent";
+import { pageMetadata } from "@/app/lib/seo";
 
 const url = "https://zefer.carrillo.app/security";
 const siteUrl = "https://zefer.carrillo.app";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/security",
+  index: false,
   title: "Security Policy",
   description:
     "Zefer security policy. How to report vulnerabilities, supported versions, security architecture, and responsible disclosure guidelines.",
@@ -15,21 +18,13 @@ export const metadata: Metadata = {
     "zefer security",
     "AES-256-GCM security",
   ],
-  openGraph: {
-    url,
-    title: "Security Policy | Zefer",
-    description:
-      "Zefer security policy. How to report vulnerabilities and our security architecture.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Security Policy | Zefer",
-    description:
-      "Zefer security policy. Vulnerability reporting, security architecture, and responsible disclosure.",
-  },
-  alternates: { canonical: url },
-  robots: { index: false, follow: true },
-};
+  ogTitle: "Security Policy | Zefer",
+  ogDescription:
+    "Zefer security policy. How to report vulnerabilities and our security architecture.",
+  twitterTitle: "Security Policy | Zefer",
+  twitterDescription:
+    "Zefer security policy. Vulnerability reporting, security architecture, and responsible disclosure.",
+});
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",

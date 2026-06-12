@@ -1,18 +1,22 @@
 import type { Metadata } from "next";
 import VsContent from "@/app/components/VsContent";
+import { pageMetadata } from "@/app/lib/seo";
 
 const url = "https://zefer.carrillo.app/vs/veracrypt";
 const siteUrl = "https://zefer.carrillo.app";
 
-export const metadata: Metadata = {
-  title: "Zefer vs VeraCrypt — Shareable Files vs Full-Disk Encryption",
+export const metadata: Metadata = pageMetadata({
+  path: "/vs/veracrypt",
+  title: "Zefer vs VeraCrypt — Files vs Full-Disk Encryption",
   description:
     "Compare Zefer and VeraCrypt. Browser-based file encryption for sharing vs full-disk and container encryption. Different tools for different threats.",
   keywords: ["zefer vs veracrypt", "veracrypt alternative", "file encryption vs disk encryption", "veracrypt review", "veracrypt online alternative"],
-  openGraph: { url, title: "Zefer vs VeraCrypt — Shareable Files vs Full-Disk Encryption", description: "Encrypted shareable files vs encrypted disk volumes. Different tools, different threats.", images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Zefer vs VeraCrypt" }] },
-  twitter: { card: "summary_large_image", title: "Zefer vs VeraCrypt", description: "Shareable encrypted files vs full-disk encryption. Which threat model fits yours?", images: [`${siteUrl}/twitter-image`] },
-  alternates: { canonical: url },
-};
+  ogTitle: "Zefer vs VeraCrypt — Shareable Files vs Full-Disk Encryption",
+  ogDescription: "Encrypted shareable files vs encrypted disk volumes. Different tools, different threats.",
+  imageAlt: "Zefer vs VeraCrypt",
+  twitterTitle: "Zefer vs VeraCrypt",
+  twitterDescription: "Shareable encrypted files vs full-disk encryption. Which threat model fits yours?",
+});
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org", "@type": "BreadcrumbList",

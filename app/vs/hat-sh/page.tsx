@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import HatShContent from "@/app/components/HatShContent";
+import { pageMetadata } from "@/app/lib/seo";
 
 const url = "https://zefer.carrillo.app/vs/hat-sh";
 const siteUrl = "https://zefer.carrillo.app";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/vs/hat-sh",
   title: "Zefer vs Hat.sh — Encryption Tools Compared",
   description:
-    "Detailed comparison of Zefer and Hat.sh. Both are free, open-source, browser-based encryption tools. See which one fits your needs: features, security, and UX compared side by side.",
+    "Compare Zefer and Hat.sh: two free, open-source, browser-based encryption tools. Features, security, and UX compared side by side to help you choose.",
   keywords: [
     "zefer vs hat.sh",
     "hat.sh alternative",
@@ -18,22 +20,14 @@ export const metadata: Metadata = {
     "hat.sh review",
     "best browser encryption tool",
   ],
-  openGraph: {
-    url,
-    title: "Zefer vs Hat.sh — Encryption Tools Compared",
-    description:
-      "Detailed comparison of Zefer and Hat.sh. Free, open-source, browser-based file encryption tools compared side by side.",
-    images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Zefer vs Hat.sh" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Zefer vs Hat.sh — Encryption Tools Compared",
-    description:
-      "Which browser encryption tool is right for you? Zefer and Hat.sh compared on features, security, UX, and more.",
-    images: [`${siteUrl}/twitter-image`],
-  },
-  alternates: { canonical: url },
-};
+  ogTitle: "Zefer vs Hat.sh — Encryption Tools Compared",
+  ogDescription:
+    "Detailed comparison of Zefer and Hat.sh. Free, open-source, browser-based file encryption tools compared side by side.",
+  imageAlt: "Zefer vs Hat.sh",
+  twitterTitle: "Zefer vs Hat.sh — Encryption Tools Compared",
+  twitterDescription:
+    "Which browser encryption tool is right for you? Zefer and Hat.sh compared on features, security, UX, and more.",
+});
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",

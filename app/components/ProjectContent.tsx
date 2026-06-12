@@ -22,6 +22,7 @@ import {
   Plug,
   KeyRound,
   RefreshCw,
+  Braces,
 } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
@@ -66,8 +67,9 @@ export default function ProjectContent() {
   const cliFeatures = [
     { icon: RefreshCw, key: "project.cli.feat.crosscompat" as const },
     { icon: KeyRound, key: "project.cli.feat.tools" as const },
-    { icon: Download, key: "project.cli.feat.binaries" as const },
     { icon: Plug, key: "project.cli.feat.mcp" as const },
+    { icon: Braces, key: "project.cli.feat.library" as const },
+    { icon: Download, key: "project.cli.feat.binaries" as const },
   ];
 
   const cliLinks = [
@@ -202,7 +204,7 @@ export default function ProjectContent() {
             <h3 className="text-xs font-semibold theme-heading mt-5 mb-2">{t("project.cli.install.title")}</h3>
             <CodeBlock
               lang="bash"
-              code={`npm install -g zefer-cli\nnpx zefer-cli keygen\nzefer encrypt secret.txt -p "passphrase"`}
+              code={`npm install -g zefer-cli\nnpx zefer-cli keygen\nzefer encrypt secret.txt -p "passphrase"\n\n# or import it as a library (ESM / CommonJS)\nimport { encodeZefer, analyzePassword } from "zefer-cli";`}
             />
 
             <div className="flex flex-wrap gap-2 mt-4">

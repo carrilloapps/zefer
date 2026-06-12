@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import GeneratorContent from "@/app/components/GeneratorContent";
+import { pageMetadata } from "@/app/lib/seo";
 
 const url = "https://zefer.carrillo.app/generator";
 const siteUrl = "https://zefer.carrillo.app";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/generator",
   title: "Advanced Password Generator & Strength Analyzer",
   description:
     "Generate cryptographically secure passwords and analyze any password's strength: entropy, crack time, and weaknesses. 100% in your browser.",
@@ -18,20 +20,13 @@ export const metadata: Metadata = {
     "crypto.getRandomValues",
     "client-side password tool",
   ],
-  openGraph: {
-    url,
-    title: "Password Generator & Analyzer | Zefer",
-    description:
-      "Generate cryptographically secure passwords and analyze strength, entropy and crack time. 100% client-side.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Password Generator & Analyzer | Zefer",
-    description:
-      "Secure password generation and strength analysis: entropy, crack time, weaknesses. Nothing leaves your browser.",
-  },
-  alternates: { canonical: url },
-};
+  ogTitle: "Password Generator & Analyzer | Zefer",
+  ogDescription:
+    "Generate cryptographically secure passwords and analyze strength, entropy and crack time. 100% client-side.",
+  twitterTitle: "Password Generator & Analyzer | Zefer",
+  twitterDescription:
+    "Secure password generation and strength analysis: entropy, crack time, weaknesses. Nothing leaves your browser.",
+});
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",

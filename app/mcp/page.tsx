@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import McpContent from "@/app/components/McpContent";
+import { pageMetadata } from "@/app/lib/seo";
 
 const url = "https://zefer.carrillo.app/mcp";
 const siteUrl = "https://zefer.carrillo.app";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/mcp",
   title: "Zefer MCP Server — Encryption Tools for AI Agents",
   description:
-    "Use Zefer from any AI agent via the Model Context Protocol: encrypt, decrypt, generate scored keys, analyze passwords and inspect .zefer files, 100% locally.",
+    "Use Zefer from any AI agent via the Model Context Protocol: encrypt, decrypt, generate scored keys, analyze passwords and inspect .zefer files, locally.",
   keywords: [
     "MCP server",
     "Model Context Protocol",
@@ -18,20 +20,13 @@ export const metadata: Metadata = {
     "local encryption AI",
     "stdio MCP server",
   ],
-  openGraph: {
-    url,
-    title: "Zefer MCP Server | Zefer",
-    description:
-      "Every Zefer capability as MCP tools for any AI agent: encrypt, decrypt, keygen, analyze, inspect. 100% local.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Zefer MCP Server | Zefer",
-    description:
-      "Encryption tools for AI agents via the Model Context Protocol. Local, dependency-free, zero telemetry.",
-  },
-  alternates: { canonical: url },
-};
+  ogTitle: "Zefer MCP Server | Zefer",
+  ogDescription:
+    "Every Zefer capability as MCP tools for any AI agent: encrypt, decrypt, keygen, analyze, inspect. 100% local.",
+  twitterTitle: "Zefer MCP Server | Zefer",
+  twitterDescription:
+    "Encryption tools for AI agents via the Model Context Protocol. Local, dependency-free, zero telemetry.",
+});
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",

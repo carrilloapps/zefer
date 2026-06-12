@@ -1,27 +1,20 @@
 import type { Metadata } from "next";
 import TermsContent from "@/app/components/TermsContent";
+import { pageMetadata } from "@/app/lib/seo";
 
-const url = "https://zefer.carrillo.app/terms";
-
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/terms",
+  index: false,
   title: "Terms & Conditions",
   description:
-    "Zefer terms of service, conditions of use, liability limitations, and acceptable use policy.",
+    "Zefer terms of service: conditions of use, liability limitations, acceptable use policy, and MIT open-source license details.",
   keywords: ["terms of service", "conditions of use", "MIT license", "acceptable use policy"],
-  openGraph: {
-    url,
-    title: "Terms & Conditions | Zefer",
-    description: "Zefer terms of service, conditions of use, and liability limitations.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Terms & Conditions | Zefer",
-    description:
-      "Zefer terms of service, acceptable use policy, and liability limitations. MIT Licensed, open-source encryption tool.",
-  },
-  alternates: { canonical: url },
-  robots: { index: false, follow: true },
-};
+  ogTitle: "Terms & Conditions | Zefer",
+  ogDescription: "Zefer terms of service, conditions of use, and liability limitations.",
+  twitterTitle: "Terms & Conditions | Zefer",
+  twitterDescription:
+    "Zefer terms of service, acceptable use policy, and liability limitations. MIT Licensed, open-source encryption tool.",
+});
 
 export default function TermsPage() {
   return <TermsContent />;

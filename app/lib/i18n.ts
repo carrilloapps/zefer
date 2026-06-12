@@ -524,6 +524,11 @@ const translations = {
     en: "Your device",
     pt: "Seu dispositivo",
   },
+  "devicepage.detecting": {
+    es: "Detectando las capacidades de tu dispositivo…",
+    en: "Detecting your device capabilities…",
+    pt: "Detectando os recursos do seu dispositivo…",
+  },
   "devicepage.reported": {
     es: "reportada",
     en: "reported",
@@ -1874,9 +1879,9 @@ const translations = {
     pt: "A CLI oficial",
   },
   "project.cli.desc": {
-    es: "zefer-cli lleva todas las capacidades de Zefer a la terminal: cifrado y descifrado de archivos y texto, generador de contraseñas con 7 modos, análisis de seguridad de contraseñas y archivos .zefer, y un servidor MCP integrado para agentes de IA. Se instala desde npm, se usa sin instalación vía npx, o se descarga como binario independiente sin necesidad de Node.js.",
-    en: "zefer-cli brings every Zefer capability to the terminal: file and text encryption and decryption, a 7-mode password generator, security analysis for passwords and .zefer files, and a built-in MCP server for AI agents. Install it from npm, run it without installing via npx, or download a standalone binary with no Node.js required.",
-    pt: "O zefer-cli leva todos os recursos do Zefer para o terminal: criptografia e descriptografia de arquivos e texto, gerador de senhas com 7 modos, análise de segurança de senhas e arquivos .zefer, e um servidor MCP integrado para agentes de IA. Instale via npm, use sem instalar via npx, ou baixe um binário independente sem precisar de Node.js.",
+    es: "zefer-cli lleva todas las capacidades de Zefer a la terminal: cifrado y descifrado de archivos y texto, generador de contraseñas con 7 modos, análisis de seguridad de contraseñas y archivos .zefer, y un servidor MCP integrado para agentes de IA. Úsalo de tres formas: como CLI (npm o npx), como servidor MCP, o impórtalo como librería programática (ESM/CommonJS) desde la v1.3.0. También disponible como binario independiente sin necesidad de Node.js.",
+    en: "zefer-cli brings every Zefer capability to the terminal: file and text encryption and decryption, a 7-mode password generator, security analysis for passwords and .zefer files, and a built-in MCP server for AI agents. Use it three ways: as a CLI (npm or npx), as an MCP server, or import it as a programmatic library (ESM/CommonJS) since v1.3.0. Also available as a standalone binary with no Node.js required.",
+    pt: "O zefer-cli leva todos os recursos do Zefer para o terminal: criptografia e descriptografia de arquivos e texto, gerador de senhas com 7 modos, análise de segurança de senhas e arquivos .zefer, e um servidor MCP integrado para agentes de IA. Use de três formas: como CLI (npm ou npx), como servidor MCP, ou importe como biblioteca programática (ESM/CommonJS) desde a v1.3.0. Também disponível como binário independente sem precisar de Node.js.",
   },
   "project.cli.feat.crosscompat": {
     es: "Compatibilidad total: un archivo cifrado en la web se descifra en la CLI y viceversa (ZEFB3/ZEFR3, mismos parámetros).",
@@ -1897,6 +1902,11 @@ const translations = {
     es: "Servidor MCP integrado: expone cifrado, descifrado, keygen, análisis e inspección como herramientas para agentes de IA.",
     en: "Built-in MCP server: exposes encryption, decryption, keygen, analysis, and inspection as tools for AI agents.",
     pt: "Servidor MCP integrado: expõe criptografia, descriptografia, keygen, análise e inspeção como ferramentas para agentes de IA.",
+  },
+  "project.cli.feat.library": {
+    es: "Librería programática (v1.3.0): importa zefer-cli en Node.js (ESM o CommonJS) y usa encodeZefer, decodeZefer, analyzePassword y generateWithOptions directamente en tu código.",
+    en: "Programmatic library (v1.3.0): import zefer-cli in Node.js (ESM or CommonJS) and call encodeZefer, decodeZefer, analyzePassword, and generateWithOptions directly in your code.",
+    pt: "Biblioteca programática (v1.3.0): importe o zefer-cli no Node.js (ESM ou CommonJS) e use encodeZefer, decodeZefer, analyzePassword e generateWithOptions diretamente no seu código.",
   },
   "project.cli.install.title": {
     es: "Instalación rápida",

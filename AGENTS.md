@@ -177,6 +177,21 @@ zefer-cli doubles as a **Model Context Protocol server** (stdio, dependency-free
 - Works with the npm install, `npx zefer-cli mcp`, and the standalone binaries
 - Per-tool setup guides (Claude Code/Desktop, Cursor, Windsurf, VS Code, Zed): https://zefer.carrillo.app/mcp
 
+### Programmatic library (`import "zefer-cli"`, v1.3.0+)
+
+Since **v1.3.0**, zefer-cli also exposes a zero-side-effect programmatic entry point, so you can embed the same engine the CLI and web app use directly in Node.js code. It is published as **both ESM and CommonJS**, and the package `"."` export resolves to the library (not the CLI bundle).
+
+```js
+// ESM
+import { encodeZefer, decodeZefer, generateWithOptions, analyzePassword } from "zefer-cli";
+// CommonJS
+const { encodeZefer, analyzePassword } = require("zefer-cli");
+```
+
+- Exposed APIs: `encodeZefer` / `decodeZefer` (ZEFB3/ZEFR3), encryption & decryption primitives, chunked crypto, compression, key generation (`generateWithOptions`), and `analyzePassword`
+- Files produced via the library stay fully cross-compatible with the web app and the CLI
+- Three usage channels in total: **CLI**, **MCP server**, and **library**
+
 ---
 
 ## Using Zefer from the Web App

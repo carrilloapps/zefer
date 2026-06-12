@@ -1,18 +1,22 @@
 import type { Metadata } from "next";
 import VsContent from "@/app/components/VsContent";
+import { pageMetadata } from "@/app/lib/seo";
 
 const url = "https://zefer.carrillo.app/vs/cryptomator";
 const siteUrl = "https://zefer.carrillo.app";
 
-export const metadata: Metadata = {
-  title: "Zefer vs Cryptomator — File Sharing vs Cloud Encryption",
+export const metadata: Metadata = pageMetadata({
+  path: "/vs/cryptomator",
+  title: "Zefer vs Cryptomator — Sharing vs Cloud Encryption",
   description:
-    "Compare Zefer and Cryptomator. Browser-based file encryption for sharing vs transparent cloud storage encryption. Features, use cases, and security compared.",
+    "Compare Zefer and Cryptomator. Browser-based file encryption for sharing vs transparent cloud storage encryption. Use cases and security compared.",
   keywords: ["zefer vs cryptomator", "cryptomator alternative", "cloud encryption comparison", "cryptomator review", "encrypt files for sharing"],
-  openGraph: { url, title: "Zefer vs Cryptomator — File Sharing vs Cloud Encryption", description: "Shareable encrypted files vs transparent cloud vault encryption. Full comparison.", images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Zefer vs Cryptomator" }] },
-  twitter: { card: "summary_large_image", title: "Zefer vs Cryptomator", description: "Encrypted file sharing vs cloud vault encryption. Which approach fits your needs?", images: [`${siteUrl}/twitter-image`] },
-  alternates: { canonical: url },
-};
+  ogTitle: "Zefer vs Cryptomator — File Sharing vs Cloud Encryption",
+  ogDescription: "Shareable encrypted files vs transparent cloud vault encryption. Full comparison.",
+  imageAlt: "Zefer vs Cryptomator",
+  twitterTitle: "Zefer vs Cryptomator",
+  twitterDescription: "Encrypted file sharing vs cloud vault encryption. Which approach fits your needs?",
+});
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org", "@type": "BreadcrumbList",
