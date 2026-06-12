@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Shield, Lock, Clock, Globe, Key, KeyRound, Eye, FileText, Zap, Cpu,
   CheckCircle2, XCircle, ArrowRight, ExternalLink, HelpCircle, Monitor,
@@ -288,7 +289,7 @@ export default function VsContent({ competitor }: { competitor: keyof typeof COM
       <GlassCard glow className="text-center">
         <h2 className="text-lg font-semibold theme-heading mb-2">{t("vs.cta.title")}</h2>
         <p className="text-sm theme-muted mb-5">{t("vs.cta.desc")}</p>
-        <a href="/" className="btn-primary !w-auto inline-flex px-8">{t("vs.cta.button")} <ArrowRight className="w-4 h-4" /></a>
+        <Link href="/" className="btn-primary !w-auto inline-flex px-8">{t("vs.cta.button")} <ArrowRight className="w-4 h-4" /></Link>
       </GlassCard>
     </PageLayout>
   );

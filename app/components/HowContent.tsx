@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   FileText,
   KeyRound,
@@ -145,16 +146,16 @@ export default function HowContent() {
             </div>
           ))}
         </div>
-        <a href="/generator" className="inline-flex items-center gap-1.5 mt-5 text-xs text-primary hover:opacity-80 transition-opacity cursor-pointer">
+        <Link href="/generator" className="inline-flex items-center gap-1.5 mt-5 text-xs text-primary hover:opacity-80 transition-opacity cursor-pointer">
           {t("gen.title")} <ArrowRight className="w-3.5 h-3.5" />
-        </a>
+        </Link>
       </GlassCard>
 
       {/* CTA */}
       <GlassCard glow className="text-center">
         <h2 className="text-lg font-semibold theme-heading mb-2">{t("how.cta")}</h2>
         <p className="text-sm theme-muted mb-5">{t("how.cta.desc")}</p>
-        <a href="/" className="btn-primary !w-auto inline-flex px-8">{t("how.cta")} <ArrowRight className="w-4 h-4" /></a>
+        <Link href="/" className="btn-primary !w-auto inline-flex px-8">{t("how.cta")} <ArrowRight className="w-4 h-4" /></Link>
       </GlassCard>
     </PageLayout>
   );
