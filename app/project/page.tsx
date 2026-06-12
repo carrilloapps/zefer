@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import ProjectContent from "@/app/components/ProjectContent";
+import { pageMetadata } from "@/app/lib/seo";
 
 const url = "https://zefer.carrillo.app/project";
 const siteUrl = "https://zefer.carrillo.app";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/project",
   title: "Open-Source Client-Side Encryption Tool",
   description:
     "Zefer is an open-source encryption tool: web app plus official CLI with MCP server. AES-256-GCM, fully cross-compatible files. MIT Licensed.",
@@ -20,20 +22,13 @@ export const metadata: Metadata = {
     "AES-256-GCM open source",
     "Next.js encryption app",
   ],
-  openGraph: {
-    url,
-    title: "Project | Zefer",
-    description:
-      "Open-source encryption: web app + official CLI with MCP server. AES-256-GCM, zero-knowledge, cross-compatible files. MIT Licensed.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Project | Zefer",
-    description:
-      "Open-source encryption: web app + official CLI with MCP server. AES-256-GCM, zero-knowledge. MIT Licensed by José Carrillo.",
-  },
-  alternates: { canonical: url },
-};
+  ogTitle: "Project | Zefer",
+  ogDescription:
+    "Open-source encryption: web app + official CLI with MCP server. AES-256-GCM, zero-knowledge, cross-compatible files. MIT Licensed.",
+  twitterTitle: "Project | Zefer",
+  twitterDescription:
+    "Open-source encryption: web app + official CLI with MCP server. AES-256-GCM, zero-knowledge. MIT Licensed by José Carrillo.",
+});
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",

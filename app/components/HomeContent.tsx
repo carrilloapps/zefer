@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useUrlParams } from "@/app/lib/useUrlParams";
 import { Lock, Unlock, BookOpen, Bot, Download, Shield, Code, Cpu, KeyRound, FileSearch } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/app/components/Navbar";
@@ -90,7 +90,7 @@ function useTypewriter(phrases: string[], enabled: boolean) {
 export default function HomeContent() {
   const { t } = useLanguage();
   const { tab, setTab } = usePreferences();
-  const searchParams = useSearchParams();
+  const searchParams = useUrlParams();
   const [reduceMotion, setReduceMotion] = useState(true);
 
   useEffect(() => {
@@ -101,6 +101,7 @@ export default function HomeContent() {
   const { display, showCursor } = useTypewriter(phrases, !reduceMotion);
 
   useEffect(() => {
+    if (!searchParams) return;
     const urlTab = searchParams.get("tab") || searchParams.get("t");
     if (urlTab === "encrypt" || urlTab === "decrypt") setTab(urlTab);
   }, [searchParams, setTab]);

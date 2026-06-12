@@ -55,9 +55,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     [locale]
   );
 
+  // Always render children so the page is server-rendered for crawlers (incl.
+  // non-JS AI bots) and indexable. The server renders the default locale ("en"),
+  // which matches the hardcoded <html lang="en"> and the initial client render,
+  // keeping hydration safe; the saved/browser locale is applied after mount.
   return (
     <LanguageContext value={{ locale, setLocale, t: translate, ready }}>
-      {ready ? children : null}
+      {children}
     </LanguageContext>
   );
 }

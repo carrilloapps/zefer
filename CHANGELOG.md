@@ -5,6 +5,24 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-06-12
+
+### Fixed
+
+- **Server-side rendering restored across the whole site** — `ThemeProvider`/`LanguageProvider` previously rendered a skeleton/`null` until client hydration, so the static HTML had **no `<h1>`, no visible content and no per-page JSON-LD**. Non-JS crawlers (ClaudeBot, GPTBot, PerplexityBot) and first-wave indexing saw an empty shell. Providers now always render `children` (server paints the default `en`/`dark`, matching `<html>`, so hydration stays safe; saved locale/theme apply after mount). All 18 pages now ship full content + a real H1 in the static HTML
+- **Per-page Open Graph / Twitter tags no longer dropped** — every subpage defined its own `openGraph`/`twitter`, which Next.js shallow-merges, silently discarding the layout's `og:site_name`, `og:locale`, `og:type`, `twitter:site` and `twitter:creator`. Centralized in `pageMetadata()` so all routes ship the complete, consistent set
+- **`/device` rendered empty server-side** (returned `null` until client device detection); the header, H1 and static guide now render on the server, with only the live-detection table gated behind a "detecting…" placeholder
+- Title/description lengths normalized to 40–60 / 120–160 chars on indexable pages; removed the redundant `Zefer … | Zefer` home title
+
+### Added
+
+- **`app/lib/seo.ts` — `pageMetadata()` helper**: single source of truth for canonical, robots (noindex flag), and the full Open Graph + Twitter set (incl. `siteName`, `locale`, `alternateLocale`, `og:type`, `twitter:site`/`creator`, images) on every route
+- **Google-compatible favicon** (`app/favicon.ico`, PNG-in-ICO) — Google ignores the SVG favicon, so the icon now shows in search results
+- **`FAQPage` + `WebSite` JSON-LD on the home page** (now static in HTML) so AI assistants and search engines can build an overview: what Zefer is, free, zero-knowledge, no account, what a `.zefer` file is
+- **`useUrlParams()` hook** — reads URL query params on the client after mount, replacing `useSearchParams()` on the home/forms so the page is no longer forced into CSR
+- Author entity enriched (`sameAs`: GitHub, LinkedIn, X, Bluesky, Dev.to, Substack, Stack Overflow)
+- **zefer-cli v1.3.0 documented** — the new programmatic library channel (ESM + CommonJS: `encodeZefer`, `decodeZefer`, `generateWithOptions`, `analyzePassword`) across `/project`, `README.md`, `llms.txt`, `AGENTS.md`, `agents.md` and `CLAUDE.md`; zefer-cli now runs three ways: CLI, MCP server and library
+
 ## [0.7.0] - 2026-06-05
 
 ### Added

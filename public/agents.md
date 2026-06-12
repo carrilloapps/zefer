@@ -89,6 +89,10 @@ Sensitive params (p, p2, r, a) are auto-cleared from the URL after reading.
 
 zefer-cli includes a built-in MCP server. Configure `{ "mcpServers": { "zefer": { "command": "zefer", "args": ["mcp"] } } }` (global install) or `{ "mcpServers": { "zefer": { "command": "npx", "args": ["-y", "zefer-cli", "mcp"] } } }` (no install) in any MCP client (Claude Code, Claude Desktop, Cursor, Windsurf, VS Code, Zed). Tools: `zefer_encrypt`, `zefer_decrypt`, `zefer_keygen`, `zefer_analyze_password`, `zefer_inspect`. Auto-detection: no args + piped stdin starts MCP mode; TTY terminals get the regular CLI. 100% local, dependency-free. Full guide: https://zefer.carrillo.app/mcp
 
+## Library (programmatic API, v1.3.0+)
+
+Since v1.3.0, zefer-cli also ships a zero-side-effect programmatic entry point (published as both ESM and CommonJS; the package `"."` export resolves to the library). Import the same engine the CLI and web app use directly in Node.js: `import { encodeZefer, decodeZefer, generateWithOptions, analyzePassword } from "zefer-cli"` (or `require("zefer-cli")`). Exposed APIs: `encodeZefer`/`decodeZefer` (ZEFB3/ZEFR3), encryption/decryption primitives, chunked crypto, compression, key generation, and password analysis. So zefer-cli has three channels: **CLI**, **MCP server**, and **library** — all producing cross-compatible `.zefer` files.
+
 ## Binary File Format
 
 - **ZEFB3**: single-key files (magic: `0x5A 0x45 0x46 0x42 0x33`)

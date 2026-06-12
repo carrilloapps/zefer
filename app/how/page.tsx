@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import HowContent from "@/app/components/HowContent";
+import { pageMetadata } from "@/app/lib/seo";
 
 const url = "https://zefer.carrillo.app/how";
 const siteUrl = "https://zefer.carrillo.app";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/how",
   title: "How Zefer Encrypts Files with AES-256-GCM",
   description:
     "How Zefer encrypts your secrets end-to-end using AES-256-GCM and PBKDF2. 7 steps from input to decryption explained in detail.",
@@ -18,20 +20,13 @@ export const metadata: Metadata = {
     "how to encrypt files",
     "browser encryption explained",
   ],
-  openGraph: {
-    url,
-    title: "How It Works | Zefer",
-    description:
-      "Learn how Zefer encrypts your secrets end-to-end using AES-256-GCM and PBKDF2. 7 steps from input to decryption explained.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "How It Works | Zefer",
-    description:
-      "How Zefer encrypts your secrets end-to-end in 7 steps. AES-256-GCM, PBKDF2, zero-knowledge architecture.",
-  },
-  alternates: { canonical: url },
-};
+  ogTitle: "How It Works | Zefer",
+  ogDescription:
+    "Learn how Zefer encrypts your secrets end-to-end using AES-256-GCM and PBKDF2. 7 steps from input to decryption explained.",
+  twitterTitle: "How It Works | Zefer",
+  twitterDescription:
+    "How Zefer encrypts your secrets end-to-end in 7 steps. AES-256-GCM, PBKDF2, zero-knowledge architecture.",
+});
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",
