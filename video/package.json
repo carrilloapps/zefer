@@ -1,0 +1,26 @@
+{
+  "name": "zefer-video",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Remotion compositions for Zefer social promos (9:16, 1:1, 16:9, 4:5).",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio",
+    "render:all": "node render-all.mjs",
+    "render:9x16": "remotion render src/index.ts Promo-9x16 out/zefer-9x16.mp4",
+    "render:1x1": "remotion render src/index.ts Promo-1x1 out/zefer-1x1.mp4",
+    "render:16x9": "remotion render src/index.ts Promo-16x9 out/zefer-16x9.mp4",
+    "render:4x5": "remotion render src/index.ts Promo-4x5 out/zefer-4x5.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.286",
+    "remotion": "4.0.286",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.0",
+    "typescript": "5.7.2"
+  }
+}
