@@ -1,18 +1,22 @@
 import type { Metadata } from "next";
 import VsContent from "@/app/components/VsContent";
+import { pageMetadata } from "@/app/lib/seo";
 
 const url = "https://zefer.carrillo.app/vs/bitwarden-send";
 const siteUrl = "https://zefer.carrillo.app";
 
-export const metadata: Metadata = {
-  title: "Zefer vs Bitwarden Send — Free Secret Sharing Compared",
+export const metadata: Metadata = pageMetadata({
+  path: "/vs/bitwarden-send",
+  title: "Zefer vs Bitwarden Send — Secret Sharing Compared",
   description:
     "Compare Zefer and Bitwarden Send for sharing secrets. Free vs freemium, no account vs vault-integrated, and advanced access controls compared.",
   keywords: ["zefer vs bitwarden send", "bitwarden send alternative", "free secret sharing", "bitwarden send review", "share passwords securely"],
-  openGraph: { url, title: "Zefer vs Bitwarden Send — Free Secret Sharing", description: "Free zero-knowledge encryption vs vault-integrated secret sharing. Full comparison.", images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Zefer vs Bitwarden Send" }] },
-  twitter: { card: "summary_large_image", title: "Zefer vs Bitwarden Send", description: "Which free secret sharing tool is right for you? Zero-knowledge vs vault-integrated.", images: [`${siteUrl}/twitter-image`] },
-  alternates: { canonical: url },
-};
+  ogTitle: "Zefer vs Bitwarden Send — Free Secret Sharing",
+  ogDescription: "Free zero-knowledge encryption vs vault-integrated secret sharing. Full comparison.",
+  imageAlt: "Zefer vs Bitwarden Send",
+  twitterTitle: "Zefer vs Bitwarden Send",
+  twitterDescription: "Which free secret sharing tool is right for you? Zero-knowledge vs vault-integrated.",
+});
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org", "@type": "BreadcrumbList",

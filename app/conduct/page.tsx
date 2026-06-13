@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import ConductContent from "@/app/components/ConductContent";
+import { pageMetadata } from "@/app/lib/seo";
 
 const url = "https://zefer.carrillo.app/conduct";
 const siteUrl = "https://zefer.carrillo.app";
 
-export const metadata: Metadata = {
-  title: "Code of Conduct",
+export const metadata: Metadata = pageMetadata({
+  path: "/conduct",
+  index: false,
+  title: "Code of Conduct — Contributor Covenant",
   description:
     "Zefer community code of conduct. Our pledge to maintain a welcoming, inclusive, and harassment-free environment for all contributors.",
   keywords: [
@@ -14,21 +17,13 @@ export const metadata: Metadata = {
     "open source community",
     "zefer community guidelines",
   ],
-  openGraph: {
-    url,
-    title: "Code of Conduct | Zefer",
-    description:
-      "Zefer community code of conduct. Our pledge for a welcoming and inclusive environment.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Code of Conduct | Zefer",
-    description:
-      "Zefer community code of conduct. Our pledge for a welcoming, inclusive, and harassment-free environment.",
-  },
-  alternates: { canonical: url },
-  robots: { index: false, follow: true },
-};
+  ogTitle: "Code of Conduct | Zefer",
+  ogDescription:
+    "Zefer community code of conduct. Our pledge for a welcoming and inclusive environment.",
+  twitterTitle: "Code of Conduct | Zefer",
+  twitterDescription:
+    "Zefer community code of conduct. Our pledge for a welcoming, inclusive, and harassment-free environment.",
+});
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",

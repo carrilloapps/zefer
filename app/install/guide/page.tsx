@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import GuideContent from "@/app/components/GuideContent";
+import { pageMetadata } from "@/app/lib/seo";
 
 const url = "https://zefer.carrillo.app/install/guide";
 const siteUrl = "https://zefer.carrillo.app";
 
-export const metadata: Metadata = {
-  title: "Usage Guide",
+export const metadata: Metadata = pageMetadata({
+  path: "/install/guide",
+  title: "How to Use Zefer — Encrypt & Decrypt Files Guide",
   description:
     "Step-by-step guide to encrypt and decrypt files with Zefer. URL parameters, dual keys, IP restrictions, and self-hosting.",
   keywords: [
@@ -18,20 +20,13 @@ export const metadata: Metadata = {
     "self-host encryption",
     "file encryption tutorial",
   ],
-  openGraph: {
-    url,
-    title: "Usage Guide | Zefer",
-    description:
-      "Step-by-step guide to encrypt and decrypt files with Zefer. Advanced security features, URL automation, and self-hosting.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Usage Guide | Zefer",
-    description:
-      "Complete encryption and decryption guide for Zefer. Advanced security, URL parameters, dual keys, and self-hosting.",
-  },
-  alternates: { canonical: url },
-};
+  ogTitle: "Usage Guide | Zefer",
+  ogDescription:
+    "Step-by-step guide to encrypt and decrypt files with Zefer. Advanced security features, URL automation, and self-hosting.",
+  twitterTitle: "Usage Guide | Zefer",
+  twitterDescription:
+    "Complete encryption and decryption guide for Zefer. Advanced security, URL parameters, dual keys, and self-hosting.",
+});
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",

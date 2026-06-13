@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import AnalyzerContent from "@/app/components/AnalyzerContent";
+import { pageMetadata } from "@/app/lib/seo";
 
 const url = "https://zefer.carrillo.app/analyzer";
 const siteUrl = "https://zefer.carrillo.app";
 
-export const metadata: Metadata = {
-  title: ".zefer File Analyzer — Inspect Encrypted Files Online",
+export const metadata: Metadata = pageMetadata({
+  path: "/analyzer",
+  title: ".zefer File Analyzer — Inspect Encrypted Files",
   description:
     "Inspect the public header of any .zefer file without the passphrase: format, iterations, compression, hint and note. 100% in your browser.",
   keywords: [
@@ -18,20 +20,13 @@ export const metadata: Metadata = {
     "client-side file analysis",
     "encrypted file metadata",
   ],
-  openGraph: {
-    url,
-    title: ".zefer File Analyzer | Zefer",
-    description:
-      "Inspect any .zefer file's public header without the passphrase. Format, KDF strength, compression. 100% client-side.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: ".zefer File Analyzer | Zefer",
-    description:
-      "Inspect .zefer files without the passphrase: format, iterations, compression. Nothing leaves your browser.",
-  },
-  alternates: { canonical: url },
-};
+  ogTitle: ".zefer File Analyzer | Zefer",
+  ogDescription:
+    "Inspect any .zefer file's public header without the passphrase. Format, KDF strength, compression. 100% client-side.",
+  twitterTitle: ".zefer File Analyzer | Zefer",
+  twitterDescription:
+    "Inspect .zefer files without the passphrase: format, iterations, compression. Nothing leaves your browser.",
+});
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",

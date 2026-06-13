@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Cpu,
   Monitor,
@@ -28,8 +29,7 @@ export default function DeviceContent() {
     benchmarkDevice().then(setBenchmark).catch(() => {});
   }, []);
 
-  if (!limits) return null;
-  const { profile } = limits;
+  const profile = limits?.profile;
 
   return (
     <main className="flex-1 flex flex-col">
@@ -60,37 +60,43 @@ export default function DeviceContent() {
               {t("devicepage.your")}
             </h2>
 
-            <div className="glass !rounded-xl overflow-hidden mb-4">
-              <table className="w-full">
-                <tbody className="divide-y divide-[var(--glass-border)]">
-                  {([
-                    ["CPU Cores", `${profile.cores}`],
-                    ["CPU Architecture", profile.cpuArch],
-                    [`RAM (${t("devicepage.reported")})`, profile.ram > 0 ? `${profile.ram} GB` : null],
-                    ["GPU Renderer", profile.gpu],
-                    ["GPU Vendor", profile.gpuVendor],
-                    [t("device.type"), profile.mobile ? "Mobile" : "Desktop"],
-                    [t("devicepage.platform"), profile.platform],
-                    ["User Agent", profile.userAgent || null],
-                    ["JS Heap Limit", profile.heapLimit ? formatBytes(profile.heapLimit) : null],
-                    [`JS Heap (${t("devicepage.used")})`, profile.heapUsed ? formatBytes(profile.heapUsed) : null],
-                    ["JS Heap Total", profile.heapTotal ? formatBytes(profile.heapTotal) : null],
-                    ["PBKDF2 (100k iter.)", benchmark !== null ? `${benchmark.toFixed(0)} ms` : null],
-                  ] as [string, string | null][]).map(([label, value]) => (
-                    <tr key={label}>
-                      <td className="text-xs theme-muted px-4 py-3 whitespace-nowrap align-top">{label}</td>
-                      <td className="text-xs font-mono theme-heading px-4 py-3 text-right break-all">
-                        {value || <span className="theme-warning">N/A</span>}
-                      </td>
+            {limits && profile ? (
+              <div className="glass !rounded-xl overflow-hidden mb-4">
+                <table className="w-full">
+                  <tbody className="divide-y divide-[var(--glass-border)]">
+                    {([
+                      ["CPU Cores", `${profile.cores}`],
+                      ["CPU Architecture", profile.cpuArch],
+                      [`RAM (${t("devicepage.reported")})`, profile.ram > 0 ? `${profile.ram} GB` : null],
+                      ["GPU Renderer", profile.gpu],
+                      ["GPU Vendor", profile.gpuVendor],
+                      [t("device.type"), profile.mobile ? "Mobile" : "Desktop"],
+                      [t("devicepage.platform"), profile.platform],
+                      ["User Agent", profile.userAgent || null],
+                      ["JS Heap Limit", profile.heapLimit ? formatBytes(profile.heapLimit) : null],
+                      [`JS Heap (${t("devicepage.used")})`, profile.heapUsed ? formatBytes(profile.heapUsed) : null],
+                      ["JS Heap Total", profile.heapTotal ? formatBytes(profile.heapTotal) : null],
+                      ["PBKDF2 (100k iter.)", benchmark !== null ? `${benchmark.toFixed(0)} ms` : null],
+                    ] as [string, string | null][]).map(([label, value]) => (
+                      <tr key={label}>
+                        <td className="text-xs theme-muted px-4 py-3 whitespace-nowrap align-top">{label}</td>
+                        <td className="text-xs font-mono theme-heading px-4 py-3 text-right break-all">
+                          {value || <span className="theme-warning">N/A</span>}
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="bg-[var(--glass-bg)]">
+                      <td className="text-xs font-medium text-primary px-4 py-3">{t("devicepage.maxfile")}</td>
+                      <td className="text-sm font-mono font-bold text-primary px-4 py-3 text-right">{limits.maxFileSizeLabel}</td>
                     </tr>
-                  ))}
-                  <tr className="bg-[var(--glass-bg)]">
-                    <td className="text-xs font-medium text-primary px-4 py-3">{t("devicepage.maxfile")}</td>
-                    <td className="text-sm font-mono font-bold text-primary px-4 py-3 text-right">{limits.maxFileSizeLabel}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="glass !rounded-xl p-6 mb-4 text-center text-xs theme-muted" aria-live="polite">
+                {t("devicepage.detecting")}
+              </div>
+            )}
           </div>
 
           {/* How the calculation works */}
@@ -186,9 +192,9 @@ export default function DeviceContent() {
 
           {/* CTA */}
           <div className="text-center">
-            <a href="/" className="btn-primary !w-auto inline-flex px-8">
+            <Link href="/" className="btn-primary !w-auto inline-flex px-8">
               {t("how.cta")} <ArrowRight className="w-4 h-4" />
-            </a>
+            </Link>
           </div>
         </div>
       </section>

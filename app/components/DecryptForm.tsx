@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useUrlParams } from "@/app/lib/useUrlParams";
 import {
   Lock,
   Unlock,
@@ -60,10 +60,10 @@ export default function DecryptForm() {
   const [showSecondPass, setShowSecondPass] = useState(false);
 
   // URL params (long and short aliases)
-  const searchParams = useSearchParams();
+  const searchParams = useUrlParams();
   const paramsApplied = useRef(false);
   useEffect(() => {
-    if (paramsApplied.current) return;
+    if (!searchParams || paramsApplied.current) return;
     paramsApplied.current = true;
     const urlTab = searchParams.get("tab") || searchParams.get("t");
     if (urlTab === "encrypt") return;

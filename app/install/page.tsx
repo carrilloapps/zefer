@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import InstallContent from "@/app/components/InstallContent";
+import { pageMetadata } from "@/app/lib/seo";
 
 const url = "https://zefer.carrillo.app/install";
 const siteUrl = "https://zefer.carrillo.app";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/install",
   title: "Install Zefer — PWA, Self-Host, or Use Online",
   description:
     "Install Zefer as a PWA, self-host with Docker, or encrypt directly in your browser. Free AES-256-GCM encryption, no account required.",
@@ -20,20 +22,12 @@ export const metadata: Metadata = {
     "cryptomator alternative",
     "veracrypt alternative",
   ],
-  openGraph: {
-    url,
-    title: "Install Zefer — PWA, Self-Host, or Use Online",
-    description:
-      "Free AES-256-GCM encryption. Install as PWA, self-host, or use directly in your browser. No account required.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Install Zefer — PWA, Self-Host, or Use Online",
-    description:
-      "Free AES-256-GCM encryption. Install as PWA, self-host, or use in your browser. Compare with Hat.sh, Picocrypt, and more.",
-  },
-  alternates: { canonical: url },
-};
+  ogTitle: "Install Zefer — PWA, Self-Host, or Use Online",
+  ogDescription:
+    "Free AES-256-GCM encryption. Install as PWA, self-host, or use directly in your browser. No account required.",
+  twitterDescription:
+    "Free AES-256-GCM encryption. Install as PWA, self-host, or use in your browser. Compare with Hat.sh, Picocrypt, and more.",
+});
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",

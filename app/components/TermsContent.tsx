@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   FileText, Shield, AlertTriangle, Scale, ArrowLeft,
   Globe, Award, BookOpen, Terminal,
@@ -41,11 +42,11 @@ export default function TermsContent() {
       </div>
 
       <div className="flex items-center justify-center gap-4">
-        <a href="/privacy" className="text-xs text-primary hover:opacity-80 transition-opacity cursor-pointer">{t("footer.privacy")}</a>
+        <Link href="/privacy" className="text-xs text-primary hover:opacity-80 transition-opacity cursor-pointer">{t("footer.privacy")}</Link>
         <span className="text-xs theme-faint">|</span>
-        <a href="/" className="inline-flex items-center gap-2 text-xs theme-faint hover:theme-muted transition-colors duration-200 cursor-pointer">
+        <Link href="/" className="inline-flex items-center gap-2 text-xs theme-faint hover:theme-muted transition-colors duration-200 cursor-pointer">
           <ArrowLeft className="w-3.5 h-3.5" />{t("privacy.back")}
-        </a>
+        </Link>
       </div>
     </PageLayout>
   );

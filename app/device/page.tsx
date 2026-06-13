@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import DeviceContent from "@/app/components/DeviceContent";
+import { pageMetadata } from "@/app/lib/seo";
 
 const url = "https://zefer.carrillo.app/device";
 const siteUrl = "https://zefer.carrillo.app";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/device",
   title: "Device Detection and Encryption Performance",
   description:
     "See how Zefer detects your device RAM, CPU cores, and GPU to calculate dynamic file size limits. Optimize your browser for maximum encryption performance.",
@@ -18,20 +20,13 @@ export const metadata: Metadata = {
     "encryption performance test",
     "client-side crypto benchmark",
   ],
-  openGraph: {
-    url,
-    title: "Device & Performance | Zefer",
-    description:
-      "Live device detection: RAM, CPU, GPU. See how Zefer calculates your maximum file size and optimize your browser for encryption.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Device & Performance | Zefer",
-    description:
-      "Live device detection and browser optimization for maximum encryption performance. See your RAM, CPU, and GPU analysis.",
-  },
-  alternates: { canonical: url },
-};
+  ogTitle: "Device & Performance | Zefer",
+  ogDescription:
+    "Live device detection: RAM, CPU, GPU. See how Zefer calculates your maximum file size and optimize your browser for encryption.",
+  twitterTitle: "Device & Performance | Zefer",
+  twitterDescription:
+    "Live device detection and browser optimization for maximum encryption performance. See your RAM, CPU, and GPU analysis.",
+});
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org",

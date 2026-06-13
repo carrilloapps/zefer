@@ -177,6 +177,27 @@ zefer-cli doubles as a **Model Context Protocol server** (stdio, dependency-free
 - Works with the npm install, `npx zefer-cli mcp`, and the standalone binaries
 - Per-tool setup guides (Claude Code/Desktop, Cursor, Windsurf, VS Code, Zed): https://zefer.carrillo.app/mcp
 
+### Programmatic library (`import "zefer-cli"`, v1.3.0+)
+
+Since **v1.3.0**, zefer-cli also exposes a zero-side-effect programmatic entry point, so you can embed the same engine the CLI and web app use directly in Node.js code. It is published as **both ESM and CommonJS**, and the package `"."` export resolves to the library (not the CLI bundle).
+
+```js
+// ESM
+import { encodeZefer, decodeZefer, generateWithOptions, analyzePassword } from "zefer-cli";
+// CommonJS
+const { encodeZefer, analyzePassword } = require("zefer-cli");
+```
+
+- Exposed APIs:
+  - `encodeZefer(options)` → `Promise<Buffer>` — encrypt text/files into ZEFB3/ZEFR3 (`content`|`fileData`, `fileName`, `fileType`, `passphrase`, `expiresAt`, `compression`, `iterations`)
+  - `decodeZefer(input, passphrase, options)` → `Promise<{ ok, payload }>` — decrypt a `.zefer` file (`options.rawBytes` for binary input)
+  - `generateWithOptions(mode, length, options)` → `string` — scored key in 7 modes; `generateValue(mode, length)` for a raw key
+  - `analyzePassword(password)` → report (score, entropy, keyspace, NIST/OWASP/AES-128/post-quantum compliance, crack times)
+- The library **never auto-benchmarks** — always pass an explicit `iterations` value
+- Files produced via the library stay fully cross-compatible with the web app and the CLI
+- Three usage channels in total: **CLI**, **MCP server**, and **library**
+- Web guide: https://zefer.carrillo.app/library · API reference: https://github.com/carrilloapps/zefer-cli/blob/main/docs/LIBRARY.md
+
 ---
 
 ## Using Zefer from the Web App

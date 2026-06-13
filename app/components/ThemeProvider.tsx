@@ -8,8 +8,6 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
-import PageSkeleton from "@/app/components/Skeleton";
-
 type Theme = "dark" | "light";
 
 interface ThemeContextType {
@@ -58,9 +56,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   }, []);
 
+  // Always render children so content is server-rendered and indexable. The
+  // server paints the default theme ("dark", matching <html data-theme="dark">);
+  // the inline script in the document head applies the saved theme before paint
+  // to avoid a flash, and React syncs to it after mount.
   return (
     <ThemeContext value={{ theme, toggleTheme }}>
-      {ready ? children : <PageSkeleton />}
+      {children}
     </ThemeContext>
   );
 }

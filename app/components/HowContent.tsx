@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   FileText,
   KeyRound,
@@ -13,6 +14,10 @@ import {
   Settings,
   Cpu,
   Globe,
+  Terminal,
+  Plug,
+  Library,
+  Boxes,
 } from "lucide-react";
 import { PageLayout, PageHeader, IconBox, SectionCard, GlassCard } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
@@ -51,6 +56,13 @@ export default function HowContent() {
     { icon: Globe, titleKey: "how.feat.ip.title" as const, descKey: "how.feat.ip.desc" as const },
     { icon: Cpu, titleKey: "how.feat.device.title" as const, descKey: "how.feat.device.desc" as const },
     { icon: Shield, titleKey: "how.feat.keygen.title" as const, descKey: "how.feat.keygen.desc" as const },
+  ];
+
+  const channels = [
+    { icon: Globe, titleKey: "how.channels.web.title" as const, descKey: "how.channels.web.desc" as const, href: "/" },
+    { icon: Terminal, titleKey: "how.channels.cli.title" as const, descKey: "how.channels.cli.desc" as const, href: "/install" },
+    { icon: Plug, titleKey: "how.channels.mcp.title" as const, descKey: "how.channels.mcp.desc" as const, href: "/mcp" },
+    { icon: Library, titleKey: "how.channels.lib.title" as const, descKey: "how.channels.lib.desc" as const, href: "/library" },
   ];
 
   return (
@@ -145,16 +157,39 @@ export default function HowContent() {
             </div>
           ))}
         </div>
-        <a href="/generator" className="inline-flex items-center gap-1.5 mt-5 text-xs text-primary hover:opacity-80 transition-opacity cursor-pointer">
+        <Link href="/generator" className="inline-flex items-center gap-1.5 mt-5 text-xs text-primary hover:opacity-80 transition-opacity cursor-pointer">
           {t("gen.title")} <ArrowRight className="w-3.5 h-3.5" />
-        </a>
+        </Link>
+      </GlassCard>
+
+      {/* Channels — the same engine and .zefer format everywhere */}
+      <GlassCard className="mb-8">
+        <h2 className="text-sm font-semibold theme-heading mb-2 flex items-center gap-2">
+          <Boxes className="w-4 h-4 text-primary" />{t("how.channels.title")}
+        </h2>
+        <p className="text-xs theme-muted mb-5 leading-relaxed">{t("how.channels.desc")}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {channels.map((c) => (
+            <Link key={c.href} href={c.href} className="glass glass-hover !rounded-xl p-4 transition-all duration-300 block cursor-pointer">
+              <div className="flex items-start gap-3">
+                <IconBox icon={c.icon} size="sm" />
+                <div>
+                  <h3 className="text-xs font-semibold theme-heading mb-1 flex items-center gap-1.5">
+                    {t(c.titleKey)} <ArrowRight className="w-3 h-3 text-primary" />
+                  </h3>
+                  <p className="text-[11px] theme-muted leading-relaxed">{t(c.descKey)}</p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </GlassCard>
 
       {/* CTA */}
       <GlassCard glow className="text-center">
         <h2 className="text-lg font-semibold theme-heading mb-2">{t("how.cta")}</h2>
         <p className="text-sm theme-muted mb-5">{t("how.cta.desc")}</p>
-        <a href="/" className="btn-primary !w-auto inline-flex px-8">{t("how.cta")} <ArrowRight className="w-4 h-4" /></a>
+        <Link href="/" className="btn-primary !w-auto inline-flex px-8">{t("how.cta")} <ArrowRight className="w-4 h-4" /></Link>
       </GlassCard>
     </PageLayout>
   );

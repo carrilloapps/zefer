@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
-import { Lock, Unlock, BookOpen, Bot, Download, Shield, Code, Cpu, KeyRound, FileSearch } from "lucide-react";
+import { useUrlParams } from "@/app/lib/useUrlParams";
+import { Lock, Unlock, BookOpen, Bot, Download, Shield, Code, Cpu, KeyRound, FileSearch, Terminal, Library } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
@@ -90,7 +90,7 @@ function useTypewriter(phrases: string[], enabled: boolean) {
 export default function HomeContent() {
   const { t } = useLanguage();
   const { tab, setTab } = usePreferences();
-  const searchParams = useSearchParams();
+  const searchParams = useUrlParams();
   const [reduceMotion, setReduceMotion] = useState(true);
 
   useEffect(() => {
@@ -101,6 +101,7 @@ export default function HomeContent() {
   const { display, showCursor } = useTypewriter(phrases, !reduceMotion);
 
   useEffect(() => {
+    if (!searchParams) return;
     const urlTab = searchParams.get("tab") || searchParams.get("t");
     if (urlTab === "encrypt" || urlTab === "decrypt") setTab(urlTab);
   }, [searchParams, setTab]);
@@ -215,6 +216,12 @@ export default function HomeContent() {
             </Link>
             <Link href="/mcp" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">
               <Bot className="w-3 h-3" />{t("nav.mcp")}
+            </Link>
+            <Link href="/install" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">
+              <Terminal className="w-3 h-3" />{t("nav.cli")}
+            </Link>
+            <Link href="/library" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">
+              <Library className="w-3 h-3" />{t("nav.library")}
             </Link>
             <a href="/llms.txt" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] theme-muted hover:text-primary hover:bg-[var(--glass-bg-hover)] transition-colors cursor-pointer border border-[var(--glass-border)]">
               <Bot className="w-3 h-3" />llms.txt

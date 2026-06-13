@@ -5,6 +5,23 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] - 2026-06-13
+
+### Added
+
+- **Server-side rendering across the whole site.** Pages now ship full content, a real `<h1>`, and per-page JSON-LD in the static HTML, so search engines and non-JS AI crawlers (ClaudeBot, GPTBot, PerplexityBot) see the real page instead of a skeleton.
+- **`app/lib/seo.ts` — centralized metadata** (`pageMetadata()`): every route ships a complete, consistent Open Graph + Twitter set (`og:site_name`, `og:locale`, `og:type`, `twitter:site`/`creator`, images), canonical, and the noindex flag — **100/100** on the full OG/SEO checklist across all pages.
+- **Google-compatible `favicon.ico`** (Google ignores SVG favicons) and **`FAQPage` + `WebSite` JSON-LD** on the home page for AI and search overviews.
+- **New `/library` page** documenting zefer-cli as a programmatic Node.js library (`encodeZefer`, `decodeZefer`, `generateWithOptions`, `analyzePassword`; ESM and CommonJS).
+- **`/how`: "Use Zefer your way"** — the four channels (Web app, CLI, MCP server, Node.js library) with links, reinforcing that they share the same engine and `.zefer` format.
+- **OpenGraph MCP** integrated in `.mcp.json`, plus OG/SEO audit tooling in `scripts/`.
+- Documented **zefer-cli v1.3.0** (the library channel) across the site and the AI docs (`llms.txt`, `AGENTS.md`, `agents.md`, `CLAUDE.md`, `README`), and enriched the author entity (`sameAs`).
+
+### Fixed
+
+- **Instant navigation** — internal links use `next/link` for prefetched client-side transitions: no full-page reloads and no language/theme flash.
+- Normalized title/description lengths to SEO ranges on indexable pages; `/device` now renders its content server-side.
+
 ## [0.7.0] - 2026-06-05
 
 ### Added

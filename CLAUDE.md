@@ -6,7 +6,7 @@ Client-side encryption tool that converts text and files into password-protected
 
 **Live:** https://zefer.carrillo.app
 **Repo:** https://github.com/carrilloapps/zefer
-**CLI companion:** https://github.com/carrilloapps/zefer-cli — Node.js CLI, same binary format, same crypto params. Local path: `/home/carrilloapps/Desarrollo/Ink/zefer-cli`
+**CLI companion:** https://github.com/carrilloapps/zefer-cli — same binary format, same crypto params. Three channels: **CLI**, **MCP server** (`zefer mcp`), and a **programmatic library** (`import "zefer-cli"`, ESM/CommonJS — added in v1.3.0). Local path: `/home/carrilloapps/Desarrollo/Ink/zefer-cli`
 
 ## Stack
 
@@ -111,6 +111,7 @@ app/
 | `/generator` | Static | index, follow | Password lab, 2 tabs: generator (7 modes, stop-slider 16–1024 + custom ≤2048, qty ≤50, advanced opts, per-key score sorted desc) + analyzer (entropy, 4 attack scenarios, NIST/OWASP/AES-128/post-quantum checks, avg-password comparison, plain-language tooltips) |
 | `/analyzer` | Static | index, follow | .zefer public-header inspector (format, KDF level, compression — no passphrase needed) |
 | `/mcp` | Static | index, follow | zefer-cli as MCP server: setup, smart detection, 5 tools, example call |
+| `/library` | Static | index, follow | zefer-cli as a Node.js library (v1.3.0+): install, ESM/CJS import, API (encodeZefer/decodeZefer/generateWithOptions/analyzePassword), examples, notes |
 | `/privacy` | Static | noindex, follow | Privacy policy — 9 sections + GDPR/CCPA/LGPD compliance |
 | `/terms` | Static | noindex, follow | 12 sections + MIT + Colombia Law 1581 |
 | `/project` | Static | index, follow | Repo, stack, creator (GitHub API), donate |

@@ -349,10 +349,33 @@ Everything runs locally: no network, no telemetry. Full guide with per-tool conf
 
 ---
 
+## Library (programmatic API, v1.3.0+)
+
+Since v1.3.0, zefer-cli also ships a zero-side-effect programmatic entry point, so you can call the same engine the CLI and web app use directly from Node.js. It is published as both ESM and CommonJS, and the package `"."` export resolves to the library (not the CLI bundle).
+
+```js
+// ESM
+import { encodeZefer, decodeZefer, generateWithOptions, analyzePassword } from "zefer-cli";
+// CommonJS
+const { encodeZefer, analyzePassword } = require("zefer-cli");
+```
+
+Exposed APIs:
+- `encodeZefer(options)` → `Promise<Buffer>` — encrypt text/files into ZEFB3/ZEFR3 (options: content | fileData, fileName, fileType, passphrase, expiresAt, compression, iterations)
+- `decodeZefer(input, passphrase, options)` → `Promise<{ ok, payload }>` — decrypt a .zefer file (`options.rawBytes` for binary input)
+- `generateWithOptions(mode, length, options)` → `string` — scored key, 7 modes (unicode|secure|alpha|hex|base58|pin|uuid)
+- `analyzePassword(password)` → report (score, entropy, keyspace, NIST/OWASP/AES-128/post-quantum compliance, crack times)
+
+Notes: the library never auto-benchmarks — always pass an explicit `iterations`. Files produced this way stay fully cross-compatible with the web app and the CLI. Full guide: https://zefer.carrillo.app/library — API reference: https://github.com/carrilloapps/zefer-cli/blob/main/docs/LIBRARY.md
+
+---
+
 ## Docs
 
 - [How It Works](https://zefer.carrillo.app/how): 7-step encryption process, technical specs
 - [Install / CLI](https://zefer.carrillo.app/install): Binary downloads, npm install, PWA
+- [Library](https://zefer.carrillo.app/library): Programmatic Node.js API — encodeZefer, decodeZefer, generateWithOptions, analyzePassword (ESM & CommonJS)
+- [MCP Server](https://zefer.carrillo.app/mcp): Use Zefer from AI agents via the Model Context Protocol
 - [Privacy Policy](https://zefer.carrillo.app/privacy): GDPR/CCPA/LGPD compliance
 - [Security Policy](https://zefer.carrillo.app/security): Vulnerability reporting, crypto architecture
 - [Project Info](https://zefer.carrillo.app/project): Tech stack, creator

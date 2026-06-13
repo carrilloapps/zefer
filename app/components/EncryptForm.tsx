@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import { useUrlParams } from "@/app/lib/useUrlParams";
 import {
   Lock,
   Eye,
@@ -105,11 +105,11 @@ export default function EncryptForm() {
   useEffect(() => { setLimits(analyzeDevice()); }, []);
 
   // URL params (long and short aliases)
-  const searchParams = useSearchParams();
+  const searchParams = useUrlParams();
   const paramsApplied = useRef(false);
   const securityMap: Record<string, number> = { standard: 300_000, high: 600_000, maximum: 1_000_000 };
   useEffect(() => {
-    if (paramsApplied.current) return;
+    if (!searchParams || paramsApplied.current) return;
     paramsApplied.current = true;
     const urlTab = searchParams.get("tab") || searchParams.get("t");
     if (urlTab === "decrypt") return;

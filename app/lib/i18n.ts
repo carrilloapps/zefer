@@ -524,6 +524,11 @@ const translations = {
     en: "Your device",
     pt: "Seu dispositivo",
   },
+  "devicepage.detecting": {
+    es: "Detectando las capacidades de tu dispositivo…",
+    en: "Detecting your device capabilities…",
+    pt: "Detectando os recursos do seu dispositivo…",
+  },
   "devicepage.reported": {
     es: "reportada",
     en: "reported",
@@ -1411,6 +1416,40 @@ const translations = {
     en: "Create your first encrypted .zefer file in seconds.",
     pt: "Crie seu primeiro arquivo .zefer criptografado em segundos.",
   },
+  "how.channels.title": {
+    es: "Usa Zefer a tu manera",
+    en: "Use Zefer your way",
+    pt: "Use o Zefer do seu jeito",
+  },
+  "how.channels.desc": {
+    es: "El mismo motor de cifrado y el mismo formato .zefer en todos los canales — los archivos son 100% compatibles entre ellos.",
+    en: "The same encryption engine and the same .zefer format across every channel — files are 100% compatible between them.",
+    pt: "O mesmo motor de criptografia e o mesmo formato .zefer em todos os canais — os arquivos são 100% compatíveis entre si.",
+  },
+  "how.channels.web.title": { es: "App web", en: "Web app", pt: "App web" },
+  "how.channels.web.desc": {
+    es: "Cifra y descifra en tu navegador, sin instalar nada.",
+    en: "Encrypt and decrypt in your browser — nothing to install.",
+    pt: "Criptografe e descriptografe no navegador, sem instalar nada.",
+  },
+  "how.channels.cli.title": { es: "Línea de comandos", en: "Command line", pt: "Linha de comando" },
+  "how.channels.cli.desc": {
+    es: "zefer-cli para scripts, automatización y CI. npm o binario independiente.",
+    en: "zefer-cli for scripts, automation and CI. npm or a standalone binary.",
+    pt: "zefer-cli para scripts, automação e CI. npm ou binário independente.",
+  },
+  "how.channels.mcp.title": { es: "Servidor MCP", en: "MCP server", pt: "Servidor MCP" },
+  "how.channels.mcp.desc": {
+    es: "Deja que agentes de IA cifren, descifren y analicen vía Model Context Protocol.",
+    en: "Let AI agents encrypt, decrypt and analyze via the Model Context Protocol.",
+    pt: "Deixe que agentes de IA criptografem, descriptografem e analisem via Model Context Protocol.",
+  },
+  "how.channels.lib.title": { es: "Librería Node.js", en: "Node.js library", pt: "Biblioteca Node.js" },
+  "how.channels.lib.desc": {
+    es: "Importa el mismo motor en tu código (ESM y CommonJS) desde la v1.3.0.",
+    en: "Import the same engine into your code (ESM and CommonJS) since v1.3.0.",
+    pt: "Importe o mesmo motor no seu código (ESM e CommonJS) desde a v1.3.0.",
+  },
 
   // How — features section
   "how.features.title": {
@@ -1874,9 +1913,9 @@ const translations = {
     pt: "A CLI oficial",
   },
   "project.cli.desc": {
-    es: "zefer-cli lleva todas las capacidades de Zefer a la terminal: cifrado y descifrado de archivos y texto, generador de contraseñas con 7 modos, análisis de seguridad de contraseñas y archivos .zefer, y un servidor MCP integrado para agentes de IA. Se instala desde npm, se usa sin instalación vía npx, o se descarga como binario independiente sin necesidad de Node.js.",
-    en: "zefer-cli brings every Zefer capability to the terminal: file and text encryption and decryption, a 7-mode password generator, security analysis for passwords and .zefer files, and a built-in MCP server for AI agents. Install it from npm, run it without installing via npx, or download a standalone binary with no Node.js required.",
-    pt: "O zefer-cli leva todos os recursos do Zefer para o terminal: criptografia e descriptografia de arquivos e texto, gerador de senhas com 7 modos, análise de segurança de senhas e arquivos .zefer, e um servidor MCP integrado para agentes de IA. Instale via npm, use sem instalar via npx, ou baixe um binário independente sem precisar de Node.js.",
+    es: "zefer-cli lleva todas las capacidades de Zefer a la terminal: cifrado y descifrado de archivos y texto, generador de contraseñas con 7 modos, análisis de seguridad de contraseñas y archivos .zefer, y un servidor MCP integrado para agentes de IA. Úsalo de tres formas: como CLI (npm o npx), como servidor MCP, o impórtalo como librería programática (ESM/CommonJS) desde la v1.3.0. También disponible como binario independiente sin necesidad de Node.js.",
+    en: "zefer-cli brings every Zefer capability to the terminal: file and text encryption and decryption, a 7-mode password generator, security analysis for passwords and .zefer files, and a built-in MCP server for AI agents. Use it three ways: as a CLI (npm or npx), as an MCP server, or import it as a programmatic library (ESM/CommonJS) since v1.3.0. Also available as a standalone binary with no Node.js required.",
+    pt: "O zefer-cli leva todos os recursos do Zefer para o terminal: criptografia e descriptografia de arquivos e texto, gerador de senhas com 7 modos, análise de segurança de senhas e arquivos .zefer, e um servidor MCP integrado para agentes de IA. Use de três formas: como CLI (npm ou npx), como servidor MCP, ou importe como biblioteca programática (ESM/CommonJS) desde a v1.3.0. Também disponível como binário independente sem precisar de Node.js.",
   },
   "project.cli.feat.crosscompat": {
     es: "Compatibilidad total: un archivo cifrado en la web se descifra en la CLI y viceversa (ZEFB3/ZEFR3, mismos parámetros).",
@@ -1897,6 +1936,11 @@ const translations = {
     es: "Servidor MCP integrado: expone cifrado, descifrado, keygen, análisis e inspección como herramientas para agentes de IA.",
     en: "Built-in MCP server: exposes encryption, decryption, keygen, analysis, and inspection as tools for AI agents.",
     pt: "Servidor MCP integrado: expõe criptografia, descriptografia, keygen, análise e inspeção como ferramentas para agentes de IA.",
+  },
+  "project.cli.feat.library": {
+    es: "Librería programática (v1.3.0): importa zefer-cli en Node.js (ESM o CommonJS) y usa encodeZefer, decodeZefer, analyzePassword y generateWithOptions directamente en tu código.",
+    en: "Programmatic library (v1.3.0): import zefer-cli in Node.js (ESM or CommonJS) and call encodeZefer, decodeZefer, analyzePassword, and generateWithOptions directly in your code.",
+    pt: "Biblioteca programática (v1.3.0): importe o zefer-cli no Node.js (ESM ou CommonJS) e use encodeZefer, decodeZefer, analyzePassword e generateWithOptions diretamente no seu código.",
   },
   "project.cli.install.title": {
     es: "Instalación rápida",
@@ -2366,6 +2410,111 @@ const translations = {
     en: "Requires Node.js ≥ 20",
     pt: "Requer Node.js ≥ 20",
   },
+  "install.cli.lib.title": {
+    es: "Como librería",
+    en: "As a library",
+    pt: "Como biblioteca",
+  },
+  "install.cli.lib.req": {
+    es: "v1.3.0+ · ESM/CJS",
+    en: "v1.3.0+ · ESM/CJS",
+    pt: "v1.3.0+ · ESM/CJS",
+  },
+  "install.cli.lib.desc": {
+    es: "Importa el mismo motor (cifrado, keygen, análisis) en tu código Node.js. Disponible como ESM y CommonJS desde la v1.3.0.",
+    en: "Import the same engine (encryption, keygen, analysis) into your Node.js code. Available as ESM and CommonJS since v1.3.0.",
+    pt: "Importe o mesmo motor (criptografia, keygen, análise) no seu código Node.js. Disponível como ESM e CommonJS desde a v1.3.0.",
+  },
+  "install.cli.lib.more": {
+    es: "Ver la guía completa de la librería",
+    en: "See the full library guide",
+    pt: "Ver o guia completo da biblioteca",
+  },
+  "nav.cli": { es: "CLI", en: "CLI", pt: "CLI" },
+  "nav.library": { es: "Librería", en: "Library", pt: "Biblioteca" },
+  "lib.badge": { es: "Librería", en: "Library", pt: "Biblioteca" },
+  "lib.title": {
+    es: "Zefer como librería de Node.js",
+    en: "Zefer as a Node.js library",
+    pt: "Zefer como biblioteca Node.js",
+  },
+  "lib.subtitle": {
+    es: "El mismo motor de cifrado, importable desde tu propio código Node.js: servicios, AWS Lambda o scripts de build. ESM y CommonJS.",
+    en: "The same encryption engine, importable from your own Node.js code: services, AWS Lambda, or build scripts. ESM and CommonJS.",
+    pt: "O mesmo motor de criptografia, importável do seu próprio código Node.js: serviços, AWS Lambda ou scripts de build. ESM e CommonJS.",
+  },
+  "lib.req": {
+    es: "Requiere Node.js ≥ 20 · v1.3.0+",
+    en: "Requires Node.js ≥ 20 · v1.3.0+",
+    pt: "Requer Node.js ≥ 20 · v1.3.0+",
+  },
+  "lib.what.title": { es: "¿Qué es el canal de librería?", en: "What is the library channel?", pt: "O que é o canal de biblioteca?" },
+  "lib.what.desc": {
+    es: "Además de la CLI y del servidor MCP, zefer-cli expone un punto de entrada programático sin efectos secundarios. Importas las mismas funciones que usan la web y la CLI y las llamas directamente desde tu código. Los archivos generados son 100% compatibles con la app web y la CLI.",
+    en: "Beyond the CLI and the MCP server, zefer-cli exposes a zero-side-effect programmatic entry point. You import the same functions the web app and CLI use and call them directly from your code. Files produced this way are 100% compatible with the web app and the CLI.",
+    pt: "Além da CLI e do servidor MCP, o zefer-cli expõe um ponto de entrada programático sem efeitos colaterais. Você importa as mesmas funções que a web e a CLI usam e as chama direto do seu código. Os arquivos gerados são 100% compatíveis com o app web e a CLI.",
+  },
+  "lib.install.title": { es: "Instalación", en: "Installation", pt: "Instalação" },
+  "lib.install.desc": {
+    es: "Añade el paquete a tu proyecto. El export \".\" resuelve a la librería (no al bundle de la CLI).",
+    en: "Add the package to your project. The \".\" export resolves to the library (not the CLI bundle).",
+    pt: "Adicione o pacote ao seu projeto. O export \".\" resolve para a biblioteca (não o bundle da CLI).",
+  },
+  "lib.import.title": { es: "Importar", en: "Import", pt: "Importar" },
+  "lib.import.desc": {
+    es: "Disponible como ESM y CommonJS, con tipos TypeScript incluidos.",
+    en: "Available as ESM and CommonJS, with TypeScript types included.",
+    pt: "Disponível como ESM e CommonJS, com tipos TypeScript incluídos.",
+  },
+  "lib.api.title": { es: "API expuesta", en: "Exposed API", pt: "API exposta" },
+  "lib.api.desc": {
+    es: "Las funciones principales del núcleo, idénticas a las de la web y la CLI.",
+    en: "The main core functions, identical to those in the web app and CLI.",
+    pt: "As principais funções do núcleo, idênticas às da web e da CLI.",
+  },
+  "lib.api.encode.desc": {
+    es: "Cifra texto o archivos al formato binario ZEFB3/ZEFR3. Devuelve los bytes cifrados.",
+    en: "Encrypts text or files into the ZEFB3/ZEFR3 binary format. Returns the encrypted bytes.",
+    pt: "Criptografa texto ou arquivos no formato binário ZEFB3/ZEFR3. Retorna os bytes criptografados.",
+  },
+  "lib.api.decode.desc": {
+    es: "Descifra un archivo .zefer. Devuelve { ok, payload } con el contenido o los datos del archivo.",
+    en: "Decrypts a .zefer file. Returns { ok, payload } with the content or file data.",
+    pt: "Descriptografa um arquivo .zefer. Retorna { ok, payload } com o conteúdo ou os dados do arquivo.",
+  },
+  "lib.api.keygen.desc": {
+    es: "Genera una clave puntuada en 7 modos (unicode, secure, alpha, hex, base58, pin, uuid) con opciones avanzadas.",
+    en: "Generates a scored key in 7 modes (unicode, secure, alpha, hex, base58, pin, uuid) with advanced options.",
+    pt: "Gera uma chave pontuada em 7 modos (unicode, secure, alpha, hex, base58, pin, uuid) com opções avançadas.",
+  },
+  "lib.api.analyze.desc": {
+    es: "Reporte completo de una contraseña: score, entropía, keyspace, cumplimiento (NIST/OWASP/AES-128/post-cuántico) y tiempos de descifrado.",
+    en: "Full report for a password: score, entropy, keyspace, compliance (NIST/OWASP/AES-128/post-quantum) and crack times.",
+    pt: "Relatório completo de uma senha: score, entropia, keyspace, conformidade (NIST/OWASP/AES-128/pós-quântico) e tempos de quebra.",
+  },
+  "lib.examples.title": { es: "Ejemplos", en: "Examples", pt: "Exemplos" },
+  "lib.example.encrypt": { es: "Cifrar texto a .zefer", en: "Encrypt text to .zefer", pt: "Criptografar texto para .zefer" },
+  "lib.example.decrypt": { es: "Descifrar un archivo", en: "Decrypt a file", pt: "Descriptografar um arquivo" },
+  "lib.example.keygen": { es: "Generar y analizar claves", en: "Generate and analyze keys", pt: "Gerar e analisar chaves" },
+  "lib.notes.title": { es: "Notas importantes", en: "Important notes", pt: "Notas importantes" },
+  "lib.notes.1": {
+    es: "No incluye auto-benchmark: pasa siempre un valor explícito de iterations (p. ej. 600000).",
+    en: "No auto-benchmarking: always pass an explicit iterations value (e.g. 600000).",
+    pt: "Sem auto-benchmark: passe sempre um valor explícito de iterations (ex.: 600000).",
+  },
+  "lib.notes.2": {
+    es: "Opera en memoria: requiere RAM ≈ tamaño de entrada + salida (en Lambda, ≥512 MB para ~100 MB).",
+    en: "Operates in memory: needs RAM ≈ input + output size (on Lambda, ≥512 MB for ~100 MB payloads).",
+    pt: "Opera em memória: requer RAM ≈ tamanho de entrada + saída (no Lambda, ≥512 MB para ~100 MB).",
+  },
+  "lib.notes.3": {
+    es: "Los archivos generados son 100% compatibles con la app web y la CLI (mismo formato, mismos parámetros).",
+    en: "Files produced are 100% compatible with the web app and the CLI (same format, same parameters).",
+    pt: "Os arquivos gerados são 100% compatíveis com o app web e a CLI (mesmo formato, mesmos parâmetros).",
+  },
+  "lib.cta.repo": { es: "Ver en GitHub", en: "View on GitHub", pt: "Ver no GitHub" },
+  "lib.cta.npm": { es: "Ver en npm", en: "View on npm", pt: "Ver no npm" },
+  "lib.cta.docs": { es: "Referencia completa de la API", en: "Full API reference", pt: "Referência completa da API" },
   "install.compare.title": {
     es: "Zefer vs alternativas",
     en: "Zefer vs alternatives",

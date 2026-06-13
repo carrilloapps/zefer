@@ -1,18 +1,22 @@
 import type { Metadata } from "next";
 import VsContent from "@/app/components/VsContent";
+import { pageMetadata } from "@/app/lib/seo";
 
 const url = "https://zefer.carrillo.app/vs/picocrypt";
 const siteUrl = "https://zefer.carrillo.app";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/vs/picocrypt",
   title: "Zefer vs Picocrypt — Browser vs Desktop Encryption",
   description:
     "Compare Zefer and Picocrypt: browser-based AES-256-GCM vs lightweight desktop XChaCha20. Features, security, and use cases compared side by side.",
   keywords: ["zefer vs picocrypt", "picocrypt alternative", "browser encryption vs desktop", "picocrypt review", "file encryption comparison"],
-  openGraph: { url, title: "Zefer vs Picocrypt — Browser vs Desktop Encryption", description: "Browser-based AES-256-GCM vs lightweight desktop XChaCha20. Full comparison.", images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Zefer vs Picocrypt" }] },
-  twitter: { card: "summary_large_image", title: "Zefer vs Picocrypt", description: "Browser encryption vs desktop CLI. Which file encryption tool fits your workflow?", images: [`${siteUrl}/twitter-image`] },
-  alternates: { canonical: url },
-};
+  ogTitle: "Zefer vs Picocrypt — Browser vs Desktop Encryption",
+  ogDescription: "Browser-based AES-256-GCM vs lightweight desktop XChaCha20. Full comparison.",
+  imageAlt: "Zefer vs Picocrypt",
+  twitterTitle: "Zefer vs Picocrypt",
+  twitterDescription: "Browser encryption vs desktop CLI. Which file encryption tool fits your workflow?",
+});
 
 const breadcrumbJsonLd = {
   "@context": "https://schema.org", "@type": "BreadcrumbList",
