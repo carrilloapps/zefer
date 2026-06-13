@@ -18,14 +18,9 @@ import {
   Plug,
   Library,
   Boxes,
-  PlayCircle,
 } from "lucide-react";
 import { PageLayout, PageHeader, IconBox, SectionCard, GlassCard } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
-
-// Paste the product-tour YouTube video ID here to show it on /how (the section
-// stays hidden until an ID is set). Example: "dQw4w9WgXcQ".
-const DEMO_VIDEO_YOUTUBE_ID = "";
 
 const SPECS = [
   { key: "how.tech.algorithm" as const, value: "AES-256-GCM" },
@@ -73,26 +68,6 @@ export default function HowContent() {
   return (
     <PageLayout>
       <PageHeader icon={Shield} badge={t("steps.title")} title={t("steps.title")} subtitle={t("how.subtitle")} />
-
-      {/* Product-tour video (shown only once a YouTube ID is configured above) */}
-      {DEMO_VIDEO_YOUTUBE_ID && (
-        <GlassCard className="mb-8">
-          <h2 className="text-sm font-semibold theme-heading mb-1 flex items-center gap-2">
-            <PlayCircle className="w-4 h-4 text-primary" />{t("how.video.title")}
-          </h2>
-          <p className="text-[13px] theme-muted leading-relaxed mb-4">{t("how.video.subtitle")}</p>
-          <div className="aspect-video w-full overflow-hidden rounded-xl border border-[var(--glass-border)]">
-            <iframe
-              className="w-full h-full"
-              src={`https://www.youtube-nocookie.com/embed/${DEMO_VIDEO_YOUTUBE_ID}`}
-              title={t("how.video.title")}
-              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-              allowFullScreen
-              loading="lazy"
-            />
-          </div>
-        </GlassCard>
-      )}
 
       {/* Overview */}
       <GlassCard className="mb-8">

@@ -5,6 +5,16 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] - 2026-06-13
+
+### Removed
+
+- The **Remotion video subproject** (`video/`) and the `/how` product-tour video slot. The promotional video is hosted externally instead of being built in-repo.
+
+### Fixed
+
+- **Production build on Vercel.** The `video/` subproject (its own `package.json`, not installed on Vercel) was picked up by the app's TypeScript check and failed with `Cannot find module '@remotion/cli/config'`. Removing it restores the build. The `/how` "Use Zefer your way" channels section introduced in 0.10.0 stays.
+
 ## [0.10.0] - 2026-06-13
 
 ### Added

@@ -1416,16 +1416,6 @@ const translations = {
     en: "Create your first encrypted .zefer file in seconds.",
     pt: "Crie seu primeiro arquivo .zefer criptografado em segundos.",
   },
-  "how.video.title": {
-    es: "Mira Zefer en acción",
-    en: "See Zefer in action",
-    pt: "Veja o Zefer em ação",
-  },
-  "how.video.subtitle": {
-    es: "Un recorrido de 30 segundos: del secreto al archivo .zefer cifrado.",
-    en: "A 30-second tour: from a secret to an encrypted .zefer file.",
-    pt: "Um tour de 30 segundos: do segredo ao arquivo .zefer criptografado.",
-  },
   "how.channels.title": {
     es: "Usa Zefer a tu manera",
     en: "Use Zefer your way",

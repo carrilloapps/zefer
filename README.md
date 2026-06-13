@@ -261,10 +261,7 @@ app/
 docs/                     # Architecture, Security, Deployment, Contributing
 public/
   llms.txt                # LLM context file (llmstxt.org standard)
-video/                    # Remotion subproject — promo product-spot video (own package.json)
 ```
-
-> **Promo video.** [`video/`](video/) is a self-contained [Remotion](https://www.remotion.dev) subproject that renders Zefer's marketing product spot (16:9, en_US). It has its own dependencies — run `cd video && npm install && npm run render`. Details in [`video/README.md`](video/README.md).
 
 ## Routes
 
