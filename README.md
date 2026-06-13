@@ -9,6 +9,7 @@
 Client-side encryption tool that converts text and files into password-protected `.zefer` files using AES-256-GCM. 100% browser-based — no servers, no traces, no cookies.
 
 [![Live](https://img.shields.io/badge/Live-zefer.carrillo.app-22c55e?style=flat-square)](https://zefer.carrillo.app)
+[![Wiki](https://img.shields.io/badge/docs-Wiki-22c55e?style=flat-square&logo=github&logoColor=white)](https://github.com/carrilloapps/zefer/wiki)
 [![CLI](https://img.shields.io/npm/v/zefer-cli?style=flat-square&color=22c55e&label=CLI)](https://www.npmjs.com/package/zefer-cli)
 [![License](https://img.shields.io/github/license/carrilloapps/zefer?style=flat-square&color=22c55e)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-161%20passed-22c55e?style=flat-square)](https://github.com/carrilloapps/zefer)
@@ -410,6 +411,7 @@ Contributions are welcome! Please read the [Contributing Guide](docs/CONTRIBUTIN
 
 | Document | Description |
 |---|---|
+| [**Wiki**](https://github.com/carrilloapps/zefer/wiki) | In-depth guides with diagrams and a glossary — algorithm, security model, `.zefer` format, channels (CLI/MCP/library), tools, comparisons |
 | [Architecture](docs/ARCHITECTURE.md) | Data flow, binary format, component tree, theming |
 | [Security](docs/SECURITY.md) | Threat model, cryptographic primitives, guarantees, limitations |
 | [Deployment](docs/DEPLOYMENT.md) | Vercel, Docker, static export, self-hosting |
