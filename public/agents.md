@@ -91,7 +91,7 @@ zefer-cli includes a built-in MCP server. Configure `{ "mcpServers": { "zefer": 
 
 ## Library (programmatic API, v1.3.0+)
 
-Since v1.3.0, zefer-cli also ships a zero-side-effect programmatic entry point (published as both ESM and CommonJS; the package `"."` export resolves to the library). Import the same engine the CLI and web app use directly in Node.js: `import { encodeZefer, decodeZefer, generateWithOptions, analyzePassword } from "zefer-cli"` (or `require("zefer-cli")`). Exposed APIs: `encodeZefer`/`decodeZefer` (ZEFB3/ZEFR3), encryption/decryption primitives, chunked crypto, compression, key generation, and password analysis. So zefer-cli has three channels: **CLI**, **MCP server**, and **library** — all producing cross-compatible `.zefer` files.
+Since v1.3.0, zefer-cli also ships a zero-side-effect programmatic entry point (published as both ESM and CommonJS; the package `"."` export resolves to the library). Import the same engine the CLI and web app use directly in Node.js: `import { encodeZefer, decodeZefer, generateWithOptions, analyzePassword } from "zefer-cli"` (or `require("zefer-cli")`). Key signatures: `encodeZefer(options)` → `Promise<Buffer>`, `decodeZefer(input, passphrase, options)` → `Promise<{ ok, payload }>`, `generateWithOptions(mode, length, options)` → `string`, `analyzePassword(password)` → report. The library never auto-benchmarks — always pass an explicit `iterations`. So zefer-cli has three channels: **CLI**, **MCP server**, and **library** — all producing cross-compatible `.zefer` files. Web guide: https://zefer.carrillo.app/library · API reference: https://github.com/carrilloapps/zefer-cli/blob/main/docs/LIBRARY.md
 
 ## Binary File Format
 

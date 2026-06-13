@@ -85,7 +85,7 @@ zefer info secret.zefer
 import { encodeZefer, decodeZefer, generateWithOptions, analyzePassword } from "zefer-cli";
 ```
 
-In total, zefer-cli runs three ways: **CLI**, **MCP server** (`zefer mcp`), and **library** — all producing cross-compatible `.zefer` files.
+In total, zefer-cli runs three ways: **CLI**, **MCP server** (`zefer mcp`), and **library** — all producing cross-compatible `.zefer` files. Full library guide: [zefer.carrillo.app/library](https://zefer.carrillo.app/library).
 
 [![npm](https://img.shields.io/npm/v/zefer-cli?style=flat-square&color=22c55e)](https://www.npmjs.com/package/zefer-cli)
 [![CLI repo](https://img.shields.io/badge/GitHub-zefer--cli-181717?style=flat-square&logo=github)](https://github.com/carrilloapps/zefer-cli)
@@ -272,6 +272,7 @@ public/
 | `/generator` | Static | Yes | Advanced password generator + analyzer — entropy, attack scenarios, security framework, copy/download |
 | `/analyzer` | Static | Yes | `.zefer` file inspector — public header without the passphrase |
 | `/mcp` | Static | Yes | zefer-cli as MCP server — setup, per-tool accordions, 5 tools, example call |
+| `/library` | Static | Yes | zefer-cli as a Node.js library (v1.3.0+) — install, ESM/CJS import, API, examples |
 | `/project` | Static | Yes | Project info, tech stack, creator, donate |
 | `/device` | Static | Yes | Device detection details + optimization guide |
 | `/install` | Static | Yes | Usage guide, self-hosting, PWA, native apps |

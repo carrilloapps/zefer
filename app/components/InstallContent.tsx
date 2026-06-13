@@ -269,6 +269,7 @@ function CodeBlock({ code }: { code: string }) {
 function CliSection({ t }: { t: (k: TranslationKey) => string }) {
   const [openPlatform, setOpenPlatform] = useState<string | null>(null);
   const [openNpm, setOpenNpm] = useState(true); // npm is the recommended option — open by default
+  const [openLib, setOpenLib] = useState(false);
 
   return (
     <GlassCard className="mb-8">
@@ -404,6 +405,40 @@ function CliSection({ t }: { t: (k: TranslationKey) => string }) {
               <p className="text-[10px] theme-faint mb-1.5">{t("install.cli.npx")}</p>
               <CodeBlock code="npx zefer-cli encrypt report.pdf -p mypassword" />
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Option 3: library ── */}
+      <div className="border-t border-[var(--border-subtle)] pt-3 mt-3">
+        <button
+          type="button"
+          onClick={() => setOpenLib((v) => !v)}
+          className="w-full flex items-center gap-2 mb-2 cursor-pointer group"
+          aria-expanded={openLib}
+        >
+          <span className="w-5 h-5 rounded-full bg-[var(--glass-bg)] border border-[var(--glass-border)] flex items-center justify-center shrink-0 group-hover:border-[var(--primary-border)] transition-colors">
+            <span className="text-[9px] font-bold theme-faint group-hover:text-primary transition-colors">3</span>
+          </span>
+          <span className="text-xs font-semibold theme-heading flex-1 text-left">{t("install.cli.lib.title")}</span>
+          <span className="text-[9px] theme-faint">{t("install.cli.lib.req")}</span>
+          <ChevronDown className={`w-3.5 h-3.5 theme-faint ml-2 shrink-0 transition-transform duration-200 ${openLib ? "rotate-180" : ""}`} />
+        </button>
+
+        <div className={`advanced-panel ${openLib ? "advanced-open" : ""}`}>
+          <div className="ml-7 pb-2 space-y-3">
+            <p className="text-[10px] theme-faint leading-relaxed">{t("install.cli.lib.desc")}</p>
+            <div>
+              <p className="text-[10px] theme-faint mb-1.5">ESM:</p>
+              <CodeBlock code={`import { encodeZefer, decodeZefer, generateWithOptions, analyzePassword } from "zefer-cli";`} />
+            </div>
+            <div>
+              <p className="text-[10px] theme-faint mb-1.5">CommonJS:</p>
+              <CodeBlock code={`const { encodeZefer, analyzePassword } = require("zefer-cli");`} />
+            </div>
+            <Link href="/library" className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline">
+              {t("install.cli.lib.more")} <ArrowRight className="w-2.5 h-2.5" />
+            </Link>
           </div>
         </div>
       </div>

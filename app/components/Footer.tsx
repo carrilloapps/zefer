@@ -34,6 +34,7 @@ export default function Footer() {
               <li><Link href="/generator" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("nav.generator")}</Link></li>
               <li><Link href="/analyzer" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("nav.analyzer")}</Link></li>
               <li><Link href="/mcp" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("nav.mcp")}</Link></li>
+              <li><Link href="/library" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("nav.library")}</Link></li>
               <li><Link href="/device" className="text-xs theme-faint hover:theme-text transition-colors duration-200 cursor-pointer">{t("footer.product.device")}</Link></li>
             </ul>
           </div>

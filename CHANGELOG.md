@@ -5,6 +5,16 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-06-12
+
+### Added
+
+- **New `/library` page** — a dedicated, indexable page for the **library channel**: what it is, install, ESM/CommonJS import, the exposed API with real signatures (`encodeZefer`, `decodeZefer`, `generateWithOptions`, `analyzePassword`), runnable examples (encrypt, decrypt, keygen + analyze), important notes (no auto-benchmark, in-memory, cross-compatibility) and CTAs. Includes `BreadcrumbList` + `FAQPage` JSON-LD. This completes the three channels — **CLI** (documented in `/install`), **MCP server** (`/mcp`) and **library** (`/library`) — each correctly located.
+- **`/install`: "As a library" option** — the CLI section now documents the third way to use zefer-cli alongside the standalone binary and npm, with ESM/CommonJS examples and a link to the full `/library` guide.
+- **Home "Resources & documentation"** now surfaces all channels: added a **CLI** chip (→ `/install`) and a **Library** chip (→ `/library`) next to MCP. The main nav still highlights only MCP by design.
+- **Footer** product column gains a **Library** link.
+- AI/LLM docs aligned: `llms.txt`, `AGENTS.md`, `agents.md`, `CLAUDE.md` and `README.md` document the library API signatures and link to `/library`.
+
 ## [0.8.1] - 2026-06-12
 
 ### Fixed
