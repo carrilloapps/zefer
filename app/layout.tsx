@@ -177,7 +177,7 @@ export default function RootLayout({
                 url: "https://carrillo.app",
               },
               license: "https://opensource.org/licenses/MIT",
-              softwareVersion: "0.9.1",
+              softwareVersion: "0.10.0",
               inLanguage: ["en", "es", "pt"],
               isAccessibleForFree: true,
               installUrl: "https://zefer.carrillo.app/install",

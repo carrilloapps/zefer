@@ -5,6 +5,15 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-06-13
+
+### Added
+
+- **Product-tour video subproject** (`video/`) — a self-contained [Remotion](https://www.remotion.dev) project that renders a 16:9, ~34s **en_US** product spot: brand intro, "what is Zefer", an animated interactive UI demo (cursor types a secret, sets a passphrase, clicks Encrypt, an AES-256-GCM progress bar runs, a `.zefer` file is "downloaded"), a feature grid, channels + terminal, and a CTA. It mirrors the web app's design system — **Geist / Geist Mono** type and the **lucide-react** icon set — with a modular `src/` (lib/components/scenes). Its own `package.json` keeps the app's deps clean. The rendered MP4 is distributed via YouTube and stays out of the repo (`out/` is git-ignored); only the source is versioned.
+- **`/how`: "Use Zefer your way" section** — cards for the four channels (Web app, CLI, MCP server, Node.js library) linking to `/`, `/install`, `/mcp` and `/library`, reinforcing that every channel shares the same engine and `.zefer` format.
+- **`/how`: product-tour video slot** — a modern, responsive YouTube embed that appears once a video ID is configured (hidden otherwise, so the live page stays clean).
+- README now references the `video/` subproject and how to render it.
+
 ## [0.9.1] - 2026-06-13
 
 ### Added
