@@ -1416,6 +1416,50 @@ const translations = {
     en: "Create your first encrypted .zefer file in seconds.",
     pt: "Crie seu primeiro arquivo .zefer criptografado em segundos.",
   },
+  "how.video.title": {
+    es: "Mira Zefer en acción",
+    en: "See Zefer in action",
+    pt: "Veja o Zefer em ação",
+  },
+  "how.video.subtitle": {
+    es: "Un recorrido de 30 segundos: del secreto al archivo .zefer cifrado.",
+    en: "A 30-second tour: from a secret to an encrypted .zefer file.",
+    pt: "Um tour de 30 segundos: do segredo ao arquivo .zefer criptografado.",
+  },
+  "how.channels.title": {
+    es: "Usa Zefer a tu manera",
+    en: "Use Zefer your way",
+    pt: "Use o Zefer do seu jeito",
+  },
+  "how.channels.desc": {
+    es: "El mismo motor de cifrado y el mismo formato .zefer en todos los canales — los archivos son 100% compatibles entre ellos.",
+    en: "The same encryption engine and the same .zefer format across every channel — files are 100% compatible between them.",
+    pt: "O mesmo motor de criptografia e o mesmo formato .zefer em todos os canais — os arquivos são 100% compatíveis entre si.",
+  },
+  "how.channels.web.title": { es: "App web", en: "Web app", pt: "App web" },
+  "how.channels.web.desc": {
+    es: "Cifra y descifra en tu navegador, sin instalar nada.",
+    en: "Encrypt and decrypt in your browser — nothing to install.",
+    pt: "Criptografe e descriptografe no navegador, sem instalar nada.",
+  },
+  "how.channels.cli.title": { es: "Línea de comandos", en: "Command line", pt: "Linha de comando" },
+  "how.channels.cli.desc": {
+    es: "zefer-cli para scripts, automatización y CI. npm o binario independiente.",
+    en: "zefer-cli for scripts, automation and CI. npm or a standalone binary.",
+    pt: "zefer-cli para scripts, automação e CI. npm ou binário independente.",
+  },
+  "how.channels.mcp.title": { es: "Servidor MCP", en: "MCP server", pt: "Servidor MCP" },
+  "how.channels.mcp.desc": {
+    es: "Deja que agentes de IA cifren, descifren y analicen vía Model Context Protocol.",
+    en: "Let AI agents encrypt, decrypt and analyze via the Model Context Protocol.",
+    pt: "Deixe que agentes de IA criptografem, descriptografem e analisem via Model Context Protocol.",
+  },
+  "how.channels.lib.title": { es: "Librería Node.js", en: "Node.js library", pt: "Biblioteca Node.js" },
+  "how.channels.lib.desc": {
+    es: "Importa el mismo motor en tu código (ESM y CommonJS) desde la v1.3.0.",
+    en: "Import the same engine into your code (ESM and CommonJS) since v1.3.0.",
+    pt: "Importe o mesmo motor no seu código (ESM e CommonJS) desde a v1.3.0.",
+  },
 
   // How — features section
   "how.features.title": {

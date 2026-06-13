@@ -14,9 +14,18 @@ import {
   Settings,
   Cpu,
   Globe,
+  Terminal,
+  Plug,
+  Library,
+  Boxes,
+  PlayCircle,
 } from "lucide-react";
 import { PageLayout, PageHeader, IconBox, SectionCard, GlassCard } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
+
+// Paste the product-tour YouTube video ID here to show it on /how (the section
+// stays hidden until an ID is set). Example: "dQw4w9WgXcQ".
+const DEMO_VIDEO_YOUTUBE_ID = "";
 
 const SPECS = [
   { key: "how.tech.algorithm" as const, value: "AES-256-GCM" },
@@ -54,9 +63,36 @@ export default function HowContent() {
     { icon: Shield, titleKey: "how.feat.keygen.title" as const, descKey: "how.feat.keygen.desc" as const },
   ];
 
+  const channels = [
+    { icon: Globe, titleKey: "how.channels.web.title" as const, descKey: "how.channels.web.desc" as const, href: "/" },
+    { icon: Terminal, titleKey: "how.channels.cli.title" as const, descKey: "how.channels.cli.desc" as const, href: "/install" },
+    { icon: Plug, titleKey: "how.channels.mcp.title" as const, descKey: "how.channels.mcp.desc" as const, href: "/mcp" },
+    { icon: Library, titleKey: "how.channels.lib.title" as const, descKey: "how.channels.lib.desc" as const, href: "/library" },
+  ];
+
   return (
     <PageLayout>
       <PageHeader icon={Shield} badge={t("steps.title")} title={t("steps.title")} subtitle={t("how.subtitle")} />
+
+      {/* Product-tour video (shown only once a YouTube ID is configured above) */}
+      {DEMO_VIDEO_YOUTUBE_ID && (
+        <GlassCard className="mb-8">
+          <h2 className="text-sm font-semibold theme-heading mb-1 flex items-center gap-2">
+            <PlayCircle className="w-4 h-4 text-primary" />{t("how.video.title")}
+          </h2>
+          <p className="text-[13px] theme-muted leading-relaxed mb-4">{t("how.video.subtitle")}</p>
+          <div className="aspect-video w-full overflow-hidden rounded-xl border border-[var(--glass-border)]">
+            <iframe
+              className="w-full h-full"
+              src={`https://www.youtube-nocookie.com/embed/${DEMO_VIDEO_YOUTUBE_ID}`}
+              title={t("how.video.title")}
+              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+              allowFullScreen
+              loading="lazy"
+            />
+          </div>
+        </GlassCard>
+      )}
 
       {/* Overview */}
       <GlassCard className="mb-8">
@@ -149,6 +185,29 @@ export default function HowContent() {
         <Link href="/generator" className="inline-flex items-center gap-1.5 mt-5 text-xs text-primary hover:opacity-80 transition-opacity cursor-pointer">
           {t("gen.title")} <ArrowRight className="w-3.5 h-3.5" />
         </Link>
+      </GlassCard>
+
+      {/* Channels — the same engine and .zefer format everywhere */}
+      <GlassCard className="mb-8">
+        <h2 className="text-sm font-semibold theme-heading mb-2 flex items-center gap-2">
+          <Boxes className="w-4 h-4 text-primary" />{t("how.channels.title")}
+        </h2>
+        <p className="text-xs theme-muted mb-5 leading-relaxed">{t("how.channels.desc")}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {channels.map((c) => (
+            <Link key={c.href} href={c.href} className="glass glass-hover !rounded-xl p-4 transition-all duration-300 block cursor-pointer">
+              <div className="flex items-start gap-3">
+                <IconBox icon={c.icon} size="sm" />
+                <div>
+                  <h3 className="text-xs font-semibold theme-heading mb-1 flex items-center gap-1.5">
+                    {t(c.titleKey)} <ArrowRight className="w-3 h-3 text-primary" />
+                  </h3>
+                  <p className="text-[11px] theme-muted leading-relaxed">{t(c.descKey)}</p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </GlassCard>
 
       {/* CTA */}
