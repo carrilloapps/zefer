@@ -5,7 +5,7 @@ import { pageMetadata } from "@/app/lib/seo";
 export const metadata: Metadata = pageMetadata({
   path: "/privacy",
   index: false,
-  title: "Privacy Policy",
+  title: "Privacy Policy — Zero-Knowledge, No Tracking",
   description:
     "Zefer privacy policy. Zero-knowledge architecture, no data collection, no cookies, no trackers. GDPR, CCPA, and LGPD compliant.",
   keywords: ["privacy policy", "zero knowledge", "no data collection", "GDPR compliant", "CCPA compliant", "LGPD compliant"],

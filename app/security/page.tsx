@@ -8,7 +8,7 @@ const siteUrl = "https://zefer.carrillo.app";
 export const metadata: Metadata = pageMetadata({
   path: "/security",
   index: false,
-  title: "Security Policy",
+  title: "Security Policy — Vulnerability Reporting",
   description:
     "Zefer security policy. How to report vulnerabilities, supported versions, security architecture, and responsible disclosure guidelines.",
   keywords: [
