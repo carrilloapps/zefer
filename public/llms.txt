@@ -360,7 +360,13 @@ import { encodeZefer, decodeZefer, generateWithOptions, analyzePassword } from "
 const { encodeZefer, analyzePassword } = require("zefer-cli");
 ```
 
-Exposed APIs: `encodeZefer` / `decodeZefer` (ZEFB3/ZEFR3 encode/decode), encryption & decryption primitives, chunked crypto, compression, key generation (`generateWithOptions`), and `analyzePassword`. Files produced this way stay fully cross-compatible with the web app and the CLI.
+Exposed APIs:
+- `encodeZefer(options)` → `Promise<Buffer>` — encrypt text/files into ZEFB3/ZEFR3 (options: content | fileData, fileName, fileType, passphrase, expiresAt, compression, iterations)
+- `decodeZefer(input, passphrase, options)` → `Promise<{ ok, payload }>` — decrypt a .zefer file (`options.rawBytes` for binary input)
+- `generateWithOptions(mode, length, options)` → `string` — scored key, 7 modes (unicode|secure|alpha|hex|base58|pin|uuid)
+- `analyzePassword(password)` → report (score, entropy, keyspace, NIST/OWASP/AES-128/post-quantum compliance, crack times)
+
+Notes: the library never auto-benchmarks — always pass an explicit `iterations`. Files produced this way stay fully cross-compatible with the web app and the CLI. Full guide: https://zefer.carrillo.app/library — API reference: https://github.com/carrilloapps/zefer-cli/blob/main/docs/LIBRARY.md
 
 ---
 
@@ -368,6 +374,8 @@ Exposed APIs: `encodeZefer` / `decodeZefer` (ZEFB3/ZEFR3 encode/decode), encrypt
 
 - [How It Works](https://zefer.carrillo.app/how): 7-step encryption process, technical specs
 - [Install / CLI](https://zefer.carrillo.app/install): Binary downloads, npm install, PWA
+- [Library](https://zefer.carrillo.app/library): Programmatic Node.js API — encodeZefer, decodeZefer, generateWithOptions, analyzePassword (ESM & CommonJS)
+- [MCP Server](https://zefer.carrillo.app/mcp): Use Zefer from AI agents via the Model Context Protocol
 - [Privacy Policy](https://zefer.carrillo.app/privacy): GDPR/CCPA/LGPD compliance
 - [Security Policy](https://zefer.carrillo.app/security): Vulnerability reporting, crypto architecture
 - [Project Info](https://zefer.carrillo.app/project): Tech stack, creator
