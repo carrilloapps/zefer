@@ -5,6 +5,16 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.1] - 2026-06-13
+
+### Added
+
+- **OpenGraph MCP integration** — `opengraph-mcp` (opengraph.to) added to `.mcp.json` so agents can inspect OG/Twitter tags and scores. Includes `scripts/og-review.mjs` (drives any OG MCP over stdio) and `scripts/og-audit.mjs` (offline OG/SEO compliance audit over the prerendered HTML).
+
+### Fixed
+
+- **100/100 OpenGraph/SEO compliance on every page** — lengthened the titles of the noindex legal pages (`/privacy`, `/security`, `/conduct`) so all 19 pages pass the full OG/Twitter/title/description/favicon/H1 checklist (was 99.2/100 avg; the three noindex pages had short titles).
+
 ## [0.9.0] - 2026-06-12
 
 ### Added

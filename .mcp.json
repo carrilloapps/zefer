@@ -25,6 +25,14 @@
         "skill-rules@0.3.0",
         "mcp"
       ]
+    },
+    "opengraph": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "opengraph-mcp"
+      ]
     }
   }
 }

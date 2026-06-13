@@ -8,7 +8,7 @@ const siteUrl = "https://zefer.carrillo.app";
 export const metadata: Metadata = pageMetadata({
   path: "/conduct",
   index: false,
-  title: "Code of Conduct",
+  title: "Code of Conduct — Contributor Covenant",
   description:
     "Zefer community code of conduct. Our pledge to maintain a welcoming, inclusive, and harassment-free environment for all contributors.",
   keywords: [
