@@ -209,15 +209,24 @@ export default function EncryptForm() {
 
   async function handleShareFile() {
     if (!zeferFile) return;
+    // Only the file travels here — never the passphrase (different channel by design).
+    // Several platforms accept files OR text, but reject files + title/text together,
+    // so add the text only when canShare() confirms the exact payload is supported.
+    const fileOnly: ShareData = { files: [zeferFile] };
+    const withText: ShareData = {
+      ...fileOnly,
+      title: t("encrypt.success.file.share.title"),
+      text: t("encrypt.success.file.share.text"),
+    };
+    const payload = navigator.canShare?.(withText) ? withText : fileOnly;
     try {
-      // Only the file travels here — never the passphrase (different channel by design)
-      await navigator.share({
-        files: [zeferFile],
-        title: t("encrypt.success.file.share.title"),
-        text: t("encrypt.success.file.share.text"),
-      });
-    } catch {
-      // User dismissed the native sheet or sharing failed — download stays available
+      await navigator.share(payload);
+    } catch (err) {
+      // AbortError = user dismissed the sheet (not a failure). Surface anything else
+      // so it isn't silent — the Download button remains as the reliable fallback.
+      if ((err as Error)?.name !== "AbortError") {
+        notifyError(t("toast.share.failed"));
+      }
     }
   }
 

@@ -1211,6 +1211,11 @@ const translations = {
     en: "An error occurred. Please try again.",
     pt: "Ocorreu um erro. Tente novamente.",
   },
+  "toast.share.failed": {
+    es: "No se pudo compartir. Usa el botón de descargar.",
+    en: "Couldn't share. Use the download button instead.",
+    pt: "Não foi possível compartilhar. Use o botão de baixar.",
+  },
   "toast.keygen.copied": {
     es: "Clave copiada al portapapeles",
     en: "Key copied to clipboard",
