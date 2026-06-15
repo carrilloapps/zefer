@@ -413,6 +413,11 @@ const translations = {
     en: "Encrypted .zefer file. You'll need the passphrase (sent separately) to decrypt it.",
     pt: "Arquivo .zefer criptografado. Você precisará da frase-chave (enviada separadamente) para descriptografá-lo.",
   },
+  "encrypt.success.file.unsupported": {
+    es: "Tu navegador no admite compartir archivos. Usa el botón Descargar.",
+    en: "Your browser doesn't support sharing files. Use the Download button.",
+    pt: "Seu navegador não suporta compartilhar arquivos. Use o botão Baixar.",
+  },
   "encrypt.success.separate": {
     es: "Por seguridad, envía el archivo y la frase clave por canales distintos (por ejemplo, el archivo por correo y la clave por otra app).",
     en: "For security, send the file and the passphrase through different channels (for example, the file by email and the key via another app).",
@@ -1210,11 +1215,6 @@ const translations = {
     es: "Ha ocurrido un error. Inténtalo de nuevo.",
     en: "An error occurred. Please try again.",
     pt: "Ocorreu um erro. Tente novamente.",
-  },
-  "toast.share.failed": {
-    es: "No se pudo compartir. Usa el botón de descargar.",
-    en: "Couldn't share. Use the download button instead.",
-    pt: "Não foi possível compartilhar. Use o botão de baixar.",
   },
   "toast.keygen.copied": {
     es: "Clave copiada al portapapeles",

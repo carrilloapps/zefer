@@ -188,6 +188,8 @@ export default function EncryptForm() {
   // is safe — and it is deliberately separate from the passphrase channel.
   const [zeferFile, setZeferFile] = useState<File | null>(null);
   const [canShareFiles, setCanShareFiles] = useState(false);
+  // Tooltip shown when tapping the disabled "send file" button (no browser support)
+  const [shareTipOpen, setShareTipOpen] = useState(false);
   // Native Web Share API support for text/URL — detected on the client (SSR-safe)
   const [canShare, setCanShare] = useState(false);
   useEffect(() => {
@@ -221,12 +223,8 @@ export default function EncryptForm() {
     const payload = navigator.canShare?.(withText) ? withText : fileOnly;
     try {
       await navigator.share(payload);
-    } catch (err) {
-      // AbortError = user dismissed the sheet (not a failure). Surface anything else
-      // so it isn't silent — the Download button remains as the reliable fallback.
-      if ((err as Error)?.name !== "AbortError") {
-        notifyError(t("toast.share.failed"));
-      }
+    } catch {
+      // User dismissed the native sheet or sharing failed — Download stays available
     }
   }
 
@@ -472,7 +470,7 @@ export default function EncryptForm() {
     setTextFileName(null); setFileName(null); setFileData(null);
     setFileType(null); setFileSize(0);
     setError(null); setDone(false); setShareLink(null); setLinkCopied(false);
-    setZeferFile(null); setCanShareFiles(false);
+    setZeferFile(null); setCanShareFiles(false); setShareTipOpen(false);
     setHint(""); setNote(""); setQuestion("");
     setQuestionAnswer(""); setMaxAttempts(0);
     setDualKey(false);
@@ -522,7 +520,7 @@ export default function EncryptForm() {
               <Download className="w-3.5 h-3.5 text-primary" />
               {t("encrypt.success.file.download")}
             </button>
-            {canShareFiles && (
+            {canShareFiles ? (
               <button
                 type="button"
                 onClick={handleShareFile}
@@ -532,6 +530,26 @@ export default function EncryptForm() {
                 <Share2 className="w-3.5 h-3.5 text-primary" />
                 {t("encrypt.success.file.send")}
               </button>
+            ) : (
+              <span
+                className={`info-tip flex-1 ${shareTipOpen ? "info-tip-open" : ""}`}
+                onMouseLeave={() => setShareTipOpen(false)}
+              >
+                <button
+                  type="button"
+                  aria-disabled="true"
+                  onClick={() => setShareTipOpen((o) => !o)}
+                  onBlur={() => setShareTipOpen(false)}
+                  className="w-full flex items-center justify-center gap-2 glass px-3 py-2.5 rounded-lg cursor-help opacity-50 transition-colors text-xs font-medium theme-heading"
+                  aria-label={t("encrypt.success.file.unsupported")}
+                >
+                  <Share2 className="w-3.5 h-3.5 theme-faint" />
+                  {t("encrypt.success.file.send")}
+                </button>
+                <span role="tooltip" className="info-tip-bubble tip-right">
+                  {t("encrypt.success.file.unsupported")}
+                </span>
+              </span>
             )}
           </div>
         </div>
