@@ -25,6 +25,7 @@ import {
   Globe,
   Copy,
   Link2,
+  Share2,
 } from "lucide-react";
 import { encodeZefer } from "@/app/lib/zefer";
 import { parseIpList, detectIp, type IpDetectionResult } from "@/app/lib/ip";
@@ -182,6 +183,24 @@ export default function EncryptForm() {
   const [progress, setProgress] = useState<ProgressState | null>(null);
   const [shareLink, setShareLink] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
+  // Native Web Share API support — detected on the client to stay SSR-safe
+  const [canShare, setCanShare] = useState(false);
+  useEffect(() => {
+    setCanShare(typeof navigator !== "undefined" && typeof navigator.share === "function");
+  }, []);
+
+  async function handleShareLink() {
+    if (!shareLink) return;
+    try {
+      await navigator.share({
+        title: t("encrypt.success.link.share.title"),
+        text: t("encrypt.success.link.share.text"),
+        url: shareLink,
+      });
+    } catch {
+      // User dismissed the native sheet or sharing failed — copy stays available as fallback
+    }
+  }
 
   // Text mode: STRICTLY .txt / .env only
   function handleTextFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -448,6 +467,16 @@ export default function EncryptForm() {
             <p className="text-[11px] theme-muted mb-3">{t("encrypt.success.link.desc")}</p>
             <div className="flex gap-2">
               <code className="flex-1 text-[11px] font-mono text-primary theme-primary-faint rounded-lg px-3 py-2 overflow-x-auto whitespace-nowrap">{shareLink}</code>
+              {canShare && (
+                <button
+                  type="button"
+                  onClick={handleShareLink}
+                  className="shrink-0 glass px-3 py-2 rounded-lg cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors"
+                  aria-label={t("aria.sharelink")}
+                >
+                  <Share2 className="w-3.5 h-3.5 theme-muted" />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => { navigator.clipboard.writeText(shareLink); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000); }}

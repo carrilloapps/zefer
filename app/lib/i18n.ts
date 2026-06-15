@@ -141,6 +141,11 @@ const translations = {
     en: "Copy link",
     pt: "Copiar link",
   },
+  "aria.sharelink": {
+    es: "Compartir enlace",
+    en: "Share link",
+    pt: "Compartilhar link",
+  },
   "aria.removefile": {
     es: "Quitar archivo",
     en: "Remove file",
@@ -362,6 +367,16 @@ const translations = {
     es: "Este enlace incluye la frase clave. Compártelo solo por canales seguros. Disponible porque el archivo tiene expiración.",
     en: "This link includes the passphrase. Share it only through secure channels. Available because the file has an expiration.",
     pt: "Este link inclui a frase-chave. Compartilhe apenas por canais seguros. Disponível porque o arquivo tem expiração.",
+  },
+  "encrypt.success.link.share.title": {
+    es: "Secreto cifrado con Zefer",
+    en: "Secret encrypted with Zefer",
+    pt: "Segredo criptografado com Zefer",
+  },
+  "encrypt.success.link.share.text": {
+    es: "Abre este enlace para descifrar el secreto. Incluye la frase clave, compártelo solo por canales seguros.",
+    en: "Open this link to decrypt the secret. It includes the passphrase, so share it only through secure channels.",
+    pt: "Abra este link para descriptografar o segredo. Inclui a frase-chave, compartilhe apenas por canais seguros.",
   },
   "encrypt.another": {
     es: "Cifrar otro secreto",
