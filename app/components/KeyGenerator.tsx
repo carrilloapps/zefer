@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, Copy, Check, RefreshCw, Hash } from "lucide-react";
+import { Sparkles, Copy, Check, RefreshCw, Hash, Share2 } from "lucide-react";
 import { useLanguage } from "@/app/components/LanguageProvider";
 import { notifySuccess } from "@/app/lib/notify";
 
@@ -26,6 +26,11 @@ export default function KeyGenerator({ onSelect, savedMode, savedLength, onModeC
   const [length, setLengthLocal] = useState(savedLength ?? 64);
   const [value, setValue] = useState("");
   const [copied, setCopied] = useState(false);
+  // Native Web Share API support — detected on the client (SSR-safe)
+  const [canShare, setCanShare] = useState(false);
+  useEffect(() => {
+    setCanShare(typeof navigator !== "undefined" && typeof navigator.share === "function");
+  }, []);
   const [regenKey, setRegenKey] = useState(0);
 
   const setMode = (v: Mode) => { setModeLocal(v); onModeChange?.(v); };
@@ -71,6 +76,14 @@ export default function KeyGenerator({ onSelect, savedMode, savedLength, onModeC
     setCopied(true);
     notifySuccess(t("toast.keygen.copied"));
     setTimeout(() => setCopied(false), 1500);
+  }
+
+  async function handleShare() {
+    try {
+      await navigator.share({ text: value });
+    } catch {
+      // User dismissed the native sheet or sharing failed — copy stays available
+    }
   }
 
   const isUuid = mode === "uuid";
@@ -142,6 +155,11 @@ export default function KeyGenerator({ onSelect, savedMode, savedLength, onModeC
               }`}>
                 {value}
               </p>
+              {canShare && (
+                <button type="button" onClick={handleShare} className="w-8 h-8 flex items-center justify-center rounded-md theme-faint hover:theme-muted transition-colors cursor-pointer shrink-0" aria-label={t("aria.share")} title={t("aria.share")}>
+                  <Share2 className="w-3.5 h-3.5" />
+                </button>
+              )}
               <button type="button" onClick={handleCopy} className="w-8 h-8 flex items-center justify-center rounded-md theme-faint hover:theme-muted transition-colors cursor-pointer shrink-0" aria-label={t("aria.copy")} title={t("aria.copy")}>
                 {copied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
               </button>

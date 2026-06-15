@@ -183,7 +183,12 @@ export default function EncryptForm() {
   const [progress, setProgress] = useState<ProgressState | null>(null);
   const [shareLink, setShareLink] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
-  // Native Web Share API support — detected on the client to stay SSR-safe
+  // The encrypted .zefer kept in memory so it can be shared as a file after
+  // the automatic download. It is ciphertext, never a secret, so holding it
+  // is safe — and it is deliberately separate from the passphrase channel.
+  const [zeferFile, setZeferFile] = useState<File | null>(null);
+  const [canShareFiles, setCanShareFiles] = useState(false);
+  // Native Web Share API support for text/URL — detected on the client (SSR-safe)
   const [canShare, setCanShare] = useState(false);
   useEffect(() => {
     setCanShare(typeof navigator !== "undefined" && typeof navigator.share === "function");
@@ -200,6 +205,35 @@ export default function EncryptForm() {
     } catch {
       // User dismissed the native sheet or sharing failed — copy stays available as fallback
     }
+  }
+
+  async function handleShareFile() {
+    if (!zeferFile) return;
+    try {
+      // Only the file travels here — never the passphrase (different channel by design)
+      await navigator.share({
+        files: [zeferFile],
+        title: t("encrypt.success.file.share.title"),
+        text: t("encrypt.success.file.share.text"),
+      });
+    } catch {
+      // User dismissed the native sheet or sharing failed — download stays available
+    }
+  }
+
+  // Re-download the encrypted file on demand. The file already auto-downloads
+  // after encryption; this keeps download available as the baseline option
+  // alongside (or instead of) native sharing.
+  function downloadZefer() {
+    if (!zeferFile) return;
+    const url = URL.createObjectURL(zeferFile);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = zeferFile.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   // Text mode: STRICTLY .txt / .env only
@@ -375,15 +409,26 @@ export default function EncryptForm() {
       tracker.packaging();
 
       // zefer is already a Blob
+      const baseName = (inputMode === "file" ? fileName : textFileName)?.replace(/\.[^.]+$/, "") || "secret";
+      const zeferName = baseName + ".zefer";
       const url = URL.createObjectURL(zefer);
       const a = document.createElement("a");
       a.href = url;
-      const baseName = (inputMode === "file" ? fileName : textFileName)?.replace(/\.[^.]+$/, "") || "secret";
-      a.download = baseName + ".zefer";
+      a.download = zeferName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+
+      // Keep the encrypted file so it can be shared natively (e.g. WhatsApp,
+      // Telegram, Slack, email) through the OS share sheet — separate from the key.
+      const file = new File([zefer], zeferName, { type: "application/octet-stream" });
+      setZeferFile(file);
+      setCanShareFiles(
+        typeof navigator !== "undefined" &&
+        typeof navigator.canShare === "function" &&
+        navigator.canShare({ files: [file] })
+      );
 
       tracker.done();
       await new Promise((r) => setTimeout(r, 500));
@@ -418,6 +463,7 @@ export default function EncryptForm() {
     setTextFileName(null); setFileName(null); setFileData(null);
     setFileType(null); setFileSize(0);
     setError(null); setDone(false); setShareLink(null); setLinkCopied(false);
+    setZeferFile(null); setCanShareFiles(false);
     setHint(""); setNote(""); setQuestion("");
     setQuestionAnswer(""); setMaxAttempts(0);
     setDualKey(false);
@@ -457,7 +503,37 @@ export default function EncryptForm() {
             <Download className="w-4 h-4 theme-faint shrink-0 mt-0.5" />
             <p className="text-[13px] theme-muted leading-relaxed">{t("encrypt.success.desc")}</p>
           </div>
+          <div className="flex gap-2 mt-3">
+            <button
+              type="button"
+              onClick={downloadZefer}
+              className="flex-1 flex items-center justify-center gap-2 glass px-3 py-2.5 rounded-lg cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors text-xs font-medium theme-heading"
+              aria-label={t("aria.downloadfile")}
+            >
+              <Download className="w-3.5 h-3.5 text-primary" />
+              {t("encrypt.success.file.download")}
+            </button>
+            {canShareFiles && (
+              <button
+                type="button"
+                onClick={handleShareFile}
+                className="flex-1 flex items-center justify-center gap-2 glass px-3 py-2.5 rounded-lg cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors text-xs font-medium theme-heading"
+                aria-label={t("aria.sharefile")}
+              >
+                <Share2 className="w-3.5 h-3.5 text-primary" />
+                {t("encrypt.success.file.send")}
+              </button>
+            )}
+          </div>
         </div>
+        {(canShareFiles || shareLink) && (
+          <div className="glass !rounded-xl p-4 mb-5 theme-warning-faint">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-4 h-4 theme-warning shrink-0 mt-0.5" />
+              <p className="text-[12px] theme-muted leading-relaxed">{t("encrypt.success.separate")}</p>
+            </div>
+          </div>
+        )}
         {shareLink && (
           <div className="glass !rounded-xl p-4 mb-5 animate-in">
             <div className="flex items-center gap-2 mb-2">

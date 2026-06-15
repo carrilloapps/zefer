@@ -146,6 +146,21 @@ const translations = {
     en: "Share link",
     pt: "Compartilhar link",
   },
+  "aria.share": {
+    es: "Compartir",
+    en: "Share",
+    pt: "Compartilhar",
+  },
+  "aria.sharefile": {
+    es: "Enviar archivo cifrado",
+    en: "Send encrypted file",
+    pt: "Enviar arquivo criptografado",
+  },
+  "aria.downloadfile": {
+    es: "Descargar archivo cifrado",
+    en: "Download encrypted file",
+    pt: "Baixar arquivo criptografado",
+  },
   "aria.removefile": {
     es: "Quitar archivo",
     en: "Remove file",
@@ -377,6 +392,31 @@ const translations = {
     es: "Abre este enlace para descifrar el secreto. Incluye la frase clave, compártelo solo por canales seguros.",
     en: "Open this link to decrypt the secret. It includes the passphrase, so share it only through secure channels.",
     pt: "Abra este link para descriptografar o segredo. Inclui a frase-chave, compartilhe apenas por canais seguros.",
+  },
+  "encrypt.success.file.download": {
+    es: "Descargar",
+    en: "Download",
+    pt: "Baixar",
+  },
+  "encrypt.success.file.send": {
+    es: "Enviar",
+    en: "Send",
+    pt: "Enviar",
+  },
+  "encrypt.success.file.share.title": {
+    es: "Archivo cifrado con Zefer",
+    en: "File encrypted with Zefer",
+    pt: "Arquivo criptografado com Zefer",
+  },
+  "encrypt.success.file.share.text": {
+    es: "Archivo .zefer cifrado. Necesitarás la frase clave (enviada por separado) para descifrarlo.",
+    en: "Encrypted .zefer file. You'll need the passphrase (sent separately) to decrypt it.",
+    pt: "Arquivo .zefer criptografado. Você precisará da frase-chave (enviada separadamente) para descriptografá-lo.",
+  },
+  "encrypt.success.separate": {
+    es: "Por seguridad, envía el archivo y la frase clave por canales distintos (por ejemplo, el archivo por correo y la clave por otra app).",
+    en: "For security, send the file and the passphrase through different channels (for example, the file by email and the key via another app).",
+    pt: "Por segurança, envie o arquivo e a frase-chave por canais diferentes (por exemplo, o arquivo por e-mail e a chave por outro aplicativo).",
   },
   "encrypt.another": {
     es: "Cifrar otro secreto",

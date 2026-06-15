@@ -5,6 +5,7 @@ import {
   KeyRound, Copy, Check, RefreshCw, Download, Hash, Eye, EyeOff,
   ShieldCheck, AlertTriangle, Gauge, Layers, ScanSearch, Shield,
   ChevronUp, ChevronDown, Ban, SquareAsterisk, X, Atom, User, Crosshair,
+  Share2,
 } from "lucide-react";
 import { PageLayout, PageHeader, InfoTip } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
@@ -269,6 +270,12 @@ export default function GeneratorContent() {
   const [keys, setKeys] = useState<GeneratedKey[]>([]);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [genTick, setGenTick] = useState(0);
+  // Native Web Share API support — detected on the client (SSR-safe). Copy
+  // stays as the baseline; sharing is offered as an extra option when available.
+  const [canShare, setCanShare] = useState(false);
+  useEffect(() => {
+    setCanShare(typeof navigator !== "undefined" && typeof navigator.share === "function");
+  }, []);
 
   // Free-typing buffers for the custom inputs, synced from persisted values
   const [lengthInput, setLengthInput] = useState(String(length));
@@ -324,6 +331,16 @@ export default function GeneratorContent() {
   async function copyAll() {
     await navigator.clipboard.writeText(keys.map((k) => k.value).join("\n"));
     notifySuccess(t("toast.gen.copiedall"));
+  }
+
+  async function shareOne(value: string) {
+    try {
+      // The password travels on its own — keep it on a different channel
+      // from any file it protects.
+      await navigator.share({ text: value });
+    } catch {
+      // User dismissed the native sheet or sharing failed — copy stays available
+    }
   }
 
   function downloadTxt() {
@@ -651,6 +668,16 @@ export default function GeneratorContent() {
                     <li key={`${genTick}-${i}`} className="glass !rounded-lg px-3 py-2 animate-in">
                       <div className="flex items-center gap-2">
                         <code className="flex-1 text-[11px] font-mono theme-text break-all select-all leading-relaxed">{k.value}</code>
+                        {canShare && (
+                          <button
+                            type="button"
+                            onClick={() => shareOne(k.value)}
+                            className="w-9 h-9 flex items-center justify-center rounded-md theme-faint hover:theme-text transition-colors cursor-pointer shrink-0"
+                            aria-label={t("aria.share")}
+                          >
+                            <Share2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => copyOne(k.value, i)}
