@@ -67,13 +67,12 @@ function isMobile(): boolean {
 /**
  * Analyze device and compute a dynamic file size limit.
  *
- * The limit is 80% of the estimated AVAILABLE memory for a single
- * crypto operation. The browser needs ~3x the file size in RAM:
- *   1x for the raw file ArrayBuffer
- *   1x for the encrypted output
- *   1x for intermediate processing (base64, compression)
- *
- * So: maxFileSize = (availableRAM / 3) * 0.80
+ * Encryption and decryption STREAM the file in 16 MB slices (Blob.slice), so
+ * the input is never held in a single contiguous ArrayBuffer — that removes
+ * the ~2 GB per-allocation cap that previously made large files fail well
+ * below the advertised limit. The remaining constraint is total memory: the
+ * output accumulates as ~1× the file size in 16 MB Blob parts before being
+ * composed into a (browser-managed, disk-backable) Blob.
  *
  * Sources (in order of accuracy):
  *   1. performance.measureUserAgentSpecificMemory() — exact, Chrome 89+ with crossOriginIsolated
@@ -125,9 +124,10 @@ export function analyzeDevice(): DeviceLimits {
   // best available proxy to separate workstations (i9/Ryzen 9/Threadripper,
   // 20+ threads) from 8 GB ultrabooks.
   //
-  // Memory model during encrypt/decrypt: 1× input ArrayBuffer (off-heap)
-  // + one active 16 MB chunk + output accumulated as browser-managed Blob
-  // parts ⇒ peak ≈ 1.2× the file size (2.2× when compression is enabled).
+  // Memory model during encrypt/decrypt: the input is read one 16 MB slice at
+  // a time (≈1 chunk resident, not the whole file) and compression streams,
+  // so peak ≈ 1× the file size — the accumulated output parts before the Blob
+  // is finalized. The tiers below leave headroom under reported RAM.
   const GB = 1024 * 1024 * 1024;
   const MB = 1024 * 1024;
 

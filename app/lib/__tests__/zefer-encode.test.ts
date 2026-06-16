@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { encodeZefer, parseFile } from "../zefer";
+import { encodeZefer, parseFile, decodeZefer } from "../zefer";
 
 const LOW_ITERATIONS = 1000;
 const TEST_PASSPHRASE = "testpass123";
@@ -37,6 +37,36 @@ describe("encodeZefer without reveal key", () => {
 
     const bytes = await blobToBytes(blob);
     expect(readMagic(bytes)).toEqual([0x5a, 0x45, 0x46, 0x42, 0x33]);
+  });
+});
+
+// ─── 1b. encodeZefer with fileBlob (streaming large-file path) ───
+
+describe("encodeZefer with fileBlob", () => {
+  it("streams a file given as a Blob and round-trips via decodeZefer", async () => {
+    const original = new Uint8Array([5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
+    const zefer = await encodeZefer({
+      fileBlob: new Blob([original]),
+      passphrase: TEST_PASSPHRASE,
+      fileName: "data.bin",
+      fileType: "application/octet-stream",
+      expiresAt: 0,
+      iterations: LOW_ITERATIONS,
+    });
+
+    const bytes = await blobToBytes(zefer);
+    expect(readMagic(bytes)).toEqual([0x5a, 0x45, 0x46, 0x42, 0x33]);
+
+    // Decode via the streaming Blob path (Stage 2) — round-trips end to end.
+    const result = await decodeZefer("", TEST_PASSPHRASE, { fileBlob: zefer });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.header.mode).toBe("file");
+      expect(result.payload.meta.fileName).toBe("data.bin");
+      expect(result.payload.meta.fileSize).toBe(original.length);
+      const out = new Uint8Array(await (result.payload.fileData as Blob).arrayBuffer());
+      expect(out).toEqual(original);
+    }
   });
 });
 

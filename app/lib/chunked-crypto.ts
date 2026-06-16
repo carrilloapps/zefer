@@ -55,12 +55,17 @@ function chunkIv(baseIv: Uint8Array, index: number): Uint8Array {
 }
 
 /**
- * Encrypt data in chunks. Returns salt, base IV, and encrypted chunks.
- * Each chunk is independently AES-256-GCM encrypted with a unique IV.
- * Memory usage: ~2x CHUNK_SIZE regardless of total file size.
+ * Encrypt a Blob/File in chunks, reading one 16 MB window at a time via
+ * Blob.slice(). The full payload is NEVER materialized in a single buffer, so
+ * this works for multi-GB files that would otherwise blow past the browser's
+ * per-ArrayBuffer allocation cap (~2 GB). Peak input memory is ~1 chunk.
+ *
+ * Produces byte-identical output to encrypting the same bytes in one buffer
+ * (same chunk boundaries, same per-chunk IV), so files stay cross-compatible
+ * with the CLI and decrypt unchanged.
  */
-export async function chunkedEncrypt(
-  data: ArrayBuffer,
+export async function chunkedEncryptBlob(
+  source: Blob,
   passphrase: string,
   iterations: number,
   onProgress?: (chunkIndex: number, totalChunks: number) => void
@@ -69,22 +74,20 @@ export async function chunkedEncrypt(
   const baseIv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
   const key = await deriveKey(passphrase, salt.buffer as ArrayBuffer, iterations);
 
-  const totalSize = data.byteLength;
+  const totalSize = source.size;
   const totalChunks = Math.ceil(totalSize / CHUNK_SIZE);
   const chunks: Uint8Array[] = [];
-
-  const dataView = new Uint8Array(data);
 
   for (let i = 0; i < totalChunks; i++) {
     const start = i * CHUNK_SIZE;
     const end = Math.min(start + CHUNK_SIZE, totalSize);
-    const chunkData = dataView.slice(start, end);
+    const chunkData = await source.slice(start, end).arrayBuffer();
 
     const iv = chunkIv(baseIv, i);
     const encrypted = await crypto.subtle.encrypt(
       { name: "AES-GCM", iv: iv.buffer as ArrayBuffer },
       key,
-      chunkData.buffer as ArrayBuffer
+      chunkData
     );
 
     // Prepend 4-byte length
@@ -107,11 +110,36 @@ export async function chunkedEncrypt(
 }
 
 /**
- * Decrypt chunked data. Returns a Blob to avoid holding the full result in RAM.
- * Memory usage: ~2x CHUNK_SIZE constant, regardless of total file size.
+ * Encrypt an in-memory ArrayBuffer. Thin wrapper over chunkedEncryptBlob so
+ * both paths share one implementation and produce identical output.
  */
-export async function chunkedDecrypt(
-  encryptedData: Uint8Array,
+export async function chunkedEncrypt(
+  data: ArrayBuffer,
+  passphrase: string,
+  iterations: number,
+  onProgress?: (chunkIndex: number, totalChunks: number) => void
+): Promise<ChunkedEncryptResult> {
+  return chunkedEncryptBlob(new Blob([data]), passphrase, iterations, onProgress);
+}
+
+/** Read a big-endian uint32 from a 4-byte window of a Blob. */
+async function readU32(source: Blob, offset: number): Promise<number> {
+  const buf = await source.slice(offset, offset + 4).arrayBuffer();
+  return new DataView(buf).getUint32(0, false);
+}
+
+/**
+ * Decrypt a chunk-framed region read from a Blob, one chunk at a time via
+ * Blob.slice(). The encrypted input is NEVER held in a single buffer, so this
+ * decrypts multi-GB files without hitting the per-ArrayBuffer cap. Returns a
+ * Blob (browser-managed, disk-backable) so the plaintext is not held in RAM
+ * as one allocation either.
+ *
+ * `encrypted` is the region AFTER salt+baseIv: a sequence of
+ * [4-byte length][ciphertext+tag] chunks.
+ */
+export async function chunkedDecryptBlob(
+  encrypted: Blob,
   salt: Uint8Array,
   baseIv: Uint8Array,
   passphrase: string,
@@ -119,38 +147,34 @@ export async function chunkedDecrypt(
   onProgress?: (chunkIndex: number, totalChunks: number) => void
 ): Promise<Blob> {
   const key = await deriveKey(passphrase, salt.buffer as ArrayBuffer, iterations);
+  const total = encrypted.size;
 
-  // First pass: count chunks
+  // First pass: count chunks by walking the 4-byte length prefixes.
   let offset = 0;
   let chunkCount = 0;
-  while (offset < encryptedData.length) {
-    if (offset + 4 > encryptedData.length) break;
-    const chunkLen = new DataView(encryptedData.buffer, encryptedData.byteOffset + offset).getUint32(0, false);
+  while (offset + 4 <= total) {
+    const chunkLen = await readU32(encrypted, offset);
     offset += 4 + chunkLen;
     chunkCount++;
   }
 
-  // Second pass: decrypt chunk by chunk, accumulate as Blob parts
+  // Second pass: decrypt chunk by chunk, accumulate as Blob parts.
   const blobParts: BlobPart[] = [];
   offset = 0;
   let chunkIndex = 0;
-
-  while (offset < encryptedData.length) {
-    if (offset + 4 > encryptedData.length) break;
-    const chunkLen = new DataView(encryptedData.buffer, encryptedData.byteOffset + offset).getUint32(0, false);
+  while (offset + 4 <= total) {
+    const chunkLen = await readU32(encrypted, offset);
     offset += 4;
-
-    const chunkCiphertext = encryptedData.slice(offset, offset + chunkLen);
+    const chunkCiphertext = await encrypted.slice(offset, offset + chunkLen).arrayBuffer();
     offset += chunkLen;
 
     const iv = chunkIv(baseIv, chunkIndex);
     const decrypted = await crypto.subtle.decrypt(
       { name: "AES-GCM", iv: iv.buffer as ArrayBuffer },
       key,
-      chunkCiphertext.buffer as ArrayBuffer
+      chunkCiphertext
     );
 
-    // Push directly as BlobPart — no accumulation in a single array
     blobParts.push(decrypted);
     chunkIndex++;
 
@@ -162,6 +186,28 @@ export async function chunkedDecrypt(
   }
 
   return new Blob(blobParts);
+}
+
+/**
+ * Decrypt an in-memory chunk-framed region. Thin wrapper over
+ * chunkedDecryptBlob so both paths share one implementation.
+ */
+export async function chunkedDecrypt(
+  encryptedData: Uint8Array,
+  salt: Uint8Array,
+  baseIv: Uint8Array,
+  passphrase: string,
+  iterations: number,
+  onProgress?: (chunkIndex: number, totalChunks: number) => void
+): Promise<Blob> {
+  return chunkedDecryptBlob(
+    new Blob([encryptedData.buffer.slice(encryptedData.byteOffset, encryptedData.byteOffset + encryptedData.byteLength) as ArrayBuffer]),
+    salt,
+    baseIv,
+    passphrase,
+    iterations,
+    onProgress
+  );
 }
 
 /**

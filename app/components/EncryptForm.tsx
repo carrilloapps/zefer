@@ -87,8 +87,9 @@ export default function EncryptForm() {
   const [textFileName, setTextFileName] = useState<string | null>(null);
   const textFileRef = useRef<HTMLInputElement>(null);
 
-  // File mode
-  const [fileData, setFileData] = useState<ArrayBuffer | null>(null);
+  // File mode — keep the File reference (streamed in slices at encrypt time)
+  // instead of reading the whole thing into an ArrayBuffer up front.
+  const [fileData, setFileData] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string | null>(null);
   const [fileSize, setFileSize] = useState(0);
@@ -333,21 +334,12 @@ export default function EncryptForm() {
     }
 
     setError(null);
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      if (ev.target?.result instanceof ArrayBuffer) {
-        setFileData(ev.target.result);
-        setFileName(file.name);
-        setFileType(file.type || "application/octet-stream");
-        setFileSize(file.size);
-      }
-    };
-    // Very large files can fail to allocate — fail gracefully
-    reader.onerror = () => {
-      setError(t("form.error.file.read"));
-      if (fileRef.current) fileRef.current.value = "";
-    };
-    reader.readAsArrayBuffer(file);
+    // Keep the File reference — it is read in 16 MB slices during encryption,
+    // so large files are never loaded into a single buffer up front.
+    setFileData(file);
+    setFileName(file.name);
+    setFileType(file.type || "application/octet-stream");
+    setFileSize(file.size);
   }
 
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -394,7 +386,7 @@ export default function EncryptForm() {
 
       const zefer = await encodeZefer({
         content: inputMode === "text" ? content : undefined,
-        fileData: inputMode === "file" ? fileData! : undefined,
+        fileBlob: inputMode === "file" ? fileData! : undefined,
         passphrase,
         secondPassphrase: dualKey ? secondPassphrase : undefined,
         fileName: inputMode === "file" ? fileName : textFileName,
@@ -616,7 +608,7 @@ export default function EncryptForm() {
           <button type="button" onClick={() => setInputMode("text")} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-medium chip-select cursor-pointer ${inputMode === "text" ? "bg-[var(--primary)] text-[var(--btn-text)]" : "theme-muted hover:theme-text"}`}>
             <FileText className="w-3 h-3" />{t("mode.text")}
           </button>
-          <button type="button" onClick={() => setInputMode("file")} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-medium chip-select cursor-pointer ${inputMode === "file" ? "bg-[var(--primary)] text-[var(--btn-text)]" : "theme-muted hover:theme-text"}`}>
+          <button type="button" onClick={() => setInputMode("file")} onDoubleClick={() => { setInputMode("file"); fileRef.current?.click(); }} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-medium chip-select cursor-pointer ${inputMode === "file" ? "bg-[var(--primary)] text-[var(--btn-text)]" : "theme-muted hover:theme-text"}`}>
             <Upload className="w-3 h-3" />{t("mode.file")}
           </button>
         </div>

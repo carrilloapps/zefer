@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/app/components/ThemeProvider";
 import LegalBanner from "@/app/components/LegalBanner";
 import DonateFab from "@/app/components/DonateFab";
 import ToastProvider from "@/app/components/ToastProvider";
+import KeyboardShortcuts from "@/app/components/KeyboardShortcuts";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -177,7 +178,7 @@ export default function RootLayout({
                 url: "https://carrillo.app",
               },
               license: "https://opensource.org/licenses/MIT",
-              softwareVersion: "0.10.1",
+              softwareVersion: "0.11.0",
               inLanguage: ["en", "es", "pt"],
               isAccessibleForFree: true,
               installUrl: "https://zefer.carrillo.app/install",
@@ -201,6 +202,7 @@ export default function RootLayout({
               <LegalBanner />
             </div>
             <ToastProvider />
+            <KeyboardShortcuts />
           </LanguageProvider>
         </ThemeProvider>
       </body>

@@ -161,6 +161,71 @@ const translations = {
     en: "Download encrypted file",
     pt: "Baixar arquivo criptografado",
   },
+  "aria.shortcuts": {
+    es: "Atajos de teclado",
+    en: "Keyboard shortcuts",
+    pt: "Atalhos de teclado",
+  },
+  "shortcuts.title": {
+    es: "Atajos de teclado",
+    en: "Keyboard shortcuts",
+    pt: "Atalhos de teclado",
+  },
+  "shortcuts.subtitle": {
+    es: "Opera Zefer por completo desde el teclado.",
+    en: "Operate Zefer entirely from the keyboard.",
+    pt: "Use o Zefer inteiramente pelo teclado.",
+  },
+  "shortcuts.help": {
+    es: "Mostrar u ocultar esta ayuda",
+    en: "Show or hide this help",
+    pt: "Mostrar ou ocultar esta ajuda",
+  },
+  "shortcuts.encrypt": {
+    es: "Ir a cifrar",
+    en: "Go to encrypt",
+    pt: "Ir para criptografar",
+  },
+  "shortcuts.decrypt": {
+    es: "Ir a descifrar",
+    en: "Go to decrypt",
+    pt: "Ir para descriptografar",
+  },
+  "shortcuts.generator": {
+    es: "Abrir el generador de claves",
+    en: "Open the key generator",
+    pt: "Abrir o gerador de chaves",
+  },
+  "shortcuts.analyzer": {
+    es: "Abrir el analizador de archivos",
+    en: "Open the file analyzer",
+    pt: "Abrir o analisador de arquivos",
+  },
+  "shortcuts.home": {
+    es: "Ir al inicio",
+    en: "Go to home",
+    pt: "Ir para o início",
+  },
+  "shortcuts.theme": {
+    es: "Cambiar entre tema claro y oscuro",
+    en: "Toggle light and dark theme",
+    pt: "Alternar tema claro e escuro",
+  },
+  "shortcuts.close": {
+    es: "Cerrar ventanas y menús",
+    en: "Close dialogs and menus",
+    pt: "Fechar janelas e menus",
+  },
+  "shortcuts.hint": {
+    es: "Pulsa ? en cualquier momento para ver los atajos",
+    en: "Press ? anytime to see the shortcuts",
+    pt: "Pressione ? a qualquer momento para ver os atalhos",
+  },
+  "shortcuts.note": {
+    es: "Pulsa la tecla indicada directamente, sin modificadores (cuando no estés escribiendo en un campo).",
+    en: "Press the indicated key directly, no modifiers (when not typing in a field).",
+    pt: "Pressione a tecla indicada diretamente, sem modificadores (quando não estiver digitando em um campo).",
+  },
   "aria.removefile": {
     es: "Quitar archivo",
     en: "Remove file",

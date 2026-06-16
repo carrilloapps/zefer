@@ -5,6 +5,23 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-06-16
+
+### Added
+
+- **Multi-GB files, end to end.** Encryption and decryption now stream the file in 16 MB slices (`Blob.slice`) instead of loading it into a single `ArrayBuffer`, so large files (e.g. 2.4 GB) no longer hit the browser's ~2 GB per-allocation cap that previously failed with "may exceed available memory". Compression and decompression also stream. The binary format is byte-identical, so files stay fully cross-compatible with the CLI.
+- **Native sharing (Web Share API).** Share the decrypt link, **send the encrypted `.zefer` file** directly to WhatsApp/Telegram/Slack/email via the OS share sheet, and share generated passwords from the generator — each on its own channel. A security note reminds users to send the file and the passphrase through **different** channels. Download remains the always-available fallback; the send button is shown disabled with an explanation when the browser lacks support.
+- **Site-wide keyboard control.** A global shortcut layer makes the app fully operable from the keyboard — `E` encrypt, `D` decrypt, `G` generator, `Z` analyzer, `H` home, `T` theme — and `?` opens a help overlay listing every shortcut (Esc closes). A keyboard affordance in the desktop navbar makes the commands discoverable.
+- **Double-click the "file" encrypt tab** to open the file picker directly.
+
+### Fixed
+
+- **Infinite render loop on the home page** when a `?t=encrypt`/`?t=decrypt` query param was present (the tab effect re-asserted the URL value every render), which also broke client navigation away from the page. The URL tab is now applied once on mount.
+
+### Security
+
+- **Decompression-bomb guard** on the streaming path: decompression aborts if the output exceeds the original size authenticated inside the AES-256-GCM payload (`meta.fileSize`), so a crafted or corrupt compressed stream can't expand without bound.
+
 ## [0.10.1] - 2026-06-13
 
 ### Added

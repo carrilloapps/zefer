@@ -33,7 +33,7 @@ export default function OGImage() {
             <path d="M11 16l4 4 6-7" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <div style={{ fontSize: 44, fontWeight: 700, color: "#ffffff", letterSpacing: "-0.02em" }}>Zefer</div>
-          <div style={{ padding: "4px 14px", borderRadius: 100, background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", fontSize: 16, color: "#22c55e", fontFamily: "monospace" }}>v0.10.1</div>
+          <div style={{ padding: "4px 14px", borderRadius: 100, background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", fontSize: 16, color: "#22c55e", fontFamily: "monospace" }}>v0.11.0</div>
         </div>
 
         {/* Headline */}

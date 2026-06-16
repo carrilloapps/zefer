@@ -37,6 +37,9 @@ export default function DecryptForm() {
   // File
   const [fileLoaded, setFileLoaded] = useState<string | null>(null);
   const [fileBytes, setFileBytes] = useState<ArrayBuffer | null>(null);
+  // The .zefer File itself — streamed in slices at decrypt time so multi-GB
+  // files are never read into a single buffer.
+  const [zeferBlob, setZeferBlob] = useState<File | null>(null);
   const [zeferFileName, setZeferFileName] = useState<string | null>(null);
   const [header, setHeader] = useState<ZeferHeader | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -112,39 +115,31 @@ export default function DecryptForm() {
     setError(null);
     setErrorType(null);
     setZeferFileName(file.name);
+    setZeferBlob(file);
 
-    // Read as both ArrayBuffer (for binary .zefer) and text (for text .zefer)
-    const bufReader = new FileReader();
-    bufReader.onload = (ev) => {
-      const buf = ev.target?.result as ArrayBuffer;
-      if (!buf) return;
-      setFileBytes(buf);
-
-      // Try binary parse first
-      const parsed = parseFile("", buf);
-      if (parsed) {
-        setHeader(parsed.header);
-        setFileLoaded("__binary__");
-        return;
-      }
-
-      // Fall back to text parse
-      const textReader = new FileReader();
-      textReader.onload = (ev2) => {
-        const text = ev2.target?.result as string;
-        if (!text) return;
+    // Read only a small head slice to detect the format and parse the public
+    // header for the UI — never the whole (possibly multi-GB) file. The full
+    // file is streamed in slices at decrypt time.
+    (async () => {
+      try {
+        const headBuf = await file.slice(0, Math.min(file.size, 65536)).arrayBuffer();
+        const parsed = parseFile("", headBuf);
+        if (parsed) {
+          setHeader(parsed.header);
+          setFileBytes(null); // binary path streams from the File, not a buffer
+          setFileLoaded("__binary__");
+          return;
+        }
+        // Legacy text .zefer — small, safe to read fully.
+        const text = await file.text();
         setFileLoaded(text);
         const textParsed = parseFile(text);
         if (textParsed) setHeader(textParsed.header);
-      };
-      textReader.readAsText(file);
-    };
-    // Very large files can fail to allocate — fail gracefully
-    bufReader.onerror = () => {
-      setError(t("form.error.file.read"));
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    };
-    bufReader.readAsArrayBuffer(file);
+      } catch {
+        setError(t("form.error.file.read"));
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    })();
   }
 
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -181,6 +176,7 @@ export default function DecryptForm() {
         secondPassphrase: useDualKey ? secondPassphrase : undefined,
         questionAnswer: questionAnswer || undefined,
         rawBytes: fileBytes || undefined,
+        fileBlob: zeferBlob || undefined,
         onProgress: tracker,
       });
 
@@ -270,7 +266,7 @@ export default function DecryptForm() {
 
   function reset() {
     setPassphrase(""); setSecondPassphrase(""); setQuestionAnswer("");
-    setFileLoaded(null); setFileBytes(null); setZeferFileName(null); setHeader(null);
+    setFileLoaded(null); setFileBytes(null); setZeferBlob(null); setZeferFileName(null); setHeader(null);
     setPayload(null); setError(null); setErrorType(null);
     setCopied(false); setUseDualKey(false);
     if (fileInputRef.current) fileInputRef.current.value = "";

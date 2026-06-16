@@ -3,7 +3,9 @@ import {
   compress,
   decompress,
   compressBytes,
+  compressBlob,
   decompressBytes,
+  decompressBlob,
   smartCompress,
 } from "../compression";
 
@@ -151,6 +153,52 @@ describe("compressBytes / decompressBytes with method 'none'", () => {
   it("decompressBytes returns original Uint8Array unchanged", async () => {
     const result = await decompressBytes(data, "none");
     expect(result).toBe(data);
+  });
+});
+
+// ---- compressBlob (streaming large-file path) -------------------------------
+
+describe("compressBlob", () => {
+  it("returns the same Blob unchanged for method 'none'", async () => {
+    const input = new Blob([new Uint8Array([1, 2, 3, 4])]);
+    const result = await compressBlob(input, "none");
+    expect(result).toBe(input);
+  });
+
+  it("gzip round-trips (output decompresses to the original bytes)", async () => {
+    const data = compressibleData(4096);
+    const input = new Blob([data.buffer as ArrayBuffer]);
+    const compressed = await compressBlob(input, "gzip");
+    expect(compressed.size).toBeLessThan(data.length);
+    const compressedBytes = new Uint8Array(await compressed.arrayBuffer());
+    const decompressed = await decompressBytes(compressedBytes, "gzip");
+    expect(Array.from(decompressed)).toEqual(Array.from(data));
+  });
+});
+
+// ---- decompressBlob (streaming large-file path) -----------------------------
+
+describe("decompressBlob", () => {
+  it("returns the same Blob unchanged for method 'none'", async () => {
+    const input = new Blob([new Uint8Array([1, 2, 3])]);
+    const result = await decompressBlob(input, "none");
+    expect(result).toBe(input);
+  });
+
+  it("round-trips with compressBlob (gzip)", async () => {
+    const data = compressibleData(2048);
+    const compressed = await compressBlob(new Blob([data.buffer as ArrayBuffer]), "gzip");
+    const out = await decompressBlob(compressed, "gzip");
+    const bytes = new Uint8Array(await out.arrayBuffer());
+    expect(Array.from(bytes)).toEqual(Array.from(data));
+  });
+
+  it("aborts when decompressed output exceeds maxBytes (decompression-bomb guard)", async () => {
+    const data = compressibleData(8192);
+    const compressed = await compressBlob(new Blob([data.buffer as ArrayBuffer]), "gzip");
+    await expect(decompressBlob(compressed, "gzip", 1024)).rejects.toThrow(
+      /exceeds the expected size/
+    );
   });
 });
 

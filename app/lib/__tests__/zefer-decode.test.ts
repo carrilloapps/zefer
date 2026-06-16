@@ -244,7 +244,7 @@ describe("decodeZefer", () => {
     expect(mainResult.ok).toBe(true);
     if (mainResult.ok) {
       expect(mainResult.payload.fileData).not.toBeNull();
-      const decryptedBytes = new Uint8Array(mainResult.payload.fileData!);
+      const decryptedBytes = new Uint8Array(mainResult.payload.fileData as ArrayBuffer);
       expect(decryptedBytes).toEqual(originalBytes);
       expect(mainResult.header.mode).toBe("file");
     }
@@ -254,7 +254,7 @@ describe("decodeZefer", () => {
     expect(revealResult.ok).toBe(true);
     if (revealResult.ok) {
       expect(revealResult.payload.fileData).not.toBeNull();
-      const decryptedBytes = new Uint8Array(revealResult.payload.fileData!);
+      const decryptedBytes = new Uint8Array(revealResult.payload.fileData as ArrayBuffer);
       expect(decryptedBytes).toEqual(originalBytes);
     }
   });

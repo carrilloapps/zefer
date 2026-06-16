@@ -76,6 +76,23 @@ export async function compressBytes(
   return streamToUint8Array(cs.readable);
 }
 
+/**
+ * Compress a Blob/File into a new Blob without ever holding the full input
+ * (or output) in a single contiguous buffer. The browser streams the source
+ * through CompressionStream and accumulates the result in a Blob, which it can
+ * back on disk — so this stays memory-safe for multi-GB files. The decompressed
+ * result is identical regardless of how the input was chunked, so files stay
+ * cross-compatible with the CLI and the one-shot compressBytes path.
+ */
+export async function compressBlob(
+  input: Blob,
+  method: CompressionMethod
+): Promise<Blob> {
+  if (method === "none") return input;
+  const cs = new CompressionStream(method as CompressionFormat);
+  return new Response(input.stream().pipeThrough(cs)).blob();
+}
+
 export async function decompressBytes(
   data: Uint8Array,
   method: CompressionMethod
@@ -88,6 +105,38 @@ export async function decompressBytes(
   writer.close();
 
   return streamToUint8Array(ds.readable, MAX_DECOMPRESS_SIZE);
+}
+
+/**
+ * Decompress a Blob into a new Blob without holding the full input or output
+ * in a single contiguous buffer — the multi-GB counterpart of decompressBytes.
+ *
+ * `maxBytes` guards against a decompression bomb: callers pass the expected
+ * plaintext size (meta.fileSize, which is authenticated inside the AES-GCM
+ * payload), so a crafted/corrupt stream that expands beyond it is aborted
+ * instead of exhausting memory or disk.
+ */
+export async function decompressBlob(
+  input: Blob,
+  method: CompressionMethod,
+  maxBytes: number = Infinity
+): Promise<Blob> {
+  if (method === "none") return input;
+  const ds = new DecompressionStream(method as CompressionFormat);
+  const reader = input.stream().pipeThrough(ds).getReader();
+  const parts: BlobPart[] = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel();
+      throw new Error(`Decompressed output exceeds the expected size (${maxBytes} bytes)`);
+    }
+    parts.push(value);
+  }
+  return new Blob(parts);
 }
 
 /**

@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   Shield, User, Code, Download, BookOpen, Cpu,
   Lock, Scale, Users, ShieldAlert, ChevronRight, ExternalLink,
-  KeyRound, FileSearch, ChevronDown, Plug,
+  KeyRound, FileSearch, ChevronDown, Plug, Keyboard,
 } from "lucide-react";
 import LanguageSelector from "@/app/components/LanguageSelector";
 import ThemeToggle from "@/app/components/ThemeToggle";
@@ -108,6 +108,16 @@ export default function Navbar() {
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
               <span className="text-[10px] text-primary font-mono tracking-wide">{t("nav.encrypted")}</span>
             </div>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent("zefer:toggle-shortcuts"))}
+              className="hidden md:flex items-center gap-1.5 h-9 px-2.5 rounded-lg theme-muted hover:theme-heading transition-colors duration-200 cursor-pointer hover:bg-[var(--glass-bg-hover)]"
+              aria-label={t("aria.shortcuts")}
+              title={t("aria.shortcuts")}
+            >
+              <Keyboard className="w-3.5 h-3.5 shrink-0" />
+              <kbd className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded border border-[var(--glass-border)] leading-none">?</kbd>
+            </button>
             <ThemeToggle />
             <LanguageSelector />
           </div>

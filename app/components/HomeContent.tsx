@@ -100,11 +100,28 @@ export default function HomeContent() {
   const phrases = useMemo(() => ROTATE_KEYS.map((k) => t(k)), [t]);
   const { display, showCursor } = useTypewriter(phrases, !reduceMotion);
 
+  // Apply the ?t= URL param to the initial tab EXACTLY ONCE. Re-running this
+  // (e.g. with `tab` in deps) would keep re-asserting the URL value and revert
+  // any later user switch; running it unconditionally every render would loop
+  // infinitely, since usePreferences returns a fresh setTab each render.
+  const urlTabApplied = useRef(false);
   useEffect(() => {
-    if (!searchParams) return;
+    if (!searchParams || urlTabApplied.current) return;
+    urlTabApplied.current = true;
     const urlTab = searchParams.get("tab") || searchParams.get("t");
     if (urlTab === "encrypt" || urlTab === "decrypt") setTab(urlTab);
   }, [searchParams, setTab]);
+
+  // useUrlParams only reads on mount, so the keyboard shortcuts (E/D) switch the
+  // tab in-place via this event when the home page is already mounted.
+  useEffect(() => {
+    function onSetTab(e: Event) {
+      const detail = (e as CustomEvent<string>).detail;
+      if (detail === "encrypt" || detail === "decrypt") setTab(detail);
+    }
+    window.addEventListener("zefer:set-tab", onSetTab);
+    return () => window.removeEventListener("zefer:set-tab", onSetTab);
+  }, [setTab]);
 
   return (
     <main className="flex-1 flex flex-col">
