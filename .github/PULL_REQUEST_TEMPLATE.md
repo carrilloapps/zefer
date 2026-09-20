@@ -12,10 +12,13 @@
 
 ## Checklist
 
-### Build & Tests
+### Quality Gates
 
+- [ ] `npm run lint` passes (zero errors, zero warnings)
+- [ ] `npm run typecheck` passes with no errors
+- [ ] `npm run test:coverage` passes — 100% statements, branches, functions and lines
 - [ ] `npm run build` passes with no errors
-- [ ] `npm test` passes (161 tests)
+- [ ] No scanner finding was silenced with an inline suppression or a lowered threshold
 
 ### Code Conventions
 

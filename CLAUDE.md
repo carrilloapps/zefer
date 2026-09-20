@@ -6,14 +6,15 @@ Client-side encryption tool that converts text and files into password-protected
 
 **Live:** https://zefer.carrillo.app
 **Repo:** https://github.com/carrilloapps/zefer
-**CLI companion:** https://github.com/carrilloapps/zefer-cli — same binary format, same crypto params. Three channels: **CLI**, **MCP server** (`zefer mcp`), and a **programmatic library** (`import "zefer-cli"`, ESM/CommonJS — added in v1.3.0). Local path: `/home/carrilloapps/Desarrollo/Ink/zefer-cli`
+**CLI companion:** https://github.com/carrilloapps/zefer-cli — same binary format, same crypto params. Three channels: **CLI**, **MCP server** (`zefer mcp`), and a **programmatic library** (`import "zefer-cli"`, ESM/CommonJS — added in v1.3.0).
 
 ## Stack
 
-- Next.js 16.2.7 (React 19), TypeScript 6, Tailwind CSS v4
+- Next.js 16.3.5 (React 19), TypeScript 6, Tailwind CSS v4
 - Web Crypto API (AES-256-GCM, PBKDF2-SHA256), CompressionStream API
+- Radix UI (`radix-ui`) — Dialog, DropdownMenu, Popover, Select, Tooltip, Tabs, Switch
 - Lucide React icons, Sonner (toast notifications)
-- Vitest + @vitest/coverage-v8 (161 tests, 100% line coverage)
+- Vitest + @vitest/coverage-v8 + @testing-library/react on jsdom (969 tests, 100% statements/branches/functions/lines)
 
 ## Critical Rules
 
@@ -86,19 +87,23 @@ passphrase
 ```
 app/
   api/author/route.ts      -- GitHub profile cache (1h TTL)
-  components/              -- 32 client components (incl. VsContent, GeneratorContent, AnalyzerContent, SecurityPolicyContent)
+  components/              -- 34 client components (incl. VsContent, GeneratorContent, AnalyzerContent, SecurityPolicyContent, LibraryContent, KeyboardShortcuts)
   lib/
     crypto.ts              -- AES-256-GCM, PBKDF2, benchmark, dual key
     zefer.ts               -- ZEFB3/ZEFR3 encode/decode, all security checks
     chunked-crypto.ts      -- Chunked encryption (16MB per chunk, unique IVs)
     compression.ts         -- Gzip/Deflate via CompressionStream
     device.ts              -- RAM/CPU/GPU detection, dynamic file limits
-    i18n.ts                -- ~600 translation keys x 3 languages
+    i18n.ts                -- ~1,045 translation keys x 3 languages
     ip.ts                  -- IP detection + allowlist check
     notify.ts              -- Toast notification helpers
     passwords.ts           -- Charsets (7 modes incl. base58/pin), unbiased keygen + advanced opts (exclusions, classes, grouping), entropy/analysis, attack scenarios, compliance checks, log-space crack times
     preferences.ts         -- Persisted user preferences (ttl, iterations, compression, inputMode, tab, keygenMode, keygenLength, keygenCount, keygenAdvanced)
     progress.ts            -- Encryption/decryption progress tracking
+    seo.ts                 -- Centralized page metadata (pageMetadata())
+    useUrlParams.ts        -- URL parameter parsing, long + short aliases
+    file-handoff.ts        -- File transfer between encrypt/decrypt forms
+  **/__tests__/            -- Vitest suites, alongside the code they cover
   globals.css              -- Design system (liquid glass, 2 themes, animations)
 ```
 
@@ -209,10 +214,25 @@ Toggles: checked styles come from native `.peer:checked ~ .toggle-track/.toggle-
 
 ## Testing
 
-- Framework: Vitest + @vitest/coverage-v8
-- 161 tests across 8 test files
-- Coverage: 100% statements, 100% functions, 100% lines, 99.47% branches
-- Scripts: `npm test` (single run), `npm run test:watch` (dev mode)
+- Framework: Vitest + @vitest/coverage-v8, jsdom + @testing-library/react (+ `/user-event`, `/jest-dom`)
+- Config: `vitest.config.mts` (`.mts` so the ESM-only config loads under TypeScript 6)
+- **969 tests across 60 test files** in `app/**/__tests__/`
+- Coverage: **100% statements, 100% branches, 100% functions, 100% lines** — all four thresholds enforced in the config
+- Scripts: `npm test` (single run), `npm run test:watch` (dev mode), `npm run test:coverage` (coverage gate), `npm run validate` (typecheck + lint + test + build)
+- A failing gate is fixed by writing the missing test or deleting unreachable code — never by lowering a threshold, excluding a file or adding a `v8 ignore` hint
+
+## CI / CD
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `.github/workflows/ci.yml` | Push / PR to `main` | `npm ci` → lint → typecheck → `test:coverage` (100% gate) → build, on Node.js 20 and 22 |
+| `.github/workflows/security.yml` | Monthly cron + `workflow_dispatch` | Semgrep, Trivy, Gitleaks and SonarQube. The first three upload SARIF to Code scanning; SonarQube skips cleanly when `SONAR_TOKEN` / `SONAR_HOST_URL` are unset |
+| `.github/dependabot.yml` | Monthly | npm + GitHub Actions updates. Two groups per ecosystem: `minor-patch` in one PR, `major` isolated. No `ignore:` rules — Dependabot applies them to security updates too |
+
+Every action is pinned to a **full commit SHA** with the tag in a trailing
+comment. `npm ci` is the only install path in CI: npm 10.9.x hits an Arborist
+bug (`Cannot read properties of null (reading 'edgesOut')`) when re-resolving
+the tree.
 
 ## Versioning
 

@@ -1,6 +1,6 @@
 # Architecture
 
-> [README](../README.md) · **Architecture** · [Security](SECURITY.md) · [Deployment](DEPLOYMENT.md) · [Contributing](CONTRIBUTING.md)
+> [README](../README.md) · **Architecture** · [Security](SECURITY.md) · [Deployment](DEPLOYMENT.md) · [Contributing](CONTRIBUTING.md) · [Releasing](RELEASING.md)
 
 ## Overview
 
@@ -243,10 +243,17 @@ RootLayout
                     |     +-- GeneratorContent (/generator: tabs, StopSlider,
                     |     |                     SecurityInsights, InfoTip)
                     |     +-- AnalyzerContent (/analyzer: .zefer header report)
+                    |     +-- LibraryContent (/library: zefer-cli as a library)
+                    +-- KeyboardShortcuts (global shortcut layer + `?` overlay)
                     +-- Footer
 ```
 
-32 client components total.
+34 client components total.
+
+Overlay and stateful primitives (`Dialog`, `DropdownMenu`, `Popover`, `Select`,
+`Tooltip`, `Tabs`, `Switch`) come from **Radix UI** (`radix-ui`), which supplies
+focus management, dismissal, typeahead and the correct ARIA roles. Styling stays
+on the theme classes — a primitive is never styled with a hardcoded color.
 
 ## Theming
 

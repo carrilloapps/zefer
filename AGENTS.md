@@ -1,7 +1,11 @@
 <!-- BEGIN:nextjs-agent-rules -->
+
 # This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
 <!-- END:nextjs-agent-rules -->
 
 # Zefer Agent Guidelines
@@ -287,8 +291,10 @@ Drop any `.zefer` file for a **deep security report without the passphrase** (su
 5. **Minimum passphrase length is 6 characters**
 6. **Test both dark and light mode** after any CSS change
 7. **All text must pass WCAG 2.1 AA** (4.5:1 contrast ratio)
-8. **Run `npm test` before any commit** — 161 tests must pass
+8. **Run `npm run validate` before any commit** — typecheck, lint, the 969-test suite behind the 100% coverage gate, and the production build must all pass
 9. **URL params: every new option needs a long + short alias** in both EncryptForm and DecryptForm
+10. **Overlay and stateful primitives come from Radix UI** (`radix-ui`: Dialog, DropdownMenu, Popover, Select, Tooltip, Tabs, Switch) — prefer a primitive over a hand-rolled one, and style it through the theme classes
+11. **Never silence a scanner** — no `// eslint-disable`, `// NOSONAR`, `nosemgrep` or lowered thresholds. A real false positive gets documented scanner configuration (see `.gitleaks.toml`)
 
 ## Accessibility Rules
 
@@ -296,10 +302,26 @@ Drop any `.zefer` file for a **deep security report without the passphrase** (su
 - Headings: strict descending order (h1 → h2 → h3). Footer labels use `<p>`, not heading tags
 - Expand/collapse controls: must have `aria-expanded` and descriptive `aria-label`
 
+## Testing and CI
+
+- Vitest + @vitest/coverage-v8, jsdom + @testing-library/react. Config: `vitest.config.mts`
+- **969 tests across 60 files**; coverage enforced at **100% on statements, branches, functions and lines**
+- Scripts: `npm test`, `npm run test:watch`, `npm run test:coverage`, `npm run lint`, `npm run typecheck`, `npm run validate`
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `.github/workflows/ci.yml` | Push / PR to `main` | `npm ci` → lint → typecheck → `test:coverage` (100% gate) → build, on Node.js 20 and 22 |
+| `.github/workflows/security.yml` | Monthly cron + `workflow_dispatch` | Semgrep, Trivy, Gitleaks and SonarQube; SARIF uploaded to Code scanning |
+| `.github/dependabot.yml` | Monthly | npm + GitHub Actions updates — `minor-patch` grouped, `major` isolated, nothing ignored |
+
+Actions are pinned to full commit SHAs. Use `npm ci`, never `npm update`, in CI.
+
 ## Versioning (web app)
 
 When releasing a new version, ALL of these must be updated together:
 - `CHANGELOG.md`, `package.json`, `app/layout.tsx` (JSON-LD `softwareVersion`), `app/opengraph-image.tsx` (badge), `app/twitter-image.tsx` (badge), `app/sitemap.ts` (`lastModified`)
+
+Full checklist: [`docs/RELEASING.md`](docs/RELEASING.md).
 
 ## SEO Rules
 
@@ -315,10 +337,11 @@ When releasing a new version, ALL of these must be updated together:
 
 ## Tech Stack
 
-- Next.js 16.2.7 (React 19), TypeScript 6, Tailwind CSS v4
+- Next.js 16.3.5 (React 19), TypeScript 6, Tailwind CSS v4
+- Radix UI (`radix-ui`) for overlay and stateful primitives
 - Web Crypto API, CompressionStream API
-- Vitest (161 tests, 100% line coverage)
-- i18n: es, en, pt (~600 translation keys)
+- Vitest (969 tests, 100% statements/branches/functions/lines)
+- i18n: es, en, pt (~1,045 translation keys)
 
 ## For AI Tool Integration
 

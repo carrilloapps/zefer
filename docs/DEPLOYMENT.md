@@ -1,6 +1,6 @@
 # Deployment
 
-> [README](../README.md) · [Architecture](ARCHITECTURE.md) · [Security](SECURITY.md) · **Deployment** · [Contributing](CONTRIBUTING.md)
+> [README](../README.md) · [Architecture](ARCHITECTURE.md) · [Security](SECURITY.md) · **Deployment** · [Contributing](CONTRIBUTING.md) · [Releasing](RELEASING.md)
 
 ## Vercel (Recommended)
 

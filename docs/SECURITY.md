@@ -1,6 +1,6 @@
 # Security
 
-> [README](../README.md) · [Architecture](ARCHITECTURE.md) · **Security** · [Deployment](DEPLOYMENT.md) · [Contributing](CONTRIBUTING.md)
+> [README](../README.md) · [Architecture](ARCHITECTURE.md) · **Security** · [Deployment](DEPLOYMENT.md) · [Contributing](CONTRIBUTING.md) · [Releasing](RELEASING.md)
 
 > To report a vulnerability, see [SECURITY.md](../SECURITY.md) in the project root.
 
