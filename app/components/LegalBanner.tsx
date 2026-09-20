@@ -1,30 +1,64 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Shield, X } from "lucide-react";
 import { useLanguage } from "@/app/components/LanguageProvider";
 
 const STORAGE_KEY = "zefer-legal-accepted";
 
+// ─── External store ───
+//
+// Whether the notice was accepted lives in localStorage, an external system.
+// Reading it through useSyncExternalStore keeps the server render and the
+// hydration render on "hidden" — so the markup matches — and lets the banner
+// appear right afterwards without a setState-in-effect.
+
+let accepted: boolean | null = null;
+const listeners = new Set<() => void>();
+
+function isAccepted(): boolean {
+  accepted ??= (() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY) !== null;
+    } catch {
+      return true; // storage blocked: stay out of the way
+    }
+  })();
+  return accepted;
+}
+
+function getServerSnapshot(): boolean {
+  return true;
+}
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+function accept() {
+  accepted = true;
+  try {
+    localStorage.setItem(STORAGE_KEY, "1");
+  } catch {
+    /* storage unavailable — dismissing still works for this session */
+  }
+  for (const listener of listeners) listener();
+}
+
 export default function LegalBanner() {
   const { t } = useLanguage();
-  const [visible, setVisible] = useState(false);
+  const hidden = useSyncExternalStore(subscribe, isAccepted, getServerSnapshot);
 
-  useEffect(() => {
-    const accepted = localStorage.getItem(STORAGE_KEY);
-    if (!accepted) setVisible(true);
-  }, []);
+  if (hidden) return null;
 
-  function accept() {
-    localStorage.setItem(STORAGE_KEY, "1");
-    setVisible(false);
-  }
-
-  if (!visible) return null;
-
+  // A complementary landmark, not a dialog: it never traps focus and the page
+  // stays fully usable behind it.
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 animate-in" role="dialog" aria-live="polite" aria-label={t("banner.title")}>
+    <aside className="fixed bottom-4 left-4 right-4 z-50 animate-in" aria-live="polite" aria-label={t("banner.title")}>
       <div className="max-w-3xl mx-auto glass-banner px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <Shield className="w-5 h-5 text-primary shrink-0 mt-0.5 sm:mt-0" />
         <div className="flex-1">
@@ -52,6 +86,6 @@ export default function LegalBanner() {
           </button>
         </div>
       </div>
-    </div>
+    </aside>
   );
 }

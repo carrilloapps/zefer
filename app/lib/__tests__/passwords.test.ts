@@ -149,7 +149,7 @@ describe("analyzePassword", () => {
 
   it("handles the empty string", () => {
     const a = analyzePassword("");
-    expect(a.length).toBe(0);
+    expect(a).toHaveLength(0);
     expect(a.score).toBe(0);
     expect(a.entropyBits).toBe(0);
   });

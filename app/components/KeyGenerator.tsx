@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useSyncExternalStore } from "react";
+import { Popover } from "radix-ui";
 import { Sparkles, Copy, Check, RefreshCw, Hash, Share2 } from "lucide-react";
 import { useLanguage } from "@/app/components/LanguageProvider";
 import { notifySuccess } from "@/app/lib/notify";
@@ -19,51 +20,39 @@ interface Props {
   onLengthChange?: (length: number) => void;
 }
 
-export default function KeyGenerator({ onSelect, savedMode, savedLength, onModeChange, onLengthChange }: Props) {
+export default function KeyGenerator({ onSelect, savedMode, savedLength, onModeChange, onLengthChange }: Readonly<Props>) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
-  const [mode, setModeLocal] = useState<Mode>(savedMode ?? "secure");
-  const [length, setLengthLocal] = useState(savedLength ?? 64);
+  // A user pick overrides the persisted preference; until then the preference
+  // wins as it hydrates from localStorage. Reading it during render keeps the
+  // component free of state-syncing effects.
+  const [modePick, setModePick] = useState<Mode | null>(null);
+  const [lengthPick, setLengthPick] = useState<number | null>(null);
+  const mode = modePick ?? savedMode ?? "secure";
+  const length = lengthPick ?? savedLength ?? 64;
   const [value, setValue] = useState("");
   const [copied, setCopied] = useState(false);
-  // Native Web Share API support — detected on the client (SSR-safe)
-  const [canShare, setCanShare] = useState(false);
-  useEffect(() => {
-    setCanShare(typeof navigator !== "undefined" && typeof navigator.share === "function");
-  }, []);
   const [regenKey, setRegenKey] = useState(0);
 
-  const setMode = (v: Mode) => { setModeLocal(v); onModeChange?.(v); };
-  const setLength = (v: number) => { setLengthLocal(v); onLengthChange?.(v); };
-  const ref = useRef<HTMLDivElement>(null);
+  // Native Web Share API support — client-only, but read without an effect so
+  // the server render and the first client render agree.
+  const canShare = useSyncExternalStore(
+    () => () => {},
+    () => typeof navigator !== "undefined" && typeof navigator.share === "function",
+    () => false,
+  );
 
-  // Preferences hydrate from localStorage after mount — adopt them when they arrive
-  useEffect(() => { if (savedMode) setModeLocal(savedMode); }, [savedMode]);
-  useEffect(() => { if (savedLength) setLengthLocal(savedLength); }, [savedLength]);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  function regen() {
-    setValue(generateValue(mode, length));
+  /** Roll a fresh key. Takes the mode/length explicitly so the handlers below
+   *  can use the value they just picked instead of the pre-update state. */
+  function roll(m: Mode, l: number) {
+    setValue(generateValue(m, l));
     setCopied(false);
     setRegenKey((k) => k + 1);
   }
 
-  useEffect(() => {
-    if (open) regen();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, length]);
-
-  function handleOpen() {
-    setOpen(true);
-    setValue(generateValue(mode, length));
-  }
+  const regen = () => roll(mode, length);
+  const setMode = (v: Mode) => { setModePick(v); onModeChange?.(v); roll(v, length); };
+  const setLength = (v: number) => { setLengthPick(v); onLengthChange?.(v); roll(mode, v); };
 
   function handleUse() {
     onSelect(value);
@@ -91,19 +80,23 @@ export default function KeyGenerator({ onSelect, savedMode, savedLength, onModeC
   const entropy = isUuid ? 122 : Math.floor(Math.log2(poolSize) * length);
 
   return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={handleOpen}
+    <Popover.Root open={open} onOpenChange={(v) => { setOpen(v); if (v) roll(mode, length); }}>
+      <Popover.Trigger
         className="flex items-center justify-center w-[2.625rem] h-[2.625rem] rounded-lg theme-primary-faint theme-primary-border border text-primary hover:opacity-80 transition-opacity cursor-pointer shrink-0"
         aria-label={t("keygen.title")}
         title={t("keygen.title")}
       >
         <Sparkles className="w-4 h-4" />
-      </button>
+      </Popover.Trigger>
 
-      {open && (
-        <div className="fixed sm:absolute inset-x-4 sm:inset-x-auto sm:right-0 bottom-4 sm:bottom-auto sm:top-full sm:mt-2 w-auto sm:w-80 keygen-popover !rounded-xl shadow-2xl z-50 p-4 animate-in-down">
+      <Popover.Portal>
+        <Popover.Content
+          align="end"
+          sideOffset={8}
+          collisionPadding={12}
+          aria-label={t("keygen.title")}
+          className="keygen-popover w-80 max-w-[calc(100vw-2rem)] !rounded-xl shadow-2xl p-4"
+        >
           <p className="text-xs font-medium theme-heading mb-3">{t("keygen.title")}</p>
 
           {/* Mode selector */}
@@ -198,8 +191,8 @@ export default function KeyGenerator({ onSelect, savedMode, savedLength, onModeC
               {t("keygen.use")}
             </button>
           </div>
-        </div>
-      )}
-    </div>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }

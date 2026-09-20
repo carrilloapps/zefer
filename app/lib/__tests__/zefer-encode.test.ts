@@ -131,7 +131,7 @@ describe("ZEFR3 format structure", () => {
     // The main block starts after the 4-byte size prefix
     const mainStart = dataOffset + 4;
     const mainBlock = bytes.slice(mainStart, mainStart + mainBlockSize);
-    expect(mainBlock.length).toBe(mainBlockSize);
+    expect(mainBlock).toHaveLength(mainBlockSize);
 
     // The reveal block occupies the remaining bytes
     const revealBlock = bytes.slice(mainStart + mainBlockSize);
@@ -213,12 +213,12 @@ describe("parseFile ZEFR3 block splitting", () => {
     expect(parsed).not.toBeNull();
 
     // binaryData length must equal mainBlockSize
-    expect(parsed!.binaryData!.length).toBe(mainBlockSize);
+    expect(parsed!.binaryData!).toHaveLength(mainBlockSize);
 
     // revealBinaryData must have the remaining bytes
     const mainStart = dataOffset + 4;
     const expectedRevealLen = bytes.length - (mainStart + mainBlockSize);
-    expect(parsed!.revealBinaryData!.length).toBe(expectedRevealLen);
+    expect(parsed!.revealBinaryData!).toHaveLength(expectedRevealLen);
     expect(parsed!.revealBinaryData!.length).toBeGreaterThan(0);
   });
 });
@@ -269,7 +269,7 @@ describe("parseFile with text format (ZEFER3)", () => {
     expect(parsed!.header.iterations).toBe(600000);
     expect(parsed!.header.mode).toBe("text");
     expect(parsed!.encryptedLines).toBeDefined();
-    expect(parsed!.encryptedLines!.length).toBe(1);
+    expect(parsed!.encryptedLines!).toHaveLength(1);
     expect(parsed!.encryptedLines![0]).toBe("SOMEBASE64ENCRYPTEDDATA==");
   });
 
@@ -288,7 +288,7 @@ describe("parseFile with text format (ZEFER3)", () => {
     expect(parsed!.binary).toBe(false);
     expect(parsed!.header.compression).toBe("gzip");
     expect(parsed!.header.hint).toBe("my hint");
-    expect(parsed!.encryptedLines!.length).toBe(3);
+    expect(parsed!.encryptedLines!).toHaveLength(3);
   });
 
   it("defaults mode to 'text' when header lacks mode field", () => {

@@ -10,20 +10,15 @@ export default function ThemeToggle() {
   const { t } = useLanguage();
   const [transitioning, setTransitioning] = useState(false);
 
+  // The button is `disabled` while a transition runs, so this never re-enters.
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (transitioning) return;
-
     const root = document.documentElement;
     root.style.setProperty("--toggle-x", `${e.clientX}px`);
     root.style.setProperty("--toggle-y", `${e.clientY}px`);
 
-    const newTheme = theme === "dark" ? "light" : "dark";
-
-    const apply = () => {
-      root.setAttribute("data-theme", newTheme);
-      localStorage.setItem("zefer-theme", newTheme);
-      toggleTheme();
-    };
+    // The theme store owns persistence and the `data-theme` attribute, so the
+    // whole switch happens inside the view transition through this one call.
+    const apply = toggleTheme;
 
     if (
       "startViewTransition" in document &&

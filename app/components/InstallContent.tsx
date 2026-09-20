@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Monitor, Smartphone, Download, Globe, ArrowRight, Shield,
+  Monitor, Download, Globe, ArrowRight, Shield,
   BookOpen, Server, Link2, Lock, Key, Clock, Zap, ChevronRight,
-  Terminal, Copy, Check,
+  Terminal, Copy, Check, ChevronDown,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { PageLayout, PageHeader, GlassCard, IconBox, highlightCode } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
@@ -124,7 +125,7 @@ export default function InstallContent() {
       <GlassCard>
         <div className="flex items-center gap-3 mb-4">
           {author ? (
-            <img src={author.avatar} alt={author.name} width={40} height={40} className="w-10 h-10 rounded-full border border-[var(--glass-border)]" />
+            <Image src={author.avatar} alt={author.name} width={40} height={40} className="w-10 h-10 rounded-full border border-[var(--glass-border)]" />
           ) : (
             <div className="w-10 h-10 rounded-full skeleton-shimmer" />
           )}
@@ -146,7 +147,7 @@ export default function InstallContent() {
   );
 }
 
-function NavLink({ href, icon: Icon, title, desc, badge }: { href: string; icon?: typeof BookOpen; title: string; desc: string; badge?: string }) {
+function NavLink({ href, icon: Icon, title, desc, badge }: Readonly<{ href: string; icon?: typeof BookOpen; title: string; desc: string; badge?: string }>) {
   return (
     <Link href={href} className="flex items-center gap-3 px-3 py-2.5 -mx-3 rounded-xl hover:bg-[var(--glass-bg)] transition-colors duration-200 cursor-pointer group">
       {Icon ? (
@@ -167,7 +168,6 @@ function NavLink({ href, icon: Icon, title, desc, badge }: { href: string; icon?
 
 /* ─── CLI section ─── */
 
-import { ChevronDown } from "lucide-react";
 import type { TranslationKey } from "@/app/lib/i18n";
 
 const BASE_URL = "https://github.com/carrilloapps/zefer-cli/releases/latest/download";
@@ -240,7 +240,7 @@ const CLI_STEPS: { titleKey: TranslationKey; descKey: TranslationKey; code: stri
   },
 ];
 
-function CopyButton({ text }: { text: string }) {
+function CopyButton({ text }: Readonly<{ text: string }>) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
   return (
@@ -255,7 +255,7 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-function CodeBlock({ code }: { code: string }) {
+function CodeBlock({ code }: Readonly<{ code: string }>) {
   return (
     <div className="flex items-start gap-2 bg-[var(--input-bg)] border border-[var(--glass-border)] rounded-xl px-3 py-2.5">
       <pre className="flex-1 text-[11px] font-mono overflow-x-auto whitespace-pre leading-relaxed">
@@ -266,7 +266,7 @@ function CodeBlock({ code }: { code: string }) {
   );
 }
 
-function CliSection({ t }: { t: (k: TranslationKey) => string }) {
+function CliSection({ t }: Readonly<{ t: (k: TranslationKey) => string }>) {
   const [openPlatform, setOpenPlatform] = useState<string | null>(null);
   const [openNpm, setOpenNpm] = useState(true); // npm is the recommended option — open by default
   const [openLib, setOpenLib] = useState(false);
@@ -392,8 +392,8 @@ function CliSection({ t }: { t: (k: TranslationKey) => string }) {
 
         <div className={`advanced-panel ${openNpm ? "advanced-open" : ""}`}>
           <div className="ml-7 pb-2 space-y-3">
-            {CLI_STEPS.map((step, i) => (
-              <div key={i}>
+            {CLI_STEPS.map((step) => (
+              <div key={step.titleKey}>
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="text-[10px] font-medium theme-heading">{t(step.titleKey)}</span>
                   <span className="text-[10px] theme-faint">{t(step.descKey)}</span>
@@ -467,7 +467,7 @@ const BROWSERS: { name: string; steps: TranslationKey[]; code: string; menuKey: 
   },
 ];
 
-function PwaSection({ t }: { t: (k: TranslationKey) => string }) {
+function PwaSection({ t }: Readonly<{ t: (k: TranslationKey) => string }>) {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
   const toggle = useCallback((i: number) => setOpenIdx((prev) => (prev === i ? null : i)), []);
 

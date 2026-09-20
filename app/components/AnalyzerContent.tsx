@@ -42,9 +42,8 @@ function walkChunks(data: Uint8Array): ChunkWalk {
 
 /** Shannon entropy in bits/byte over a sample (proper AES output ≈ 8.0) */
 function shannonEntropy(bytes: Uint8Array): number {
-  if (bytes.length === 0) return 0;
   const freq = new Array<number>(256).fill(0);
-  for (let i = 0; i < bytes.length; i++) freq[bytes[i]]++;
+  for (const byte of bytes) freq[byte]++;
   let h = 0;
   for (const f of freq) {
     if (f > 0) {
@@ -148,26 +147,334 @@ const KDF_ROWS: { key: TranslationKey; bits: number }[] = [
   { key: "anlz.kdfres.gen", bits: 400 },
 ];
 
+/** ZEFB3, ZEFR3 or the legacy text container. */
+function formatKeyFor(parsed: ParsedFile): TranslationKey {
+  if (!parsed.binary) return "anlz.format.legacy";
+  return parsed.revealBinaryData ? "anlz.format.zefr3" : "anlz.format.zefb3";
+}
+
+/** KDF strength bucket for the iteration count in the public header. */
+function kdfLevelFor(iterations: number): TranslationKey {
+  if (iterations >= 1_000_000) return "anlz.kdf.maximum";
+  if (iterations >= 600_000) return "anlz.kdf.high";
+  return "anlz.kdf.standard";
+}
+
 const OBS_STYLE = {
   info: { icon: Info, text: "theme-muted" },
   warn: { icon: AlertTriangle, text: "theme-warning" },
   danger: { icon: ShieldAlert, text: "theme-danger" },
 } as const;
 
-export default function AnalyzerContent() {
+/** Drop / pick a .zefer file. A real <button>, so Enter and Space both work
+ *  and no "button" role has to be faked. */
+function Dropzone({ onPick, invalid }: Readonly<{ onPick: (files: FileList | null) => void; invalid: boolean }>) {
   const { t } = useLanguage();
-  const router = useRouter();
-  const [report, setReport] = useState<Report | null>(null);
-  const [invalid, setInvalid] = useState(false);
-  const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
 
-  function formatCrack(bits: number, gps: number): string {
-    const { bucket, value } = crackBucketFor(bits, gps);
+  return (
+    <div className="glass glow-green-sm p-6 sm:p-8 animate-in">
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => { e.preventDefault(); setDragging(false); onPick(e.dataTransfer.files); }}
+        className={`w-full flex flex-col items-center justify-center gap-3 py-12 px-6 rounded-xl border-2 border-dashed transition-colors cursor-pointer ${
+          dragging ? "theme-primary-border theme-primary-faint" : "border-[var(--glass-border)] hover:border-[var(--input-border-focus)]"
+        }`}
+        aria-label={t("anlz.drop")}
+      >
+        <span className="w-12 h-12 rounded-xl theme-primary-faint theme-primary-border border flex items-center justify-center">
+          <Upload className="w-5 h-5 text-primary" />
+        </span>
+        <span className="text-sm theme-text font-medium">{t("anlz.drop")}</span>
+        <span className="text-[11px] theme-faint">{t("anlz.drop.hint")}</span>
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".zefer"
+        onChange={(e) => onPick(e.target.files)}
+        className="hidden"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+
+      {invalid && (
+        <div role="alert" className="flex items-start gap-2.5 mt-4 theme-danger-faint theme-danger-border border rounded-xl px-3.5 py-3 error-shake">
+          <ShieldAlert className="w-4 h-4 theme-danger shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-medium theme-danger">{t("anlz.invalid")}</p>
+            <p className="text-[11px] theme-danger opacity-80 mt-0.5 leading-relaxed">{t("anlz.invalid.desc")}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Public-header fields, one row each. */
+function HeaderFields({ report }: Readonly<{ report: Report }>) {
+  const { t } = useLanguage();
+  const { header, revealBinaryData } = report.parsed;
+  const isFileMode = header.mode === "file";
+
+  const fields = [
+    { icon: Layers, label: t("anlz.field.format"), value: t(formatKeyFor(report.parsed)), mono: true },
+    { icon: isFileMode ? FileText : MessageSquare, label: t("anlz.field.mode"), value: isFileMode ? t("anlz.mode.file") : t("anlz.mode.text") },
+    { icon: Gauge, label: t("anlz.field.iterations"), value: `${header.iterations.toLocaleString()} — ${t(kdfLevelFor(header.iterations))}`, mono: true },
+    { icon: Layers, label: t("anlz.field.compression"), value: header.compression === "none" ? t("anlz.compression.none") : header.compression, mono: true },
+    { icon: FileText, label: t("anlz.field.size"), value: formatBytes(report.fileSize), mono: true },
+    { icon: KeyRound, label: t("anlz.field.reveal"), value: revealBinaryData ? t("anlz.reveal.yes") : t("anlz.reveal.no") },
+    { icon: MessageSquare, label: t("anlz.field.hint"), value: header.hint ?? t("anlz.none"), faded: !header.hint },
+    { icon: MessageSquare, label: t("anlz.field.note"), value: header.note ?? t("anlz.none"), faded: !header.note },
+  ];
+
+  return (
+    <dl className="space-y-2 mb-5">
+      {fields.map((f) => (
+        <div key={f.label} className="glass !rounded-lg px-3.5 py-2.5 flex items-center gap-3">
+          <f.icon className="w-3.5 h-3.5 theme-faint shrink-0" />
+          <dt className="text-[11px] theme-muted w-32 sm:w-40 shrink-0">{f.label}</dt>
+          <dd className={`text-xs flex-1 break-words ${f.mono ? "font-mono" : ""} ${f.faded ? "theme-faint" : "theme-text"}`}>{f.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/** Chunk-framing verdict: intact, or corrupted/truncated. */
+function StructureVerdict({ ok }: Readonly<{ ok: boolean }>) {
+  const { t } = useLanguage();
+  const tone = ok
+    ? { box: "theme-primary-faint theme-primary-border", title: "text-primary", body: "theme-muted", Icon: CheckCircle2, iconTone: "text-primary", desc: t("anlz.struct.ok") }
+    : { box: "theme-danger-faint theme-danger-border", title: "theme-danger", body: "theme-danger opacity-80", Icon: ShieldAlert, iconTone: "theme-danger", desc: t("anlz.struct.bad") };
+
+  return (
+    <div className={`flex items-start gap-2.5 mb-3 rounded-xl px-3.5 py-3 border ${tone.box}`}>
+      <tone.Icon className={`w-4 h-4 shrink-0 mt-0.5 ${tone.iconTone}`} />
+      <div>
+        <p className={`text-xs font-medium ${tone.title}`}>{t("anlz.struct.title")}</p>
+        <p className={`text-[11px] leading-relaxed mt-0.5 ${tone.body}`}>{tone.desc}</p>
+      </div>
+    </div>
+  );
+}
+
+/** Chunk count, estimated plaintext size and ciphertext entropy. */
+function DeepMetrics({ report }: Readonly<{ report: Report }>) {
+  const { t } = useLanguage();
+  const { deep, parsed } = report;
+
+  return (
+    <div className="grid grid-cols-1 min-[440px]:grid-cols-3 gap-2 mb-3">
+      <div className="glass !rounded-lg px-3 py-2.5">
+        <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5 flex items-center gap-1">
+          <Binary className="w-2.5 h-2.5" />{t("anlz.field.chunks")}
+          <InfoTip tipKey="tip.anlz.chunks" align="left" />
+        </p>
+        <p className="text-sm font-mono theme-heading">{deep.chunks}</p>
+      </div>
+      <div className="glass !rounded-lg px-3 py-2.5">
+        <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5">{t("anlz.field.estplain")}</p>
+        <p className="text-sm font-mono theme-heading">
+          ~{formatBytes(deep.estimatedPlain)}
+          {parsed.header.compression !== "none" && (
+            <span className="text-[9px] theme-faint block">{t("anlz.estplain.note")}</span>
+          )}
+        </p>
+      </div>
+      <div className="glass !rounded-lg px-3 py-2.5">
+        <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5 flex items-center gap-1">
+          {t("anlz.field.entropy")}
+          <InfoTip tipKey="tip.anlz.entropy" align="right" />
+        </p>
+        <p className="text-sm font-mono theme-heading">
+          {deep.entropy === null ? "—" : `${deep.entropy.toFixed(2)} ${t("anlz.entropy.unit")}`}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/** Salt, base IV and the whole-file SHA-256 fingerprint. */
+function CryptoIdentifiers({ deep }: Readonly<{ deep: DeepAnalysis }>) {
+  const { t } = useLanguage();
+
+  return (
+    <div className="space-y-2 mb-5">
+      {deep.saltHex && (
+        <div className="glass !rounded-lg px-3.5 py-2.5 flex items-center gap-3">
+          <KeyRound className="w-3.5 h-3.5 theme-faint shrink-0" />
+          <dt className="text-[11px] theme-muted w-32 sm:w-40 shrink-0 flex items-center gap-1">
+            {t("anlz.field.salt")}
+            <InfoTip tipKey="tip.anlz.salt" align="left" />
+          </dt>
+          <dd className="text-[10px] font-mono theme-text flex-1 break-all leading-relaxed">{deep.saltHex}</dd>
+        </div>
+      )}
+      {deep.ivHex && (
+        <div className="glass !rounded-lg px-3.5 py-2.5 flex items-center gap-3">
+          <KeyRound className="w-3.5 h-3.5 theme-faint shrink-0" />
+          <dt className="text-[11px] theme-muted w-32 sm:w-40 shrink-0">{t("anlz.field.iv")}</dt>
+          <dd className="text-[10px] font-mono theme-text flex-1 break-all leading-relaxed">{deep.ivHex}</dd>
+        </div>
+      )}
+      <div className="glass !rounded-lg px-3.5 py-2.5 flex items-center gap-3">
+        <Fingerprint className="w-3.5 h-3.5 theme-faint shrink-0" />
+        <dt className="text-[11px] theme-muted w-32 sm:w-40 shrink-0 flex items-center gap-1">
+          {t("anlz.field.sha")}
+          <InfoTip tipKey="tip.anlz.sha" align="left" />
+        </dt>
+        <dd className="text-[10px] font-mono text-primary flex-1 break-all leading-relaxed select-all">{deep.sha256}</dd>
+      </div>
+    </div>
+  );
+}
+
+/** Crack times for typical passphrase strengths against a 1,000-GPU fleet. */
+function KdfResistance({ iterations }: Readonly<{ iterations: number }>) {
+  const { t } = useLanguage();
+  const guessesPerGpu = Math.max(1, Math.round(GPU_SHA256_PER_SECOND / (2 * iterations)));
+
+  function formatCrack(bits: number): string {
+    const { bucket, value } = crackBucketFor(bits, guessesPerGpu * FLEET_SIZE);
     if (bucket === "instant") return t("time.instant");
     if (bucket === "yearsExp") return `≈10${toSuperscript(value)} ${t("time.years")}`;
-    return `${value.toLocaleString()} ${t(`time.${bucket}` as TranslationKey)}`;
+    const unit = t(`time.${bucket}` as TranslationKey);
+    return `${value.toLocaleString()} ${unit}`;
   }
+
+  return (
+    <div className="glass !rounded-xl p-4 mb-5">
+      <p className="flex items-center gap-1.5 text-xs font-medium theme-heading mb-1">
+        <Gauge className="w-3 h-3" />{t("anlz.kdfres.title")}
+        <InfoTip tipKey="tip.anlz.kdfres" />
+      </p>
+      <p className="text-[11px] theme-muted mb-3 leading-relaxed">
+        {t("anlz.kdfres.desc").replace("{n}", guessesPerGpu.toLocaleString())}
+      </p>
+      <ul className="space-y-1.5">
+        {KDF_ROWS.map((row) => (
+          <li key={row.key} className="glass !rounded-lg px-3 py-2 flex items-center justify-between gap-3">
+            <span className="text-[11px] theme-text">{t(row.key)}</span>
+            <span className="text-[11px] font-mono text-primary shrink-0">{formatCrack(row.bits)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** Severity-tagged findings, or an all-clear. */
+function Observations({ observations }: Readonly<{ observations: Observation[] }>) {
+  const { t } = useLanguage();
+
+  if (observations.length === 0) {
+    return (
+      <div className="flex items-center gap-2.5 theme-primary-faint theme-primary-border border rounded-xl px-3.5 py-3">
+        <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+        <p className="text-[11px] text-primary leading-relaxed">{t("anlz.obs.ok")}</p>
+      </div>
+    );
+  }
+
+  return (
+    <ul className="space-y-1.5">
+      {observations.map((o) => {
+        const S = OBS_STYLE[o.severity];
+        return (
+          <li key={o.key} className={`flex items-start gap-2.5 glass !rounded-lg px-3.5 py-2.5 text-[11px] leading-relaxed ${S.text}`}>
+            <S.icon className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+            {t(o.key)}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** The full report for one inspected file. */
+function ReportView({ report, onReset }: Readonly<{ report: Report; onReset: () => void }>) {
+  const { t } = useLanguage();
+  const router = useRouter();
+
+  return (
+    <div className="glass glow-green p-6 sm:p-8 animate-in stagger-children">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-5">
+        <div className="w-9 h-9 rounded-xl theme-primary-faint theme-primary-border border flex items-center justify-center success-icon">
+          <ShieldCheck className="w-4 h-4 text-primary" />
+        </div>
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold theme-heading">{t("anlz.report")}</h2>
+          <p className="text-xs theme-muted font-mono truncate">{report.fileName}</p>
+        </div>
+      </div>
+
+      <HeaderFields report={report} />
+
+      {/* ─── Deep analysis ─── */}
+      <h3 className="flex items-center gap-1.5 text-xs font-semibold theme-heading mb-3">
+        <Microscope className="w-3.5 h-3.5 text-primary" />{t("anlz.deep.title")}
+      </h3>
+
+      {report.deep.structureOk !== null && <StructureVerdict ok={report.deep.structureOk} />}
+      {report.parsed.binary && <DeepMetrics report={report} />}
+
+      <CryptoIdentifiers deep={report.deep} />
+      <KdfResistance iterations={report.parsed.header.iterations} />
+
+      {/* ─── Security observations ─── */}
+      <div className="mb-5">
+        <p className="flex items-center gap-1.5 text-xs font-medium theme-heading mb-2">
+          <ShieldCheck className="w-3 h-3" />{t("anlz.obs.title")}
+        </p>
+        <Observations observations={report.observations} />
+      </div>
+
+      {/* Protected metadata notice */}
+      <div className="glass !rounded-xl p-4 mb-5">
+        <div className="flex items-start gap-3">
+          <Lock className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-medium theme-heading mb-1">{t("anlz.private.title")}</p>
+            <p className="text-[11px] theme-muted leading-relaxed">{t("anlz.private.desc")}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            // Hand the analyzed file to the decrypt form via client navigation
+            setPendingDecryptFile(report.file);
+            router.push("/?t=decrypt");
+          }}
+          className="btn-primary flex-1"
+        >
+          <Unlock className="w-4 h-4" />{t("anlz.decrypt.cta")}
+        </button>
+        <button
+          type="button"
+          onClick={onReset}
+          className="flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl text-xs font-medium glass theme-muted hover:theme-text transition-colors cursor-pointer"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />{t("anlz.another")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function AnalyzerContent() {
+  const { t } = useLanguage();
+  const [report, setReport] = useState<Report | null>(null);
+  const [invalid, setInvalid] = useState(false);
 
   async function inspect(file: File) {
     setInvalid(false);
@@ -200,32 +507,6 @@ export default function AnalyzerContent() {
     if (f) void inspect(f);
   }
 
-  function reset() {
-    setReport(null);
-    setInvalid(false);
-    if (inputRef.current) inputRef.current.value = "";
-  }
-
-  const formatKey = report
-    ? report.parsed.binary
-      ? report.parsed.revealBinaryData
-        ? "anlz.format.zefr3"
-        : "anlz.format.zefb3"
-      : "anlz.format.legacy"
-    : null;
-
-  const kdfLevel = report
-    ? report.parsed.header.iterations >= 1_000_000
-      ? "anlz.kdf.maximum"
-      : report.parsed.header.iterations >= 600_000
-        ? "anlz.kdf.high"
-        : "anlz.kdf.standard"
-    : null;
-
-  const guessesPerGpu = report
-    ? Math.max(1, Math.round(GPU_SHA256_PER_SECOND / (2 * report.parsed.header.iterations)))
-    : 0;
-
   return (
     <PageLayout>
       <PageHeader
@@ -235,245 +516,9 @@ export default function AnalyzerContent() {
         subtitle={t("anlz.subtitle")}
       />
 
-      {!report && (
-        <div className="glass glow-green-sm p-6 sm:p-8 animate-in">
-          {/* Dropzone */}
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={(e) => { e.preventDefault(); setDragging(false); onFile(e.dataTransfer.files); }}
-            className={`w-full flex flex-col items-center justify-center gap-3 py-12 px-6 rounded-xl border-2 border-dashed transition-colors cursor-pointer ${
-              dragging ? "theme-primary-border theme-primary-faint" : "border-[var(--glass-border)] hover:border-[var(--input-border-focus)]"
-            }`}
-            aria-label={t("anlz.drop")}
-          >
-            <span className="w-12 h-12 rounded-xl theme-primary-faint theme-primary-border border flex items-center justify-center">
-              <Upload className="w-5 h-5 text-primary" />
-            </span>
-            <span className="text-sm theme-text font-medium">{t("anlz.drop")}</span>
-            <span className="text-[11px] theme-faint">{t("anlz.drop.hint")}</span>
-          </button>
-          <input
-            ref={inputRef}
-            type="file"
-            accept=".zefer"
-            onChange={(e) => onFile(e.target.files)}
-            className="hidden"
-            tabIndex={-1}
-            aria-hidden="true"
-          />
-
-          {invalid && (
-            <div role="alert" className="flex items-start gap-2.5 mt-4 theme-danger-faint theme-danger-border border rounded-xl px-3.5 py-3 error-shake">
-              <ShieldAlert className="w-4 h-4 theme-danger shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-medium theme-danger">{t("anlz.invalid")}</p>
-                <p className="text-[11px] theme-danger opacity-80 mt-0.5 leading-relaxed">{t("anlz.invalid.desc")}</p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {report && (
-        <div className="glass glow-green p-6 sm:p-8 animate-in stagger-children">
-          {/* Header */}
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-9 h-9 rounded-xl theme-primary-faint theme-primary-border border flex items-center justify-center success-icon">
-              <ShieldCheck className="w-4 h-4 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-sm font-semibold theme-heading">{t("anlz.report")}</h2>
-              <p className="text-xs theme-muted font-mono truncate">{report.fileName}</p>
-            </div>
-          </div>
-
-          {/* Public header fields */}
-          <dl className="space-y-2 mb-5">
-            {[
-              { icon: Layers, label: t("anlz.field.format"), value: t(formatKey! as TranslationKey), mono: true },
-              { icon: report.parsed.header.mode === "file" ? FileText : MessageSquare, label: t("anlz.field.mode"), value: report.parsed.header.mode === "file" ? t("anlz.mode.file") : t("anlz.mode.text") },
-              { icon: Gauge, label: t("anlz.field.iterations"), value: `${report.parsed.header.iterations.toLocaleString()} — ${t(kdfLevel! as TranslationKey)}`, mono: true },
-              { icon: Layers, label: t("anlz.field.compression"), value: report.parsed.header.compression === "none" ? t("anlz.compression.none") : report.parsed.header.compression, mono: true },
-              { icon: FileText, label: t("anlz.field.size"), value: formatBytes(report.fileSize), mono: true },
-              { icon: KeyRound, label: t("anlz.field.reveal"), value: report.parsed.revealBinaryData ? t("anlz.reveal.yes") : t("anlz.reveal.no") },
-              { icon: MessageSquare, label: t("anlz.field.hint"), value: report.parsed.header.hint ?? t("anlz.none"), faded: !report.parsed.header.hint },
-              { icon: MessageSquare, label: t("anlz.field.note"), value: report.parsed.header.note ?? t("anlz.none"), faded: !report.parsed.header.note },
-            ].map((f) => (
-              <div key={f.label} className="glass !rounded-lg px-3.5 py-2.5 flex items-center gap-3">
-                <f.icon className="w-3.5 h-3.5 theme-faint shrink-0" />
-                <dt className="text-[11px] theme-muted w-32 sm:w-40 shrink-0">{f.label}</dt>
-                <dd className={`text-xs flex-1 break-words ${f.mono ? "font-mono" : ""} ${f.faded ? "theme-faint" : "theme-text"}`}>{f.value}</dd>
-              </div>
-            ))}
-          </dl>
-
-          {/* ─── Deep analysis ─── */}
-          <h3 className="flex items-center gap-1.5 text-xs font-semibold theme-heading mb-3">
-            <Microscope className="w-3.5 h-3.5 text-primary" />{t("anlz.deep.title")}
-          </h3>
-
-          {/* Structural integrity */}
-          {report.deep.structureOk !== null && (
-            <div className={`flex items-start gap-2.5 mb-3 rounded-xl px-3.5 py-3 border ${
-              report.deep.structureOk ? "theme-primary-faint theme-primary-border" : "theme-danger-faint theme-danger-border"
-            }`}>
-              {report.deep.structureOk ? (
-                <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-              ) : (
-                <ShieldAlert className="w-4 h-4 theme-danger shrink-0 mt-0.5" />
-              )}
-              <div>
-                <p className={`text-xs font-medium ${report.deep.structureOk ? "text-primary" : "theme-danger"}`}>{t("anlz.struct.title")}</p>
-                <p className={`text-[11px] leading-relaxed mt-0.5 ${report.deep.structureOk ? "theme-muted" : "theme-danger opacity-80"}`}>
-                  {report.deep.structureOk ? t("anlz.struct.ok") : t("anlz.struct.bad")}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Deep metrics */}
-          {report.parsed.binary && (
-            <div className="grid grid-cols-1 min-[440px]:grid-cols-3 gap-2 mb-3">
-              <div className="glass !rounded-lg px-3 py-2.5">
-                <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5 flex items-center gap-1">
-                  <Binary className="w-2.5 h-2.5" />{t("anlz.field.chunks")}
-                  <InfoTip tipKey="tip.anlz.chunks" align="left" />
-                </p>
-                <p className="text-sm font-mono theme-heading">{report.deep.chunks}</p>
-              </div>
-              <div className="glass !rounded-lg px-3 py-2.5">
-                <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5">{t("anlz.field.estplain")}</p>
-                <p className="text-sm font-mono theme-heading">
-                  ~{formatBytes(report.deep.estimatedPlain)}
-                  {report.parsed.header.compression !== "none" && (
-                    <span className="text-[9px] theme-faint block">{t("anlz.estplain.note")}</span>
-                  )}
-                </p>
-              </div>
-              <div className="glass !rounded-lg px-3 py-2.5">
-                <p className="text-[9px] theme-faint uppercase tracking-wider mb-0.5 flex items-center gap-1">
-                  {t("anlz.field.entropy")}
-                  <InfoTip tipKey="tip.anlz.entropy" align="right" />
-                </p>
-                <p className="text-sm font-mono theme-heading">
-                  {report.deep.entropy !== null ? `${report.deep.entropy.toFixed(2)} ${t("anlz.entropy.unit")}` : "—"}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Cryptographic identifiers */}
-          <div className="space-y-2 mb-5">
-            {report.deep.saltHex && (
-              <div className="glass !rounded-lg px-3.5 py-2.5 flex items-center gap-3">
-                <KeyRound className="w-3.5 h-3.5 theme-faint shrink-0" />
-                <dt className="text-[11px] theme-muted w-32 sm:w-40 shrink-0 flex items-center gap-1">
-                  {t("anlz.field.salt")}
-                  <InfoTip tipKey="tip.anlz.salt" align="left" />
-                </dt>
-                <dd className="text-[10px] font-mono theme-text flex-1 break-all leading-relaxed">{report.deep.saltHex}</dd>
-              </div>
-            )}
-            {report.deep.ivHex && (
-              <div className="glass !rounded-lg px-3.5 py-2.5 flex items-center gap-3">
-                <KeyRound className="w-3.5 h-3.5 theme-faint shrink-0" />
-                <dt className="text-[11px] theme-muted w-32 sm:w-40 shrink-0">{t("anlz.field.iv")}</dt>
-                <dd className="text-[10px] font-mono theme-text flex-1 break-all leading-relaxed">{report.deep.ivHex}</dd>
-              </div>
-            )}
-            <div className="glass !rounded-lg px-3.5 py-2.5 flex items-center gap-3">
-              <Fingerprint className="w-3.5 h-3.5 theme-faint shrink-0" />
-              <dt className="text-[11px] theme-muted w-32 sm:w-40 shrink-0 flex items-center gap-1">
-                {t("anlz.field.sha")}
-                <InfoTip tipKey="tip.anlz.sha" align="left" />
-              </dt>
-              <dd className="text-[10px] font-mono text-primary flex-1 break-all leading-relaxed select-all">{report.deep.sha256}</dd>
-            </div>
-          </div>
-
-          {/* ─── KDF resistance ─── */}
-          <div className="glass !rounded-xl p-4 mb-5">
-            <p className="flex items-center gap-1.5 text-xs font-medium theme-heading mb-1">
-              <Gauge className="w-3 h-3" />{t("anlz.kdfres.title")}
-              <InfoTip tipKey="tip.anlz.kdfres" />
-            </p>
-            <p className="text-[11px] theme-muted mb-3 leading-relaxed">
-              {t("anlz.kdfres.desc").replace("{n}", guessesPerGpu.toLocaleString())}
-            </p>
-            <ul className="space-y-1.5">
-              {KDF_ROWS.map((row) => (
-                <li key={row.key} className="glass !rounded-lg px-3 py-2 flex items-center justify-between gap-3">
-                  <span className="text-[11px] theme-text">{t(row.key)}</span>
-                  <span className="text-[11px] font-mono text-primary shrink-0">
-                    {formatCrack(row.bits, guessesPerGpu * FLEET_SIZE)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* ─── Security observations ─── */}
-          <div className="mb-5">
-            <p className="flex items-center gap-1.5 text-xs font-medium theme-heading mb-2">
-              <ShieldCheck className="w-3 h-3" />{t("anlz.obs.title")}
-            </p>
-            {report.observations.length === 0 ? (
-              <div className="flex items-center gap-2.5 theme-primary-faint theme-primary-border border rounded-xl px-3.5 py-3">
-                <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                <p className="text-[11px] text-primary leading-relaxed">{t("anlz.obs.ok")}</p>
-              </div>
-            ) : (
-              <ul className="space-y-1.5">
-                {report.observations.map((o) => {
-                  const S = OBS_STYLE[o.severity];
-                  return (
-                    <li key={o.key} className={`flex items-start gap-2.5 glass !rounded-lg px-3.5 py-2.5 text-[11px] leading-relaxed ${S.text}`}>
-                      <S.icon className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                      {t(o.key)}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
-
-          {/* Protected metadata notice */}
-          <div className="glass !rounded-xl p-4 mb-5">
-            <div className="flex items-start gap-3">
-              <Lock className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-medium theme-heading mb-1">{t("anlz.private.title")}</p>
-                <p className="text-[11px] theme-muted leading-relaxed">{t("anlz.private.desc")}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                // Hand the analyzed file to the decrypt form via client navigation
-                setPendingDecryptFile(report.file);
-                router.push("/?t=decrypt");
-              }}
-              className="btn-primary flex-1"
-            >
-              <Unlock className="w-4 h-4" />{t("anlz.decrypt.cta")}
-            </button>
-            <button
-              type="button"
-              onClick={reset}
-              className="flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl text-xs font-medium glass theme-muted hover:theme-text transition-colors cursor-pointer"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />{t("anlz.another")}
-            </button>
-          </div>
-        </div>
-      )}
+      {report
+        ? <ReportView report={report} onReset={() => { setReport(null); setInvalid(false); }} />
+        : <Dropzone onPick={onFile} invalid={invalid} />}
     </PageLayout>
   );
 }

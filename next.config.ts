@@ -2,6 +2,15 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   trailingSlash: false,
+  images: {
+    // The only remote images in the app are the author's GitHub avatar, served
+    // by /api/author (avatars.githubusercontent.com) or by its static fallback
+    // (github.com/<user>.png). Nothing else is allowed through.
+    remotePatterns: [
+      { protocol: "https", hostname: "avatars.githubusercontent.com", pathname: "/**" },
+      { protocol: "https", hostname: "github.com", pathname: "/**" },
+    ],
+  },
   async redirects() {
     return [
       { source: "/:path+/", destination: "/:path+", permanent: true },

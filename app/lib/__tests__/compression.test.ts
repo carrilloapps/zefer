@@ -8,6 +8,10 @@ import {
   decompressBlob,
   smartCompress,
 } from "../compression";
+import type { CompressionMethod } from "../compression";
+
+/** Every real compression format, exercised identically by the round-trip suites. */
+const METHODS = ["gzip", "deflate", "deflate-raw"] as const satisfies CompressionMethod[];
 
 /**
  * Node.js v24 CompressionStream/DecompressionStream reject ArrayBuffer input
@@ -77,24 +81,10 @@ describe("compress + decompress string roundtrip", () => {
   const text =
     "Hello, Zefer! This is a test message for compression. ".repeat(20);
 
-  it("gzip", async () => {
-    const compressed = await compress(text, "gzip");
+  it.each(METHODS)("%s", async (method) => {
+    const compressed = await compress(text, method);
     expect(compressed).not.toBe(text);
-    const decompressed = await decompress(compressed, "gzip");
-    expect(decompressed).toBe(text);
-  });
-
-  it("deflate", async () => {
-    const compressed = await compress(text, "deflate");
-    expect(compressed).not.toBe(text);
-    const decompressed = await decompress(compressed, "deflate");
-    expect(decompressed).toBe(text);
-  });
-
-  it("deflate-raw", async () => {
-    const compressed = await compress(text, "deflate-raw");
-    expect(compressed).not.toBe(text);
-    const decompressed = await decompress(compressed, "deflate-raw");
+    const decompressed = await decompress(compressed, method);
     expect(decompressed).toBe(text);
   });
 });
@@ -118,24 +108,10 @@ describe("compress / decompress with method 'none'", () => {
 describe("compressBytes + decompressBytes binary roundtrip", () => {
   const data = compressibleData(2048);
 
-  it("gzip", async () => {
-    const compressed = await compressBytes(data, "gzip");
+  it.each(METHODS)("%s", async (method) => {
+    const compressed = await compressBytes(data, method);
     expect(compressed.length).toBeLessThan(data.length);
-    const decompressed = await decompressBytes(compressed, "gzip");
-    expect(Array.from(decompressed)).toEqual(Array.from(data));
-  });
-
-  it("deflate", async () => {
-    const compressed = await compressBytes(data, "deflate");
-    expect(compressed.length).toBeLessThan(data.length);
-    const decompressed = await decompressBytes(compressed, "deflate");
-    expect(Array.from(decompressed)).toEqual(Array.from(data));
-  });
-
-  it("deflate-raw", async () => {
-    const compressed = await compressBytes(data, "deflate-raw");
-    expect(compressed.length).toBeLessThan(data.length);
-    const decompressed = await decompressBytes(compressed, "deflate-raw");
+    const decompressed = await decompressBytes(compressed, method);
     expect(Array.from(decompressed)).toEqual(Array.from(data));
   });
 });

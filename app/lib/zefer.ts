@@ -1,10 +1,17 @@
 import { decryptFromBase64, combineDualKeys, hashAnswer } from "./crypto";
-import { chunkedEncryptBlob, chunkedDecryptToBuffer, chunkedDecryptBlob, CHUNK_SIZE } from "./chunked-crypto";
+import { chunkedEncryptBlob, chunkedDecryptToBuffer, chunkedDecryptBlob, CHUNK_SIZE, type ChunkedEncryptResult } from "./chunked-crypto";
 import { compressBlob, decompressBytes, decompressBlob, type CompressionMethod } from "./compression";
 
 const MAGIC_TEXT = "ZEFER3";
 const MAGIC_BIN = new Uint8Array([0x5A, 0x45, 0x46, 0x42, 0x33]); // "ZEFB3" — binary format
 const MAGIC_BIN_REVEAL = new Uint8Array([0x5A, 0x45, 0x46, 0x52, 0x33]); // "ZEFR3" — binary with reveal key
+
+// Wire layout of one encrypted block, before the framed chunks start.
+const SALT_BYTES = 32;
+const IV_BYTES = 12;
+const BLOCK_PREFIX_BYTES = SALT_BYTES + IV_BYTES;
+// magic (5) + header length (4)
+const HEADER_OFFSET = 9;
 
 // ─── Public header ───
 
@@ -89,46 +96,29 @@ export interface EncodeOptions {
 
 // ─── Encode ───
 
-export async function encodeZefer(opts: EncodeOptions): Promise<Blob> {
-  const iterations = opts.iterations || 600_000;
-  const compressionMethod = opts.compression || "none";
-  const dualKey = opts.dualKey || false;
-  const hasRevealKey = !!opts.revealKey?.trim();
-  const isFile = !!opts.fileBlob || !!opts.fileData;
+/** Public-header text: trimmed, emptied to null, stripped of markup characters. */
+function sanitizeHeaderText(s: string | undefined): string | null {
+  const v = s?.trim();
+  if (!v) return null;
+  return v.replace(/[<>"'&]/g, "");
+}
 
-  const sanitize = (s: string | undefined) => {
-    const v = s?.trim();
-    if (!v) return null;
-    return v.replace(/[<>"'&]/g, "");
-  };
-
-  const header: ZeferHeader = {
-    iterations,
-    compression: compressionMethod,
-    hint: sanitize(opts.hint),
-    note: sanitize(opts.note),
+function buildHeader(opts: EncodeOptions, isFile: boolean): ZeferHeader {
+  return {
+    iterations: opts.iterations || 600_000,
+    compression: opts.compression || "none",
+    hint: sanitizeHeaderText(opts.hint),
+    note: sanitizeHeaderText(opts.note),
     mode: isFile ? "file" : "text",
   };
+}
 
-  let answerHash: string | null = null;
-  if (opts.question && opts.questionAnswer) {
-    answerHash = await hashAnswer(opts.questionAnswer);
-  }
-
-  // Content as a Blob so large files stream from disk and are never held in a
-  // single contiguous buffer (the ~2 GB per-ArrayBuffer cap). fileBlob wins;
-  // fileData (in-memory ArrayBuffer) and text are wrapped cheaply by reference.
-  let rawContent: Blob;
-  if (opts.fileBlob) rawContent = opts.fileBlob;
-  else if (opts.fileData) rawContent = new Blob([opts.fileData]);
-  else rawContent = new Blob([new TextEncoder().encode(opts.content || "")]);
-  const originalSize = rawContent.size;
-
-  const meta: ZeferMeta = {
+function buildMeta(opts: EncodeOptions, fileSize: number, answerHash: string | null): ZeferMeta {
+  return {
     v: 3,
     fileName: opts.fileName,
     fileType: opts.fileType || null,
-    fileSize: originalSize,
+    fileSize,
     expiresAt: opts.expiresAt,
     createdAt: Date.now(),
     answerHash,
@@ -136,28 +126,99 @@ export async function encodeZefer(opts: EncodeOptions): Promise<Blob> {
     question: opts.question?.trim() || null,
     maxAttempts: opts.maxAttempts || 0,
   };
+}
+
+/**
+ * Content as a Blob so large files stream from disk and are never held in a
+ * single contiguous buffer (the ~2 GB per-ArrayBuffer cap). fileBlob wins;
+ * fileData (in-memory ArrayBuffer) and text are wrapped cheaply by reference.
+ */
+function contentBlob(opts: EncodeOptions): Blob {
+  if (opts.fileBlob) return opts.fileBlob;
+  if (opts.fileData) return new Blob([opts.fileData]);
+  return new Blob([new TextEncoder().encode(opts.content || "")]);
+}
+
+/**
+ * Pack: 4-byte length prefix + meta JSON + data bytes. The prefix and meta
+ * are tiny; the (large) content stays a Blob — new Blob() composes by
+ * reference, so nothing is copied into one buffer.
+ */
+function packPayload(meta: ZeferMeta, data: Blob): Blob {
+  const metaBytes = new TextEncoder().encode(JSON.stringify(meta));
+  const lengthPrefix = new Uint8Array(4);
+  new DataView(lengthPrefix.buffer).setUint32(0, metaBytes.length, false);
+  return new Blob([lengthPrefix, metaBytes, data]);
+}
+
+/** One encrypted block on the wire: salt (32B) + baseIv (12B) + framed chunks. */
+function blockParts(block: ChunkedEncryptResult): BlobPart[] {
+  return [
+    block.salt.buffer as ArrayBuffer,
+    block.baseIv.buffer as ArrayBuffer,
+    ...block.chunks.map((chunk) => chunk.buffer as ArrayBuffer),
+  ];
+}
+
+function blockSize(block: ChunkedEncryptResult): number {
+  return SALT_BYTES + IV_BYTES + block.chunks.reduce((total, chunk) => total + chunk.byteLength, 0);
+}
+
+/** Assemble the final ZEFB3 (single block) or ZEFR3 (main + reveal) file. */
+function packageZefer(
+  headerJson: string,
+  main: ChunkedEncryptResult,
+  reveal: ChunkedEncryptResult | null
+): Blob {
+  const headerBytes = new TextEncoder().encode(headerJson);
+  const headerLenBuf = new Uint8Array(4);
+  new DataView(headerLenBuf.buffer).setUint32(0, headerBytes.length, false);
+
+  const magic = reveal ? MAGIC_BIN_REVEAL : MAGIC_BIN;
+  const parts: BlobPart[] = [
+    magic.buffer as ArrayBuffer,
+    headerLenBuf.buffer as ArrayBuffer,
+    headerBytes.buffer as ArrayBuffer,
+  ];
+
+  if (reveal) {
+    // Dual-block format: [mainBlockSize][mainBlock][revealBlock]
+    const mainBlockSizeBuf = new Uint8Array(4);
+    new DataView(mainBlockSizeBuf.buffer).setUint32(0, blockSize(main), false);
+    parts.push(mainBlockSizeBuf.buffer as ArrayBuffer, ...blockParts(main), ...blockParts(reveal));
+  } else {
+    // Single-block format (original)
+    parts.push(...blockParts(main));
+  }
+
+  return new Blob(parts, { type: "application/octet-stream" });
+}
+
+export async function encodeZefer(opts: EncodeOptions): Promise<Blob> {
+  const isFile = !!opts.fileBlob || !!opts.fileData;
+  const header = buildHeader(opts, isFile);
+  const hasRevealKey = !!opts.revealKey?.trim();
+
+  const answerHash = opts.question && opts.questionAnswer
+    ? await hashAnswer(opts.questionAnswer)
+    : null;
+
+  const rawContent = contentBlob(opts);
+  const meta = buildMeta(opts, rawContent.size, answerHash);
 
   // Compress ALL content if compression is enabled — no exceptions.
   // Streams through CompressionStream into a (possibly disk-backed) Blob.
   opts.onProgress?.compressing(0);
-  const dataToEncrypt = compressionMethod !== "none"
-    ? await compressBlob(rawContent, compressionMethod)
+  const dataToEncrypt = header.compression !== "none"
+    ? await compressBlob(rawContent, header.compression)
     : rawContent;
   opts.onProgress?.compressingDone();
 
-  // Pack: 4-byte length prefix + meta JSON + data bytes. The prefix and meta
-  // are tiny; the (large) content stays a Blob — new Blob() composes by
-  // reference, so nothing is copied into one buffer.
-  const metaBytes = new TextEncoder().encode(JSON.stringify(meta));
-  const lengthPrefix = new Uint8Array(4);
-  new DataView(lengthPrefix.buffer).setUint32(0, metaBytes.length, false);
-  const combined = new Blob([lengthPrefix, metaBytes, dataToEncrypt]);
+  const combined = packPayload(meta, dataToEncrypt);
 
-  const mainPassphrase = dualKey && opts.secondPassphrase
+  const mainPassphrase = opts.dualKey && opts.secondPassphrase
     ? combineDualKeys(opts.passphrase, opts.secondPassphrase)
     : opts.passphrase;
-
-  const headerJson = JSON.stringify(header);
 
   // All modes use binary chunked format (ZEFB3 / ZEFR3)
   const estimatedChunks = Math.ceil(combined.size / CHUNK_SIZE);
@@ -167,7 +228,7 @@ export async function encodeZefer(opts: EncodeOptions): Promise<Blob> {
   const result = await chunkedEncryptBlob(
     combined,
     mainPassphrase,
-    iterations,
+    header.iterations,
     (chunkIndex) => {
       if (chunkIndex === 1) opts.onProgress?.derivingDone();
       opts.onProgress?.encrypting(chunkIndex, grandTotal);
@@ -179,7 +240,7 @@ export async function encodeZefer(opts: EncodeOptions): Promise<Blob> {
     ? await chunkedEncryptBlob(
         combined,
         opts.revealKey!.trim(),
-        iterations,
+        header.iterations,
         (chunkIndex) => {
           opts.onProgress?.encrypting(estimatedChunks + chunkIndex, grandTotal);
         }
@@ -187,41 +248,7 @@ export async function encodeZefer(opts: EncodeOptions): Promise<Blob> {
     : null;
 
   opts.onProgress?.packaging();
-  const headerBytesEnc = new TextEncoder().encode(headerJson);
-  const headerLenBuf = new Uint8Array(4);
-  new DataView(headerLenBuf.buffer).setUint32(0, headerBytesEnc.length, false);
-
-  const magic = revealResult ? MAGIC_BIN_REVEAL : MAGIC_BIN;
-  const parts: BlobPart[] = [
-    magic.buffer as ArrayBuffer,
-    headerLenBuf.buffer as ArrayBuffer,
-    headerBytesEnc.buffer as ArrayBuffer,
-  ];
-
-  if (revealResult) {
-    // Dual-block format: [mainBlockSize][mainBlock][revealBlock]
-    let mainBlockSize = 32 + 12; // salt + baseIv
-    for (const chunk of result.chunks) mainBlockSize += chunk.byteLength;
-
-    const mainBlockSizeBuf = new Uint8Array(4);
-    new DataView(mainBlockSizeBuf.buffer).setUint32(0, mainBlockSize, false);
-    parts.push(mainBlockSizeBuf.buffer as ArrayBuffer);
-
-    parts.push(result.salt.buffer as ArrayBuffer);
-    parts.push(result.baseIv.buffer as ArrayBuffer);
-    for (const chunk of result.chunks) parts.push(chunk.buffer as ArrayBuffer);
-
-    parts.push(revealResult.salt.buffer as ArrayBuffer);
-    parts.push(revealResult.baseIv.buffer as ArrayBuffer);
-    for (const chunk of revealResult.chunks) parts.push(chunk.buffer as ArrayBuffer);
-  } else {
-    // Single-block format (original)
-    parts.push(result.salt.buffer as ArrayBuffer);
-    parts.push(result.baseIv.buffer as ArrayBuffer);
-    for (const chunk of result.chunks) parts.push(chunk.buffer as ArrayBuffer);
-  }
-
-  return new Blob(parts, { type: "application/octet-stream" });
+  return packageZefer(JSON.stringify(header), result, revealResult);
 }
 
 // ─── Decode ───
@@ -242,50 +269,47 @@ export type DecodeResult =
 export interface ParsedFile {
   header: ZeferHeader;
   binary: boolean;
-  // Text format fields
-  encryptedLines?: string[];
+  /** Legacy text format: base64 lines. Always `[]` for binary containers. */
+  encryptedLines: string[];
   // Binary format fields
   binaryData?: Uint8Array;
   revealBinaryData?: Uint8Array;
 }
 
-export function parseFile(fileContent: string, rawBytes?: ArrayBuffer): ParsedFile | null {
-  // Check for binary format first
-  if (rawBytes && rawBytes.byteLength >= 5) {
-    const magic = new Uint8Array(rawBytes, 0, 5);
-    const isBinary = magic[0] === 0x5A && magic[1] === 0x45 && magic[2] === 0x46 && magic[4] === 0x33;
-    const isRevealFormat = magic[3] === 0x52; // 'R' in ZEFR3
-    if (isBinary && (magic[3] === 0x42 || isRevealFormat)) {
-      // ZEFB3 / ZEFR3 binary format
-      const view = new DataView(rawBytes, 5);
-      const headerLen = view.getUint32(0, false);
-      const headerStr = new TextDecoder().decode(new Uint8Array(rawBytes, 9, headerLen));
-      try {
-        const header = JSON.parse(headerStr) as ZeferHeader;
-        if (!header.mode) header.mode = "file";
-        const dataOffset = 9 + headerLen;
-        if (isRevealFormat) {
-          const mainBlockSize = new DataView(rawBytes, dataOffset).getUint32(0, false);
-          const mainStart = dataOffset + 4;
-          return {
-            header,
-            binary: true,
-            binaryData: new Uint8Array(rawBytes, mainStart, mainBlockSize),
-            revealBinaryData: new Uint8Array(rawBytes, mainStart + mainBlockSize),
-          };
-        }
-        return {
-          header,
-          binary: true,
-          binaryData: new Uint8Array(rawBytes, dataOffset),
-        };
-      } catch {
-        return null;
-      }
-    }
-  }
+/** True for the 5-byte "ZEFB3"/"ZEFR3" magic of the binary formats. */
+function isBinaryMagic(magic: Uint8Array): boolean {
+  const zef = magic[0] === 0x5a && magic[1] === 0x45 && magic[2] === 0x46 && magic[4] === 0x33;
+  return zef && (magic[3] === 0x42 || magic[3] === 0x52); // 'B' in ZEFB3, 'R' in ZEFR3
+}
 
-  // Text format
+/** ZEFB3 / ZEFR3 binary format, already known to carry the right magic. */
+function parseBinaryFile(rawBytes: ArrayBuffer): ParsedFile | null {
+  const isRevealFormat = new Uint8Array(rawBytes, 3, 1)[0] === 0x52; // 'R' in ZEFR3
+  const headerLen = new DataView(rawBytes, 5).getUint32(0, false);
+  const headerStr = new TextDecoder().decode(new Uint8Array(rawBytes, HEADER_OFFSET, headerLen));
+  try {
+    const header = JSON.parse(headerStr) as ZeferHeader;
+    if (!header.mode) header.mode = "file";
+    const dataOffset = HEADER_OFFSET + headerLen;
+    if (!isRevealFormat) {
+      return { header, binary: true, encryptedLines: [], binaryData: new Uint8Array(rawBytes, dataOffset) };
+    }
+    const mainBlockSize = new DataView(rawBytes, dataOffset).getUint32(0, false);
+    const mainStart = dataOffset + 4;
+    return {
+      header,
+      binary: true,
+      encryptedLines: [],
+      binaryData: new Uint8Array(rawBytes, mainStart, mainBlockSize),
+      revealBinaryData: new Uint8Array(rawBytes, mainStart + mainBlockSize),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Legacy ZEFER3 / ZEFER2 line format. */
+function parseTextFile(fileContent: string): ParsedFile | null {
   const lines = fileContent.trim().split("\n");
   if (lines.length < 3) return null;
   if (lines[0] !== MAGIC_TEXT && lines[0] !== "ZEFER2") return null;
@@ -299,15 +323,27 @@ export function parseFile(fileContent: string, rawBytes?: ArrayBuffer): ParsedFi
   }
 }
 
+export function parseFile(fileContent: string, rawBytes?: ArrayBuffer): ParsedFile | null {
+  // Check for binary format first
+  if (rawBytes && rawBytes.byteLength >= 5 && isBinaryMagic(new Uint8Array(rawBytes, 0, 5))) {
+    return parseBinaryFile(rawBytes);
+  }
+  return parseTextFile(fileContent);
+}
+
+type BufferPayload = { meta: ZeferMeta; rawData: ArrayBuffer };
+type AnyPayload = { meta: ZeferMeta; rawData: ArrayBuffer | Blob };
+type ChunkProgress = (chunkIndex: number, totalChunks: number) => void;
+
 async function tryDecryptText(
   encryptedLines: string[],
   passphrase: string,
   header: ZeferHeader
-): Promise<{ meta: ZeferMeta; rawData: ArrayBuffer } | null> {
+): Promise<BufferPayload | null> {
   for (const line of encryptedLines) {
     try {
       const decryptedBuf = await decryptFromBase64(line, passphrase, header.iterations);
-      return extractPayload(new Uint8Array(decryptedBuf), header);
+      return extractPayload(new Uint8Array(decryptedBuf));
     } catch {
       continue;
     }
@@ -319,68 +355,85 @@ async function tryDecryptBinary(
   data: Uint8Array,
   passphrase: string,
   header: ZeferHeader,
-  onChunkProgress?: (chunkIndex: number, totalChunks: number) => void
-): Promise<{ meta: ZeferMeta; rawData: ArrayBuffer } | null> {
-  if (data.length < 44) return null;
-  const salt = data.slice(0, 32);
-  const baseIv = data.slice(32, 44);
-  const encryptedChunks = data.slice(44);
+  onChunkProgress?: ChunkProgress
+): Promise<BufferPayload | null> {
+  if (data.length < BLOCK_PREFIX_BYTES) return null;
+  const salt = data.slice(0, SALT_BYTES);
+  const baseIv = data.slice(SALT_BYTES, BLOCK_PREFIX_BYTES);
+  const encryptedChunks = data.slice(BLOCK_PREFIX_BYTES);
 
   try {
     const decryptedBuf = await chunkedDecryptToBuffer(encryptedChunks, salt, baseIv, passphrase, header.iterations, onChunkProgress);
-    return await extractPayload(new Uint8Array(decryptedBuf), header);
+    return extractPayload(new Uint8Array(decryptedBuf));
   } catch {
     return null;
   }
 }
 
-async function extractPayload(
-  decryptedArr: Uint8Array,
-  header: ZeferHeader
-): Promise<{ meta: ZeferMeta; rawData: ArrayBuffer } | null> {
-  // Try length-prefix format (ZEFER3 current)
-  if (decryptedArr.length >= 4) {
-    const metaLength = new DataView(decryptedArr.buffer, decryptedArr.byteOffset).getUint32(0, false);
-    if (metaLength > 0 && metaLength + 4 <= decryptedArr.length) {
-      try {
-        const metaStr = new TextDecoder().decode(decryptedArr.slice(4, 4 + metaLength));
-        const testMeta = JSON.parse(metaStr);
-        if (isValidMeta(testMeta)) {
-          const dataBytes = decryptedArr.slice(4 + metaLength);
-          return { meta: testMeta as ZeferMeta, rawData: dataBytes.buffer as ArrayBuffer };
-        }
-      } catch { /* try next */ }
-    }
-  }
-
-  // Fallback: null-byte separator (older files)
-  const sepIndex = decryptedArr.indexOf(0);
-  if (sepIndex > 0 && sepIndex < decryptedArr.length - 1) {
-    try {
-      const metaStr = new TextDecoder().decode(decryptedArr.slice(0, sepIndex));
-      const testMeta = JSON.parse(metaStr);
-      if (isValidMeta(testMeta)) {
-        const dataBytes = decryptedArr.slice(sepIndex + 1);
-        return { meta: testMeta as ZeferMeta, rawData: dataBytes.buffer as ArrayBuffer };
-      }
-    } catch { /* try next */ }
-  }
-
-  // Fallback: ZEFER2 format (compression not supported — decodeZefer handles it separately)
+/**
+ * Decrypted bytes are attacker-influenced, so every payload form has to survive
+ * malformed JSON. One total parser keeps that failure in a single place.
+ */
+function parseJsonOrNull(text: string): unknown {
   try {
-    const text = new TextDecoder().decode(decryptedArr);
-    const legacy = JSON.parse(text);
-    const meta: ZeferMeta = {
-      v: 3, fileName: legacy.fileName, fileType: null, fileSize: 0,
-      expiresAt: legacy.expiresAt, createdAt: legacy.createdAt,
-      answerHash: legacy.answerHash, allowedIps: legacy.allowedIps || [],
-      question: legacy.question || null, maxAttempts: legacy.maxAttempts || 0,
-    };
-    const contentBytes = new TextEncoder().encode(legacy.content);
-    return { meta, rawData: contentBytes.buffer as ArrayBuffer };
+    return JSON.parse(text);
   } catch {
     return null;
   }
+}
+
+/** Length-prefix payload form (ZEFB3/ZEFR3/ZEFER3 current). */
+function readLengthPrefixed(decryptedArr: Uint8Array): BufferPayload | null {
+  if (decryptedArr.length < 4) return null;
+  const metaLength = new DataView(decryptedArr.buffer, decryptedArr.byteOffset).getUint32(0, false);
+  if (metaLength <= 0 || metaLength + 4 > decryptedArr.length) return null;
+
+  const meta = parseJsonOrNull(new TextDecoder().decode(decryptedArr.slice(4, 4 + metaLength)));
+  if (!isValidMeta(meta)) return null;
+  return { meta, rawData: decryptedArr.slice(4 + metaLength).buffer as ArrayBuffer };
+}
+
+/** Null-byte separator payload form (older files). */
+function readNullSeparated(decryptedArr: Uint8Array): BufferPayload | null {
+  const sepIndex = decryptedArr.indexOf(0);
+  if (sepIndex <= 0 || sepIndex >= decryptedArr.length - 1) return null;
+
+  const meta = parseJsonOrNull(new TextDecoder().decode(decryptedArr.slice(0, sepIndex)));
+  if (!isValidMeta(meta)) return null;
+  return { meta, rawData: decryptedArr.slice(sepIndex + 1).buffer as ArrayBuffer };
+}
+
+interface LegacyZefer2 {
+  fileName: string | null;
+  expiresAt: number;
+  createdAt: number;
+  answerHash: string | null;
+  allowedIps?: string[];
+  question?: string | null;
+  maxAttempts?: number;
+  content: string;
+}
+
+/** ZEFER2 form: the whole plaintext is one JSON document. */
+function readLegacyJson(decryptedArr: Uint8Array): BufferPayload | null {
+  const legacy = parseJsonOrNull(new TextDecoder().decode(decryptedArr)) as LegacyZefer2 | null;
+  if (!legacy) return null;
+
+  const meta: ZeferMeta = {
+    v: 3, fileName: legacy.fileName, fileType: null, fileSize: 0,
+    expiresAt: legacy.expiresAt, createdAt: legacy.createdAt,
+    answerHash: legacy.answerHash, allowedIps: legacy.allowedIps || [],
+    question: legacy.question || null, maxAttempts: legacy.maxAttempts || 0,
+  };
+  const contentBytes = new TextEncoder().encode(legacy.content);
+  return { meta, rawData: contentBytes.buffer as ArrayBuffer };
+}
+
+/** Try each payload form, newest first, and take the first that validates. */
+function extractPayload(decryptedArr: Uint8Array): BufferPayload | null {
+  return readLengthPrefixed(decryptedArr)
+    ?? readNullSeparated(decryptedArr)
+    ?? readLegacyJson(decryptedArr);
 }
 
 export async function decodeZefer(
@@ -402,105 +455,168 @@ export async function decodeZefer(
     };
   }
 ): Promise<DecodeResult> {
-  // ─── Resolve header + decryption strategy ───
-  // Streaming path: a binary (ZEFB3/ZEFR3) File/Blob is read in slices.
-  // In-memory path: rawBytes/text string (legacy + tests + small files).
-  const fileBlob = options?.fileBlob;
-  let parsed: ParsedFile | null = null;
-  let streaming: { header: ZeferHeader; mainRegion: Blob; revealRegion: Blob | null } | null = null;
+  const source = await resolveSource(fileContent, options);
+  if (!source) return { ok: false, error: "invalid_format" };
+  const header = source.header;
 
-  // Streaming path only applies to binary (ZEFB3/ZEFR3) blobs. Anything else
-  // (legacy text, no blob) uses the in-memory parseFile path with fileContent.
-  if (fileBlob) {
-    streaming = await parseBinaryHeaderBlob(fileBlob);
-  }
-  if (!streaming) {
-    parsed = parseFile(fileContent, options?.rawBytes);
-    if (!parsed) return { ok: false, error: "invalid_format" };
-  }
-  const header: ZeferHeader = streaming ? streaming.header : parsed!.header;
-
-  const { secondPassphrase, questionAnswer } = options || {};
-
-  const candidates: string[] = [];
-  candidates.push(passphrase);
-  if (secondPassphrase) {
-    candidates.push(combineDualKeys(passphrase, secondPassphrase));
-  }
+  const candidates = options?.secondPassphrase
+    ? [passphrase, combineDualKeys(passphrase, options.secondPassphrase)]
+    : [passphrase];
 
   const startTime = performance.now();
-  const MIN_RESPONSE_MS = 100;
-
-  let result: { meta: ZeferMeta; rawData: ArrayBuffer | Blob } | null = null;
 
   options?.onProgress?.deriving();
-  const progress = (ci: number, tc: number) => {
+  const progress: ChunkProgress = (ci, tc) => {
     if (ci === 1) options?.onProgress?.derivingDone();
     options?.onProgress?.decrypting(ci, tc);
   };
+  const derivingDone = () => options?.onProgress?.derivingDone();
 
+  let result: AnyPayload | null = null;
   for (const candidate of candidates) {
-    if (streaming) {
-      result = await tryDecryptBinaryBlob(streaming.mainRegion, candidate, header, progress);
-      if (!result && streaming.revealRegion) {
-        result = await tryDecryptBinaryBlob(streaming.revealRegion, candidate, header, progress);
-      }
-    } else if (parsed!.binary && parsed!.binaryData) {
-      result = await tryDecryptBinary(parsed!.binaryData, candidate, header, progress);
-      if (!result && parsed!.revealBinaryData) {
-        result = await tryDecryptBinary(parsed!.revealBinaryData, candidate, header, progress);
-      }
-    } else if (parsed!.encryptedLines) {
-      result = await tryDecryptText(parsed!.encryptedLines, candidate, header);
-      if (result) options?.onProgress?.derivingDone();
-    }
+    result = await decryptWithCandidate(source, candidate, progress, derivingDone);
     if (result) break;
   }
-
-  if (!result) {
-    const elapsed = performance.now() - startTime;
-    if (elapsed < MIN_RESPONSE_MS) await new Promise((r) => setTimeout(r, MIN_RESPONSE_MS - elapsed));
-    return { ok: false, error: "wrong_passphrase" };
-  }
+  if (!result) return wrongPassphrase(startTime);
 
   const { meta, rawData } = result;
 
-  const attemptKey = meta.maxAttempts > 0
-    ? `zefer_attempts_${(parsed?.encryptedLines?.[0] || "bin").substring(0, 40)}`
-    : null;
-
-  const policyError = await checkPolicies(meta, attemptKey, questionAnswer);
+  const attemptKey = attemptKeyFor(meta, source.parsed);
+  const policyError = await checkPolicies(meta, attemptKey, options?.questionAnswer);
   if (policyError) return { ok: false, error: policyError };
 
   // Decompress if compression was applied (streaming Blob or in-memory buffer).
   options?.onProgress?.decompressing();
-  let content: string | null = null;
-  let fileData: ArrayBuffer | Blob | null = null;
+  const payload = await finalizeContent(header, meta, rawData);
 
+  return { ok: true, payload: { meta, ...payload }, header };
+}
+
+// ─── decodeZefer helpers ───
+
+interface DecodeSource {
+  header: ZeferHeader;
+  /** Streaming path: regions of a binary (ZEFB3/ZEFR3) File/Blob, read in slices. */
+  streaming: { mainRegion: Blob; revealRegion: Blob | null } | null;
+  /** In-memory path: rawBytes/text string (legacy + tests + small files). */
+  parsed: ParsedFile | null;
+}
+
+/**
+ * Pick the decryption strategy. The streaming path only applies to binary
+ * (ZEFB3/ZEFR3) blobs; anything else (legacy text, no blob) falls back to the
+ * in-memory parseFile path with fileContent.
+ */
+async function resolveSource(
+  fileContent: string,
+  options?: { rawBytes?: ArrayBuffer; fileBlob?: Blob }
+): Promise<DecodeSource | null> {
+  if (options?.fileBlob) {
+    const streaming = await parseBinaryHeaderBlob(options.fileBlob);
+    if (streaming) {
+      return {
+        header: streaming.header,
+        streaming: { mainRegion: streaming.mainRegion, revealRegion: streaming.revealRegion },
+        parsed: null,
+      };
+    }
+  }
+  const parsed = parseFile(fileContent, options?.rawBytes);
+  return parsed ? { header: parsed.header, streaming: null, parsed } : null;
+}
+
+/** Main block first, then the reveal block if the file carries one. */
+async function decryptRegions(
+  main: Blob,
+  reveal: Blob | null,
+  candidate: string,
+  header: ZeferHeader,
+  progress: ChunkProgress
+): Promise<AnyPayload | null> {
+  const fromMain = await tryDecryptBinaryBlob(main, candidate, header, progress);
+  if (fromMain || !reveal) return fromMain;
+  return tryDecryptBinaryBlob(reveal, candidate, header, progress);
+}
+
+async function decryptBlocks(
+  main: Uint8Array,
+  reveal: Uint8Array | undefined,
+  candidate: string,
+  header: ZeferHeader,
+  progress: ChunkProgress
+): Promise<AnyPayload | null> {
+  const fromMain = await tryDecryptBinary(main, candidate, header, progress);
+  if (fromMain || !reveal) return fromMain;
+  return tryDecryptBinary(reveal, candidate, header, progress);
+}
+
+async function decryptWithCandidate(
+  source: DecodeSource,
+  candidate: string,
+  progress: ChunkProgress,
+  onTextDecrypted: () => void
+): Promise<AnyPayload | null> {
+  if (source.streaming) {
+    const { mainRegion, revealRegion } = source.streaming;
+    return decryptRegions(mainRegion, revealRegion, candidate, source.header, progress);
+  }
+
+  const parsed = source.parsed!;
+  if (parsed.binary) {
+    return decryptBlocks(parsed.binaryData!, parsed.revealBinaryData, candidate, source.header, progress);
+  }
+  const result = await tryDecryptText(parsed.encryptedLines, candidate, source.header);
+  if (result) onTextDecrypted();
+  return result;
+}
+
+const MIN_RESPONSE_MS = 100;
+
+/**
+ * Pad every failed attempt to a constant floor so response time does not leak
+ * how far the decryption got.
+ */
+async function wrongPassphrase(startTime: number): Promise<DecodeResult> {
+  const elapsed = performance.now() - startTime;
+  if (elapsed < MIN_RESPONSE_MS) await new Promise((r) => setTimeout(r, MIN_RESPONSE_MS - elapsed));
+  return { ok: false, error: "wrong_passphrase" };
+}
+
+function attemptKeyFor(meta: ZeferMeta, parsed: ParsedFile | null): string | null {
+  if (meta.maxAttempts <= 0) return null;
+  return `zefer_attempts_${(parsed?.encryptedLines[0] || "bin").substring(0, 40)}`;
+}
+
+/** Decompress if needed, then shape the plaintext as text or file data. */
+async function finalizeContent(
+  header: ZeferHeader,
+  meta: ZeferMeta,
+  rawData: ArrayBuffer | Blob
+): Promise<{ content: string | null; fileData: ArrayBuffer | Blob | null }> {
   if (rawData instanceof Blob) {
     // Cap decompression at the authenticated original size (+1 KB margin) to
     // reject decompression bombs; meta.fileSize lives inside the AES-GCM payload.
     const finalBlob = header.compression !== "none"
       ? await decompressBlob(rawData, header.compression, meta.fileSize + 1024)
       : rawData;
-    if (header.mode === "file") fileData = finalBlob;
-    else content = await finalBlob.text();
-  } else {
-    let finalData: ArrayBuffer;
-    if (header.compression !== "none") {
-      const decompressed = await decompressBytes(new Uint8Array(rawData), header.compression);
-      finalData = decompressed.buffer as ArrayBuffer;
-    } else {
-      finalData = rawData;
-    }
-    if (header.mode === "file") fileData = finalData;
-    else content = new TextDecoder().decode(finalData);
+    return header.mode === "file"
+      ? { content: null, fileData: finalBlob }
+      : { content: await finalBlob.text(), fileData: null };
   }
 
-  return { ok: true, payload: { meta, content, fileData }, header };
+  const finalData = header.compression !== "none"
+    ? (await decompressBytes(new Uint8Array(rawData), header.compression)).buffer as ArrayBuffer
+    : rawData;
+  return header.mode === "file"
+    ? { content: null, fileData: finalData }
+    : { content: new TextDecoder().decode(finalData), fileData: null };
 }
 
 // ─── Shared post-decrypt policy checks (used by both paths) ───
+
+function readAttempts(attemptKey: string): number {
+  return Number.parseInt(localStorage.getItem(attemptKey) || "0", 10);
+}
 
 async function checkPolicies(
   meta: ZeferMeta,
@@ -508,8 +624,7 @@ async function checkPolicies(
   questionAnswer: string | undefined
 ): Promise<DecodeError | null> {
   if (attemptKey) {
-    const attempts = parseInt(localStorage.getItem(attemptKey) || "0", 10);
-    if (attempts >= meta.maxAttempts) return "max_attempts";
+    if (readAttempts(attemptKey) >= meta.maxAttempts) return "max_attempts";
   }
 
   if (meta.answerHash && meta.question) {
@@ -517,8 +632,7 @@ async function checkPolicies(
     const hash = await hashAnswer(questionAnswer);
     if (hash !== meta.answerHash) {
       if (attemptKey) {
-        const attempts = parseInt(localStorage.getItem(attemptKey) || "0", 10);
-        localStorage.setItem(attemptKey, String(attempts + 1));
+        localStorage.setItem(attemptKey, String(readAttempts(attemptKey) + 1));
       }
       return "wrong_answer";
     }
@@ -535,18 +649,17 @@ async function checkPolicies(
 async function parseBinaryHeaderBlob(
   file: Blob
 ): Promise<{ header: ZeferHeader; mainRegion: Blob; revealRegion: Blob | null } | null> {
-  if (file.size < 9) return null;
-  const head = new Uint8Array(await file.slice(0, 9).arrayBuffer());
-  const isBinary = head[0] === 0x5a && head[1] === 0x45 && head[2] === 0x46 && head[4] === 0x33;
+  if (file.size < HEADER_OFFSET) return null;
+  const head = new Uint8Array(await file.slice(0, HEADER_OFFSET).arrayBuffer());
+  if (!isBinaryMagic(head)) return null;
   const isReveal = head[3] === 0x52; // 'R' in ZEFR3
-  if (!isBinary || !(head[3] === 0x42 || isReveal)) return null;
 
   const headerLen = new DataView(head.buffer, head.byteOffset + 5).getUint32(0, false);
   try {
-    const headerStr = new TextDecoder().decode(await file.slice(9, 9 + headerLen).arrayBuffer());
+    const headerStr = new TextDecoder().decode(await file.slice(HEADER_OFFSET, HEADER_OFFSET + headerLen).arrayBuffer());
     const header = JSON.parse(headerStr) as ZeferHeader;
     if (!header.mode) header.mode = "file";
-    const dataOffset = 9 + headerLen;
+    const dataOffset = HEADER_OFFSET + headerLen;
 
     if (isReveal) {
       const mbsBuf = await file.slice(dataOffset, dataOffset + 4).arrayBuffer();
@@ -568,12 +681,12 @@ async function tryDecryptBinaryBlob(
   region: Blob,
   passphrase: string,
   header: ZeferHeader,
-  onProgress?: (chunkIndex: number, totalChunks: number) => void
+  onProgress?: ChunkProgress
 ): Promise<{ meta: ZeferMeta; rawData: Blob } | null> {
-  if (region.size < 44) return null;
-  const salt = new Uint8Array(await region.slice(0, 32).arrayBuffer());
-  const baseIv = new Uint8Array(await region.slice(32, 44).arrayBuffer());
-  const chunks = region.slice(44);
+  if (region.size < BLOCK_PREFIX_BYTES) return null;
+  const salt = new Uint8Array(await region.slice(0, SALT_BYTES).arrayBuffer());
+  const baseIv = new Uint8Array(await region.slice(SALT_BYTES, BLOCK_PREFIX_BYTES).arrayBuffer());
+  const chunks = region.slice(BLOCK_PREFIX_BYTES);
   try {
     const decrypted = await chunkedDecryptBlob(chunks, salt, baseIv, passphrase, header.iterations, onProgress);
     return await extractPayloadBlob(decrypted);

@@ -19,7 +19,7 @@ import {
   Library,
   Boxes,
 } from "lucide-react";
-import { PageLayout, PageHeader, IconBox, SectionCard, GlassCard } from "@/app/components/ui";
+import { PageLayout, PageHeader, IconBox, GlassCard } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
 
 const SPECS = [

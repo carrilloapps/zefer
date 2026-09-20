@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo, useSyncExternalStore } from "react";
 import { useUrlParams } from "@/app/lib/useUrlParams";
 import { Lock, Unlock, BookOpen, Bot, Download, Shield, Code, Cpu, KeyRound, FileSearch, Terminal, Library } from "lucide-react";
 import Link from "next/link";
+import { Tabs } from "radix-ui";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import EncryptForm from "@/app/components/EncryptForm";
@@ -20,16 +21,45 @@ const ROTATE_KEYS: TranslationKey[] = [
   "hero.rotate.5",
 ];
 
+// ─── Reduced-motion store ───
+//
+// The OS motion preference is an external system, so it is read through
+// useSyncExternalStore: the server render and the hydration render both see
+// `true` (no animation, matching the static markup), and the real preference
+// arrives right after without a setState-in-effect.
+const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
+
+function getReduceMotion(): boolean {
+  return window.matchMedia(REDUCED_MOTION).matches;
+}
+
+/** Server and hydration render: assume reduced motion, the safe default. */
+function getServerReduceMotion(): boolean {
+  return true;
+}
+
+function subscribeReduceMotion(listener: () => void): () => void {
+  const mq = window.matchMedia(REDUCED_MOTION);
+  mq.addEventListener("change", listener);
+  return () => mq.removeEventListener("change", listener);
+}
+
+/** Deterministic per-character jitter: keeps the typing rhythm human without
+ *  a pseudorandom generator. */
+function jitter(step: number, base: number, spread: number): number {
+  return base + ((step * 7) % spread);
+}
+
 function useTypewriter(phrases: string[], enabled: boolean) {
-  const langKey = phrases[0] ?? "";
+  const langKey = phrases[0];
   const [display, setDisplay] = useState(langKey);
   const [showCursor, setShowCursor] = useState(true);
   const phrasesRef = useRef(phrases);
   phrasesRef.current = phrases;
 
   useEffect(() => {
-    if (!enabled || phrasesRef.current.length === 0) {
-      setDisplay(phrasesRef.current[0] ?? "");
+    if (!enabled) {
+      setDisplay(phrasesRef.current[0]);
       setShowCursor(false);
       return;
     }
@@ -40,11 +70,13 @@ function useTypewriter(phrases: string[], enabled: boolean) {
 
     const wait = (ms: number) =>
       new Promise<void>((resolve) => {
-        timer = setTimeout(() => { if (!cancelled) resolve(); }, ms);
+        // The cleanup below clears the pending timer, so a cancelled wait
+        // simply never resolves and the loop stops where it stands.
+        timer = setTimeout(resolve, ms);
       });
 
     async function run() {
-      setDisplay(phrasesRef.current[0] ?? "");
+      setDisplay(phrasesRef.current[0]);
       await wait(3000);
 
       while (!cancelled) {
@@ -55,7 +87,7 @@ function useTypewriter(phrases: string[], enabled: boolean) {
         // Delete
         for (let i = current.length; i >= 0 && !cancelled; i--) {
           setDisplay(current.slice(0, i));
-          await wait(30 + Math.random() * 20);
+          await wait(jitter(i, 30, 20));
         }
 
         if (cancelled) break;
@@ -64,7 +96,7 @@ function useTypewriter(phrases: string[], enabled: boolean) {
         // Type
         for (let i = 0; i <= next.length && !cancelled; i++) {
           setDisplay(next.slice(0, i));
-          await wait(50 + Math.random() * 40);
+          await wait(jitter(i, 50, 40));
         }
 
         if (cancelled) break;
@@ -91,11 +123,11 @@ export default function HomeContent() {
   const { t } = useLanguage();
   const { tab, setTab } = usePreferences();
   const searchParams = useUrlParams();
-  const [reduceMotion, setReduceMotion] = useState(true);
-
-  useEffect(() => {
-    setReduceMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  }, []);
+  const reduceMotion = useSyncExternalStore(
+    subscribeReduceMotion,
+    getReduceMotion,
+    getServerReduceMotion
+  );
 
   const phrases = useMemo(() => ROTATE_KEYS.map((k) => t(k)), [t]);
   const { display, showCursor } = useTypewriter(phrases, !reduceMotion);
@@ -152,38 +184,35 @@ export default function HomeContent() {
           </p>
         </div>
 
-        {/* Tabs */}
-        <div className="max-w-3xl mx-auto px-4 mb-6">
-          <div className="glass !rounded-xl p-1 flex">
-            <button
-              onClick={() => setTab("encrypt")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium chip-select cursor-pointer ${
-                tab === "encrypt"
-                  ? "bg-[var(--primary)] text-[var(--btn-text)] shadow-sm"
-                  : "theme-muted hover:theme-text"
-              }`}
-            >
-              <Lock className="w-3.5 h-3.5" />
-              {t("tab.encrypt")}
-            </button>
-            <button
-              onClick={() => setTab("decrypt")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium chip-select cursor-pointer ${
-                tab === "decrypt"
-                  ? "bg-[var(--primary)] text-[var(--btn-text)] shadow-sm"
-                  : "theme-muted hover:theme-text"
-              }`}
-            >
-              <Unlock className="w-3.5 h-3.5" />
-              {t("tab.decrypt")}
-            </button>
+        {/* Tabs — Radix supplies the tablist/tab/tabpanel wiring and arrow-key
+            navigation the plain buttons never had; `tab` stays the single
+            source of truth, so `?t=` and the persisted preference still win. */}
+        <Tabs.Root value={tab} onValueChange={(v) => setTab(v as "encrypt" | "decrypt")}>
+          <div className="max-w-3xl mx-auto px-4 mb-6">
+            <Tabs.List className="glass !rounded-xl p-1 flex" aria-label={t("hero.badge")}>
+              <Tabs.Trigger
+                value="encrypt"
+                className="tab-trigger flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium chip-select cursor-pointer"
+              >
+                <Lock className="w-3.5 h-3.5" />
+                {t("tab.encrypt")}
+              </Tabs.Trigger>
+              <Tabs.Trigger
+                value="decrypt"
+                className="tab-trigger flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium chip-select cursor-pointer"
+              >
+                <Unlock className="w-3.5 h-3.5" />
+                {t("tab.decrypt")}
+              </Tabs.Trigger>
+            </Tabs.List>
           </div>
-        </div>
 
-        {/* Form */}
-        <div className="max-w-3xl mx-auto px-4">
-          {tab === "encrypt" ? <EncryptForm /> : <DecryptForm />}
-        </div>
+          {/* Form */}
+          <div className="max-w-3xl mx-auto px-4">
+            <Tabs.Content value="encrypt"><EncryptForm /></Tabs.Content>
+            <Tabs.Content value="decrypt"><DecryptForm /></Tabs.Content>
+          </div>
+        </Tabs.Root>
       </section>
 
       {/* Quick steps */}

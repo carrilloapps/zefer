@@ -63,7 +63,7 @@ describe("large-file streaming smoke test", () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       const out = new Uint8Array(await (result.payload.fileData as Blob).arrayBuffer());
-      expect(out.length).toBe(original.length);
+      expect(out).toHaveLength(original.length);
       expect(checksum(out)).toBe(checksum(original));
       expect(result.payload.meta.fileSize).toBe(SIZE);
     }
@@ -86,7 +86,7 @@ describe("large-file streaming smoke test", () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       const out = new Uint8Array(await (result.payload.fileData as Blob).arrayBuffer());
-      expect(out.length).toBe(original.length);
+      expect(out).toHaveLength(original.length);
       expect(checksum(out)).toBe(checksum(original));
     }
   }, 30_000);

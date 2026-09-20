@@ -1,16 +1,30 @@
 // Minimal MCP stdio client that drives `opengraph-mcp` to review a URL.
 // Usage: node scripts/og-review.mjs <url>
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
+
+// Resolve npx from the directory of the running node binary instead of letting
+// the OS search PATH, and run it through node itself — no shell, no PATH lookup,
+// and no .cmd shim, so this behaves identically on Windows and POSIX.
+const nodeDir = dirname(process.execPath);
+const npxCli = [
+  join(nodeDir, "node_modules", "npm", "bin", "npx-cli.js"), // Windows layout
+  join(nodeDir, "..", "lib", "node_modules", "npm", "bin", "npx-cli.js"), // POSIX layout
+].find((candidate) => existsSync(candidate));
+
+if (!npxCli) {
+  console.error("ERROR: could not locate npx-cli.js next to", process.execPath);
+  process.exit(1);
+}
 
 const url = process.argv[2] || "http://localhost:3000/";
-const child = spawn("npx", ["-y", "opengraph-mcp"], {
+const child = spawn(process.execPath, [npxCli, "-y", "opengraph-mcp"], {
   stdio: ["pipe", "pipe", "inherit"],
-  shell: process.platform === "win32",
 });
 
 let buf = "";
 const pending = new Map();
-let toolName = null;
 
 function send(obj) {
   child.stdin.write(JSON.stringify(obj) + "\n");
@@ -41,7 +55,7 @@ child.stdout.on("data", (d) => {
 const fail = (m) => { console.error("ERROR:", m); child.kill(); process.exit(1); };
 setTimeout(() => fail("timeout (60s)"), 60000);
 
-(async () => {
+try {
   await rpc(1, "initialize", {
     protocolVersion: "2024-11-05",
     capabilities: {},
@@ -57,7 +71,7 @@ setTimeout(() => fail("timeout (60s)"), 60000);
     console.log(`  input: ${JSON.stringify(t.inputSchema?.properties || {})}`);
   }
   // pick a tool that takes a url
-  toolName = (tools.find((t) => JSON.stringify(t.inputSchema || {}).includes("url")) || tools[0])?.name;
+  const toolName = (tools.find((t) => JSON.stringify(t.inputSchema || {}).includes("url")) || tools[0])?.name;
   if (!toolName) fail("no tools exposed");
 
   console.log(`\n=== CALL ${toolName}({ url: "${url}" }) ===`);
@@ -70,4 +84,6 @@ setTimeout(() => fail("timeout (60s)"), 60000);
   }
   child.kill();
   process.exit(0);
-})().catch((e) => fail(String(e)));
+} catch (e) {
+  fail(String(e));
+}

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import {
   chunkedEncrypt,
   chunkedDecrypt,
@@ -130,7 +130,9 @@ describe("chunkedEncrypt + chunkedDecryptToBuffer roundtrip", () => {
 
     const decrypted = new Uint8Array(decryptedBuf);
     expect(decrypted.byteLength).toBe(original.byteLength);
-    expect(Array.from(decrypted)).toEqual(Array.from(original));
+    // Byte-for-byte, without materialising two 16M-element JS arrays: the
+    // `Array.from` comparison dominated the runtime of this whole file.
+    expect(Buffer.from(decrypted).equals(Buffer.from(original))).toBe(true);
   }, 30_000);
 });
 

@@ -24,6 +24,7 @@ import {
   RefreshCw,
   Braces,
 } from "lucide-react";
+import Image from "next/image";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import { CodeBlock } from "@/app/components/ui";
@@ -256,7 +257,7 @@ export default function ProjectContent() {
               {/* Avatar */}
               <a href={author?.profileUrl || "https://github.com/carrilloapps"} target="_blank" rel="noopener noreferrer" className="shrink-0 cursor-pointer">
                 {author?.avatar ? (
-                  <img
+                  <Image
                     src={author.avatar}
                     alt={author.name || "Author"}
                     width={72}

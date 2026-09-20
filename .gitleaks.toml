@@ -1,0 +1,23 @@
+title = "Zefer gitleaks configuration"
+
+# Inherit every default gitleaks rule. Nothing is disabled here.
+[extend]
+useDefault = true
+
+# False positive: `app/components/PrivacyContent.tsx` builds the privacy page
+# sections from i18n lookup keys (`privacy.<section>.title` / `.desc`, resolved
+# through `app/lib/i18n.ts`). The dotted, high-entropy shape of those keys makes
+# the default `generic-api-key` rule flag them as credentials. They are plain
+# translation identifiers: no secret material exists in this repository, since
+# Zefer is 100% client-side and holds no keys or tokens.
+#
+# The exemption is deliberately narrow: it applies only to the `generic-api-key`
+# rule, only inside that single file, and only to strings that match the i18n
+# key shape (`condition = "AND"` requires both to hold). Any other finding in
+# that file, and any finding of this shape elsewhere, is still reported.
+[[allowlists]]
+description = "i18n translation keys in PrivacyContent.tsx are not secrets"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^app/components/PrivacyContent\.tsx$''']
+regexes = ['''^privacy\.[a-z0-9]+\.(?:title|desc)$''']

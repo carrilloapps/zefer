@@ -5,6 +5,122 @@ All notable changes to Zefer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2026-09-20
+
+A security, accessibility and quality release. No change to the `.zefer` binary
+format or to the cryptographic parameters — files stay fully cross-compatible
+with [zefer-cli](https://github.com/carrilloapps/zefer-cli), in both directions.
+
+### Changed
+
+- **Migrated the interactive UI to Radix UI** (`radix-ui`). `Dialog`,
+  `DropdownMenu`, `Popover`, `Select`, `Tooltip`, `Tabs` and `Switch` now come
+  from vetted primitives instead of hand-rolled implementations, which brings
+  focus trapping and restoration, outside-click and Escape dismissal, typeahead,
+  roving tabindex and the correct ARIA roles and relationships to every menu,
+  popover, tab strip and toggle in the app. The visual design is unchanged: the
+  primitives are styled entirely through the existing theme variables and glass
+  classes, with no hardcoded colors.
+- **Upgraded the toolchain**: Next.js to 16.3.5 and Vitest to 4.1.11. The Vitest
+  config moved to `vitest.config.mts`, so the ESM-only configuration loads
+  correctly under TypeScript 6 instead of being resolved as CommonJS.
+
+### Security
+
+- **14 vulnerable dependencies resolved**, including a **CRITICAL** advisory in
+  `next` (11 CVEs fixed by the move to 16.3.x) and high-severity advisories in
+  `brace-expansion`, `browserslist`, `nanoid`, `postcss`, `sharp` and `vite`,
+  plus medium and low ones in `@humanfs/node`, `@vitest/mocker`,
+  `baseline-browser-mapping`, `vitest` and `@babel/core`.
+- **ReDoS in the password analyzer** (`app/lib/passwords.ts`). A pattern used to
+  score passwords could backtrack catastrophically on a crafted input, freezing
+  the tab of anyone who pasted it into `/generator`. The analysis is now linear
+  in the length of the input.
+- **Command-injection surface removed from `scripts/og-review.mjs`**, which
+  spawned a child process with `shell: true` on Windows.
+- **Incomplete sanitization in `McpContent.tsx`**, where a single-argument
+  `String.replace` substituted only the first occurrence of a placeholder while
+  the generated snippet implied all of them were replaced.
+- **`.gitleaks.toml` added.** It inherits every default rule and disables none.
+  It carries one narrowly scoped, documented allowlist: the dotted i18n lookup
+  keys in `PrivacyContent.tsx` match the shape of a generic API key, and are
+  exempted only for that rule, only in that file, and only when the string also
+  matches the translation-key pattern. Zefer is 100% client-side and holds no
+  keys or tokens; no finding is suppressed inline anywhere in the codebase.
+
+### Fixed
+
+- **ESLint was crashing, so the project was effectively unlinted.**
+  `eslint.config.mjs` now loads, and the whole repository passes at **zero
+  errors and zero warnings**. This was the root cause behind a large share of
+  the static-analysis findings fixed in this release — the gate existed but
+  never ran.
+- **Secret-question retry in `DecryptForm`.** After a wrong answer, the question
+  input disappeared, leaving no way to retry without re-uploading the file, and
+  every resubmission consumed one of the file's `maxAttempts` — so a typo could
+  permanently lock a file that was never brute-forced. The question now stays on
+  screen for a retry, and a wrong answer no longer burns a decryption attempt.
+- **Layout shift from the mobile drawer reduced from ~6 px to ~0.4 px.** Opening
+  the drawer locks body scroll, and the scrollbar it removes was not fully
+  compensated, nudging the whole page sideways.
+- **`/terms` page title corrected.**
+
+### Accessibility
+
+- **Dropzones are real `<button>` elements.** They were clickable `<div>`s, so
+  they were unreachable by keyboard and invisible to assistive technology. They
+  now carry the correct role, appear in the tab order, and respond to both
+  `Enter` and `Space` — `Space` in particular is what a native button does and
+  what a screen-reader user expects.
+- **Native semantics for status output**: encryption and decryption progress use
+  `<progress>`, results and live messages use `<output>`, and grouped form
+  controls use `<fieldset>` / `<legend>` instead of a styled heading.
+- **Tooltips and help bubbles wired with `aria-describedby`**, so their content
+  is announced with the control they describe rather than being an orphaned
+  hover-only affordance.
+
+### Tests
+
+- **969 tests across 60 files**, with coverage enforced at **100% on statements,
+  branches, functions *and* lines** (previously 100% lines with branches at
+  99.47%, and no component coverage at all). The suite now covers the client
+  components — rendered with `@testing-library/react` on jsdom — alongside the
+  crypto and format layer, the route metadata, the sitemap and the generated
+  OG/Twitter images.
+- New test dependencies: `jsdom`, `@testing-library/react`,
+  `@testing-library/user-event` and `@testing-library/jest-dom`.
+
+### Added
+
+- **`.github/workflows/ci.yml`** — the repository had no CI at all. Every push
+  and pull request to `main` now runs `npm ci` → lint → typecheck →
+  `test:coverage` (the 100% gate) → build, on Node.js 20 and 22.
+- **`.github/workflows/security.yml`** — a monthly sweep (plus manual dispatch)
+  running Semgrep, Trivy, Gitleaks and SonarQube. The first three upload SARIF,
+  so findings land in the repository's Security → Code scanning tab; SonarQube
+  is skipped cleanly when its secrets are not configured, instead of failing the
+  run. Every action is pinned to a full commit SHA.
+- **`.github/dependabot.yml`** — monthly npm and GitHub Actions updates. Minor
+  and patch updates are grouped into a single pull request; majors are isolated
+  in their own. There are deliberately **no `ignore:` rules**, because Dependabot
+  applies them to security updates as well — ignoring majors in bulk would
+  silence a CVE whose only patch ships in a major release.
+- **`docs/RELEASING.md`** — the six-file version checklist, the quality gates,
+  social-image verification and the tag/release/deploy steps.
+- `images.remotePatterns` configured in `next.config.ts` for the remote avatar
+  served on `/project`.
+
+### Removed
+
+- **`.github/CONTRIBUTING.md`.** It was a second, shorter contributing guide
+  living alongside `docs/CONTRIBUTING.md`, and it had already drifted (stale
+  test counts, an outdated rule list). GitHub resolves `CONTRIBUTING.md` from
+  `.github/`, the repository root and `docs/` in that order, so
+  [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) is still linked from the issue
+  and pull-request UI — with one source of truth instead of two.
+
+[0.12.0]: https://github.com/carrilloapps/zefer/compare/v0.11.0...v0.12.0
+
 ## [0.11.0] - 2026-06-16
 
 ### Added

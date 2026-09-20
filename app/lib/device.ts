@@ -64,6 +64,49 @@ function isMobile(): boolean {
   return /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
+const GB = 1024 * 1024 * 1024;
+const MB = 1024 * 1024;
+
+/** Phones/tablets: RAM is the only meaningful signal and it is always scarce. */
+function mobileFileLimit(ramGb: number): number {
+  if (ramGb >= 6) return 1.5 * GB;
+  if (ramGb >= 4) return 1 * GB;
+  if (ramGb >= 2) return 512 * MB;
+  return 256 * MB;
+}
+
+/**
+ * navigator.deviceMemory reported exactly 8 — which Chromium also returns for
+ * machines with far more RAM (privacy clamp). Core count is the best available
+ * proxy to separate workstations (i9/Ryzen 9, 20+ threads) from 8 GB ultrabooks.
+ */
+function clampedRamFileLimit(cores: number): number {
+  if (cores >= 20) return 10 * GB;
+  if (cores >= 16) return 6 * GB;
+  if (cores >= 12) return 4 * GB;
+  if (cores >= 8) return 3 * GB;
+  return 2 * GB;
+}
+
+/** No deviceMemory API at all (Firefox/Safari) — fall back to core count. */
+function coreOnlyFileLimit(cores: number): number {
+  if (cores >= 16) return 4 * GB;
+  if (cores >= 8) return 2 * GB;
+  return 1 * GB;
+}
+
+/** Desktop/laptop tiers, highest confidence signal first. */
+function desktopFileLimit(ramGb: number, cores: number): number {
+  // Verified high-memory workstation (some Chromium builds report real RAM)
+  if (ramGb >= 64) return 10 * GB;
+  if (ramGb >= 32) return cores >= 20 ? 10 * GB : 8 * GB;
+  if (ramGb >= 16) return cores >= 16 ? 8 * GB : 6 * GB;
+  if (ramGb >= 8) return clampedRamFileLimit(cores);
+  if (ramGb >= 4) return cores >= 8 ? 2 * GB : 1 * GB;
+  if (ramGb > 0) return 512 * MB;
+  return coreOnlyFileLimit(cores);
+}
+
 /**
  * Analyze device and compute a dynamic file size limit.
  *
@@ -109,7 +152,8 @@ export function analyzeDevice(): DeviceLimits {
   };
 
   // Kick off async CPU arch detection (non-blocking)
-  detectCpuArch().then((arch) => { profile.cpuArch = arch; }).catch(() => {});
+  // detectCpuArch never rejects (it resolves to null on any failure).
+  detectCpuArch().then((arch) => { profile.cpuArch = arch; });
 
   // ─── Tiered limit model ───
   //
@@ -127,42 +171,10 @@ export function analyzeDevice(): DeviceLimits {
   // Memory model during encrypt/decrypt: the input is read one 16 MB slice at
   // a time (≈1 chunk resident, not the whole file) and compression streams,
   // so peak ≈ 1× the file size — the accumulated output parts before the Blob
-  // is finalized. The tiers below leave headroom under reported RAM.
-  const GB = 1024 * 1024 * 1024;
-  const MB = 1024 * 1024;
-
-  let maxFileSize: number;
-
-  if (mobile) {
-    if (deviceMemoryGb >= 6) maxFileSize = 1.5 * GB;
-    else if (deviceMemoryGb >= 4) maxFileSize = 1 * GB;
-    else if (deviceMemoryGb >= 2) maxFileSize = 512 * MB;
-    else maxFileSize = 256 * MB;
-  } else if (deviceMemoryGb >= 64) {
-    // Verified high-memory workstation (some Chromium builds report real RAM)
-    maxFileSize = 10 * GB;
-  } else if (deviceMemoryGb >= 32) {
-    maxFileSize = cores >= 20 ? 10 * GB : 8 * GB;
-  } else if (deviceMemoryGb >= 16) {
-    maxFileSize = cores >= 16 ? 8 * GB : 6 * GB;
-  } else if (deviceMemoryGb >= 8) {
-    // "8" may be the privacy clamp (8 GB OR more) — use cores to separate
-    // workstations (i9/Ryzen 9, 20+ threads) from 8 GB ultrabooks
-    if (cores >= 20) maxFileSize = 10 * GB;
-    else if (cores >= 16) maxFileSize = 6 * GB;
-    else if (cores >= 12) maxFileSize = 4 * GB;
-    else if (cores >= 8) maxFileSize = 3 * GB;
-    else maxFileSize = 2 * GB;
-  } else if (deviceMemoryGb >= 4) {
-    maxFileSize = cores >= 8 ? 2 * GB : 1 * GB;
-  } else if (deviceMemoryGb > 0) {
-    maxFileSize = 512 * MB;
-  } else {
-    // No deviceMemory API (Firefox/Safari) — fall back to core count
-    if (cores >= 16) maxFileSize = 4 * GB;
-    else if (cores >= 8) maxFileSize = 2 * GB;
-    else maxFileSize = 1 * GB;
-  }
+  // is finalized. The tiers leave headroom under reported RAM.
+  const maxFileSize = mobile
+    ? mobileFileLimit(deviceMemoryGb)
+    : desktopFileLimit(deviceMemoryGb, cores);
 
   return {
     maxFileSize,

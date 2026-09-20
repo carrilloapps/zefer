@@ -351,7 +351,7 @@ export default function McpContent() {
                         : "border-[var(--glass-border)] theme-muted"
                     }`}
                   >
-                    {p.replace("*", "")}{p.endsWith("*") && <span aria-hidden="true"> •</span>}
+                    {p.replace(/\*$/, "")}{p.endsWith("*") && <span aria-hidden="true"> •</span>}
                   </span>
                 ))}
               </div>

@@ -42,30 +42,11 @@ describe("toBase64 + fromBase64 roundtrip", () => {
 });
 
 describe("encrypt + decrypt roundtrip", () => {
-  it("should encrypt and decrypt text to produce identical output", async () => {
-    const plaintext = "Hello, Zefer! This is a test message.";
-    const passphrase = "testpassword123";
-
-    const encrypted = await encrypt(plaintext, passphrase, FAST_ITERATIONS);
-    const decrypted = await decrypt(encrypted, passphrase, FAST_ITERATIONS);
-
-    expect(decrypted).toBe(plaintext);
-  });
-
-  it("should handle empty string", async () => {
-    const plaintext = "";
-    const passphrase = "mypass123";
-
-    const encrypted = await encrypt(plaintext, passphrase, FAST_ITERATIONS);
-    const decrypted = await decrypt(encrypted, passphrase, FAST_ITERATIONS);
-
-    expect(decrypted).toBe(plaintext);
-  });
-
-  it("should handle unicode text", async () => {
-    const plaintext = "こんにちは世界 🌍 Ñoño café résumé";
-    const passphrase = "unicode-pass";
-
+  it.each([
+    { label: "a plain ASCII message", plaintext: "Hello, Zefer! This is a test message.", passphrase: "testpassword123" },
+    { label: "an empty string", plaintext: "", passphrase: "mypass123" },
+    { label: "unicode text", plaintext: "こんにちは世界 🌍 Ñoño café résumé", passphrase: "unicode-pass" },
+  ])("should round-trip $label unchanged", async ({ plaintext, passphrase }) => {
     const encrypted = await encrypt(plaintext, passphrase, FAST_ITERATIONS);
     const decrypted = await decrypt(encrypted, passphrase, FAST_ITERATIONS);
 

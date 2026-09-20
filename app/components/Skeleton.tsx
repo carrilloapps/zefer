@@ -5,15 +5,15 @@
  * Use these while content is loading or providers are hydrating.
  */
 
-export function SkeletonLine({ className = "" }: { className?: string }) {
+export function SkeletonLine({ className = "" }: Readonly<{ className?: string }>) {
   return <div className={`skeleton-shimmer rounded-md ${className}`} />;
 }
 
-export function SkeletonCircle({ className = "" }: { className?: string }) {
+export function SkeletonCircle({ className = "" }: Readonly<{ className?: string }>) {
   return <div className={`skeleton-shimmer rounded-full ${className}`} />;
 }
 
-export function SkeletonCard({ className = "" }: { className?: string }) {
+export function SkeletonCard({ className = "" }: Readonly<{ className?: string }>) {
   return <div className={`skeleton-shimmer rounded-xl ${className}`} />;
 }
 

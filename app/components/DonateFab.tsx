@@ -46,7 +46,7 @@ export default function DonateFab() {
   return (
     <div className="donate-fab-wrap fixed z-40">
       {bubble && (
-        <div role="status" className="absolute bottom-full right-0 mb-3 w-64 animate-in-down">
+        <output className="block absolute bottom-full right-0 mb-3 w-64 animate-in-down">
           <div className="donate-bubble rounded-2xl px-4 py-3.5" style={{ background: "var(--glass-solid)" }}>
             <div className="flex items-start gap-3">
               <span className="w-9 h-9 rounded-xl theme-primary-faint theme-primary-border border flex items-center justify-center shrink-0 success-icon">
@@ -80,7 +80,7 @@ export default function DonateFab() {
             style={{ background: "var(--glass-solid)" }}
             aria-hidden="true"
           />
-        </div>
+        </output>
       )}
 
       <a

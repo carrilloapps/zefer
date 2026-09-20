@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useSyncExternalStore } from "react";
 import type { CompressionMethod } from "./compression";
 import type { KeygenMode, GenerateOptions } from "./passwords";
 
@@ -51,20 +51,42 @@ function save(prefs: Preferences) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
 }
 
+// ─── External store ───
+//
+// localStorage IS an external system, so preferences live in a module-level
+// store read through useSyncExternalStore instead of being copied into state
+// by an effect. That keeps hydration safe — the server and the hydration
+// render both see DEFAULTS, the client swaps in the stored values right
+// afterwards — without the extra cascading render a setState-in-effect costs,
+// and every component sharing the hook now sees the same values.
+
+let snapshot: Preferences | null = null;
+const listeners = new Set<() => void>();
+
+/** Stable reference per state: useSyncExternalStore loops if it changes on every call. */
+function getSnapshot(): Preferences {
+  snapshot ??= load();
+  return snapshot;
+}
+
+/** Server and hydration render: defaults only, never localStorage. */
+function getServerSnapshot(): Preferences {
+  return DEFAULTS;
+}
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => { listeners.delete(listener); };
+}
+
+function update(partial: Partial<Preferences>) {
+  snapshot = { ...getSnapshot(), ...partial };
+  save(snapshot);
+  for (const listener of listeners) listener();
+}
+
 export function usePreferences() {
-  const [prefs, setPrefs] = useState<Preferences>(DEFAULTS);
-
-  useEffect(() => {
-    setPrefs(load());
-  }, []);
-
-  const update = useCallback((partial: Partial<Preferences>) => {
-    setPrefs((prev) => {
-      const next = { ...prev, ...partial };
-      save(next);
-      return next;
-    });
-  }, []);
+  const prefs = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   return {
     ttl: prefs.ttl,

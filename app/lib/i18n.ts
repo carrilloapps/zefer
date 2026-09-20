@@ -837,16 +837,6 @@ const translations = {
     en: "Expires in:",
     pt: "Expira em:",
   },
-  "form.search": {
-    es: "Buscar...",
-    en: "Search...",
-    pt: "Buscar...",
-  },
-  "form.noresults": {
-    es: "Sin resultados",
-    en: "No results",
-    pt: "Sem resultados",
-  },
   "form.encrypting": {
     es: "Cifrando…",
     en: "Encrypting...",

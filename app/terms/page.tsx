@@ -5,7 +5,7 @@ import { pageMetadata } from "@/app/lib/seo";
 export const metadata: Metadata = pageMetadata({
   path: "/terms",
   index: false,
-  title: "Terms & Conditions",
+  title: "Terms & Conditions — Use, Liability & License",
   description:
     "Zefer terms of service: conditions of use, liability limitations, acceptable use policy, and MIT open-source license details.",
   keywords: ["terms of service", "conditions of use", "MIT license", "acceptable use policy"],

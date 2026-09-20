@@ -1,17 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import {
   Cpu,
-  Monitor,
-  Smartphone,
   Gauge,
   Shield,
   ArrowRight,
   CheckCircle2,
   AlertTriangle,
-  ExternalLink,
 } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
@@ -19,13 +16,33 @@ import { analyzeDevice, formatBytes, type DeviceLimits } from "@/app/lib/device"
 import { benchmarkDevice } from "@/app/lib/crypto";
 import { useLanguage } from "@/app/components/LanguageProvider";
 
+// ─── External store ───
+//
+// The hardware profile comes from `navigator` — an external system that never
+// changes while the page is open. Reading it through useSyncExternalStore
+// keeps the server render on `null` (so hydration matches) and publishes the
+// real profile immediately afterwards, without a setState-in-effect.
+let deviceSnapshot: DeviceLimits | null = null;
+
+function getDeviceSnapshot(): DeviceLimits {
+  deviceSnapshot ??= analyzeDevice();
+  return deviceSnapshot;
+}
+
+function getServerDeviceSnapshot(): DeviceLimits | null {
+  return null;
+}
+
+function subscribeDevice(): () => void {
+  return () => {};
+}
+
 export default function DeviceContent() {
   const { t } = useLanguage();
-  const [limits, setLimits] = useState<DeviceLimits | null>(null);
+  const limits = useSyncExternalStore(subscribeDevice, getDeviceSnapshot, getServerDeviceSnapshot);
   const [benchmark, setBenchmark] = useState<number | null>(null);
 
   useEffect(() => {
-    setLimits(analyzeDevice());
     benchmarkDevice().then(setBenchmark).catch(() => {});
   }, []);
 
@@ -169,8 +186,8 @@ export default function DeviceContent() {
                 <div key={browser.title} className="glass glass-hover !rounded-xl p-4 transition-all duration-300">
                   <h3 className="text-xs font-semibold theme-heading mb-2">{browser.title}</h3>
                   <ul className="space-y-1.5">
-                    {t(browser.tips as Parameters<typeof t>[0]).split("|").map((tip, i) => (
-                      <li key={i} className="flex items-start gap-2 text-[12px] theme-muted">
+                    {t(browser.tips as Parameters<typeof t>[0]).split("|").map((tip) => (
+                      <li key={tip} className="flex items-start gap-2 text-[12px] theme-muted">
                         <CheckCircle2 className="w-3 h-3 text-primary shrink-0 mt-0.5" />
                         <span>{tip}</span>
                       </li>

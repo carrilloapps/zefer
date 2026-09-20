@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect, type ReactNode } from "react";
+import { useState, useId, type ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { ChevronDown, Info, Copy, Check } from "lucide-react";
+import { Select, Switch, Tooltip } from "radix-ui";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import { useLanguage } from "@/app/components/LanguageProvider";
@@ -10,25 +11,87 @@ import type { TranslationKey } from "@/app/lib/i18n";
 
 // ─── Info tooltip (hover / focus / tap) ───
 
+/** Bubble shared by InfoTip and any other Radix tooltip in the app. Radix
+ *  handles positioning, collisions, Escape and the aria-describedby wiring the
+ *  hand-rolled version never had. */
+export function TipBubble({
+  children,
+  align = "center",
+}: Readonly<{
+  children: ReactNode;
+  align?: "start" | "center" | "end";
+}>) {
+  return (
+    <Tooltip.Portal>
+      <Tooltip.Content side="top" align={align} sideOffset={6} collisionPadding={12} className="info-tip-bubble">
+        {children}
+      </Tooltip.Content>
+    </Tooltip.Portal>
+  );
+}
+
+/** `align` is expressed in page terms ("left"/"right"); Radix speaks anchor terms. */
+const TIP_ALIGN = { left: "start", right: "end" } as const;
+
 /** Small (i) trigger with a plain-language explanation. The visual icon is
- *  small but the hit area is ~36px. */
-export function InfoTip({ tipKey, align }: { tipKey: TranslationKey; align?: "left" | "right" }) {
+ *  small but the hit area is ~36px. Radix drives hover and focus; the explicit
+ *  pointer-down toggle keeps the bubble reachable by tap on touch devices,
+ *  which a bare Radix tooltip would not be. */
+export function InfoTip({ tipKey, align }: Readonly<{ tipKey: TranslationKey; align?: "left" | "right" }>) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   return (
-    <span className={`info-tip ${open ? "info-tip-open" : ""}`} onMouseLeave={() => setOpen(false)}>
-      <button
-        type="button"
-        onClick={(e) => { setOpen(!open); e.currentTarget.focus(); }}
-        onBlur={() => setOpen(false)}
-        aria-label={t("tip.aria")}
-        className="relative w-4 h-4 flex items-center justify-center rounded-full theme-faint hover:text-primary transition-colors cursor-help before:content-[''] before:absolute before:-inset-2.5"
+    <Tooltip.Provider delayDuration={150}>
+      <Tooltip.Root open={open} onOpenChange={setOpen}>
+        <Tooltip.Trigger asChild>
+          <button
+            type="button"
+            onPointerDown={(e) => { e.preventDefault(); setOpen((o) => !o); }}
+            aria-label={t("tip.aria")}
+            className="relative w-4 h-4 flex items-center justify-center rounded-full theme-faint hover:text-primary transition-colors cursor-help before:content-[''] before:absolute before:-inset-2.5"
+          >
+            <Info className="w-3 h-3" aria-hidden="true" />
+          </button>
+        </Tooltip.Trigger>
+        <TipBubble align={align ? TIP_ALIGN[align] : "center"}>
+          {t(tipKey)}
+        </TipBubble>
+      </Tooltip.Root>
+    </Tooltip.Provider>
+  );
+}
+
+// ─── Toggle switch ───
+
+/** Radix Switch: announces as `switch` with `aria-checked` (the sr-only
+ *  checkbox it replaces announced as a plain checkbox) and gains a visible
+ *  focus ring. `<label for>` still toggles it — a button is a labelable
+ *  element — so the click target is unchanged. */
+export function Toggle({
+  checked,
+  onCheckedChange,
+  label,
+  icon: Icon,
+}: Readonly<{
+  checked: boolean;
+  onCheckedChange: (v: boolean) => void;
+  label: string;
+  icon: LucideIcon;
+}>) {
+  const id = useId();
+  return (
+    <span className="flex items-center gap-3 w-fit">
+      <Switch.Root
+        id={id}
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+        className="toggle-track relative flex items-center w-9 h-5 rounded-full shrink-0 cursor-pointer"
       >
-        <Info className="w-3 h-3" aria-hidden="true" />
-      </button>
-      <span role="tooltip" className={`info-tip-bubble ${align === "left" ? "tip-left" : ""}${align === "right" ? "tip-right" : ""}`}>
-        {t(tipKey)}
-      </span>
+        <Switch.Thumb className="toggle-knob block w-4 h-4 rounded-full translate-x-0.5 data-[state=checked]:translate-x-[1.125rem]" />
+      </Switch.Root>
+      <label htmlFor={id} className="flex items-center gap-1.5 text-xs theme-muted transition-colors cursor-pointer">
+        <Icon className="w-3.5 h-3.5" />{label}
+      </label>
     </span>
   );
 }
@@ -36,6 +99,58 @@ export function InfoTip({ tipKey, align }: { tipKey: TranslationKey; align?: "le
 // ─── Code block with lightweight syntax highlighting + copy ───
 
 type CodeLang = "json" | "bash";
+
+/** One token type: a sticky pattern tried at the current index and the class
+ *  its match is painted with. Splitting the grammar into one small pattern per
+ *  token keeps every regex trivial instead of one unreadable mega-alternation. */
+interface TokenRule {
+  re: RegExp;
+  cls?: string;
+}
+
+const STRING_RE = /"(?:\\.|[^"\\])*"/y;
+
+const BASH_RULES: TokenRule[] = [
+  { re: STRING_RE, cls: "tok-str" },
+  { re: /--?[\w-]+/y, cls: "tok-flag" },
+  { re: /\$\w+/y, cls: "tok-num" },
+  { re: /[^\s"]+/y, cls: "tok-word" },
+  { re: /\s+/y },
+];
+
+const JSON_RULES: TokenRule[] = [
+  { re: /\/\/[^\n]*/y, cls: "tok-cmt" },
+  { re: /"(?:\\.|[^"\\])*"(?=\s*:)/y, cls: "tok-key" },
+  { re: STRING_RE, cls: "tok-str" },
+  { re: /-?\b\d+(?:\.\d+)?\b/y, cls: "tok-num" },
+  { re: /\b(?:true|false|null)\b/y, cls: "tok-bool" },
+];
+
+/** Walk `src` left to right, emitting the first rule that matches at each
+ *  index; an unmatched character is emitted on its own, unstyled. */
+function scan(src: string, rules: TokenRule[], emit: (text: string, cls?: string) => void) {
+  let i = 0;
+  let plainFrom = 0;
+  const flushPlain = (until: number) => {
+    if (until > plainFrom) emit(src.slice(plainFrom, until));
+  };
+
+  while (i < src.length) {
+    const hit = rules.find((rule) => {
+      rule.re.lastIndex = i;
+      return rule.re.test(src);
+    });
+    if (!hit) {
+      i++;
+      continue;
+    }
+    flushPlain(i);
+    emit(src.slice(i, hit.re.lastIndex), hit.cls);
+    i = hit.re.lastIndex;
+    plainFrom = i;
+  }
+  flushPlain(src.length);
+}
 
 /** Dependency-free tokenizer: JSON keys/strings/numbers/booleans/comments,
  *  bash commands/flags/strings/comments. Colors come from theme variables. */
@@ -46,45 +161,32 @@ export function highlightCode(code: string, lang: CodeLang): ReactNode[] {
     out.push(cls ? <span key={k++} className={cls}>{text}</span> : <span key={k++}>{text}</span>);
   };
 
-  if (lang === "bash") {
-    code.split("\n").forEach((line, li) => {
-      if (li > 0) push("\n");
-      if (/^\s*#/.test(line)) {
-        push(line, "tok-cmt");
-        return;
-      }
-      const re = /("(?:[^"\\]|\\.)*")|(--?[\w-]+)|(\$\w+)|([^\s"$-][^\s"]*)|(\s+)/g;
-      let m: RegExpExecArray | null;
-      let firstWord = true;
-      while ((m = re.exec(line)) !== null) {
-        if (m[1]) push(m[1], "tok-str");
-        else if (m[2]) push(m[2], "tok-flag");
-        else if (m[3]) push(m[3], "tok-num");
-        else if (m[4]) { push(m[4], firstWord ? "tok-cmd" : undefined); firstWord = false; }
-        else push(m[0]);
-      }
-    });
+  if (lang === "json") {
+    scan(code, JSON_RULES, push);
     return out;
   }
 
-  // json / jsonc
-  const re = /(\/\/[^\n]*)|("(?:[^"\\]|\\.)*")(\s*:)?|(-?\b\d+(?:\.\d+)?\b)|(\btrue\b|\bfalse\b|\bnull\b)/g;
-  let last = 0;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(code)) !== null) {
-    if (m.index > last) push(code.slice(last, m.index));
-    if (m[1]) push(m[1], "tok-cmt");
-    else if (m[2] && m[3]) { push(m[2], "tok-key"); push(m[3]); }
-    else if (m[2]) push(m[2], "tok-str");
-    else if (m[4]) push(m[4], "tok-num");
-    else if (m[5]) push(m[5], "tok-bool");
-    last = re.lastIndex;
-  }
-  if (last < code.length) push(code.slice(last));
+  code.split("\n").forEach((line, li) => {
+    if (li > 0) push("\n");
+    if (line.trimStart().startsWith("#")) {
+      push(line, "tok-cmt");
+      return;
+    }
+    // The first bare word on a line is the command being run.
+    let firstWord = true;
+    scan(line, BASH_RULES, (text, cls) => {
+      if (cls !== "tok-word") {
+        push(text, cls);
+        return;
+      }
+      push(text, firstWord ? "tok-cmd" : undefined);
+      firstWord = false;
+    });
+  });
   return out;
 }
 
-export function CodeBlock({ code, lang = "json" }: { code: string; lang?: CodeLang }) {
+export function CodeBlock({ code, lang = "json" }: Readonly<{ code: string; lang?: CodeLang }>) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
@@ -114,7 +216,7 @@ export function CodeBlock({ code, lang = "json" }: { code: string; lang?: CodeLa
 
 // ─── Page layout wrapper ───
 
-export function PageLayout({ children }: { children: ReactNode }) {
+export function PageLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <main className="flex-1 flex flex-col">
       <Navbar />
@@ -133,12 +235,12 @@ export function PageHeader({
   badge,
   title,
   subtitle,
-}: {
+}: Readonly<{
   icon: LucideIcon;
   badge: string;
   title: string;
   subtitle: string;
-}) {
+}>) {
   return (
     <div className="text-center mb-10 animate-in">
       <div className="inline-flex items-center gap-2 glass px-4 py-1.5 mb-6 !rounded-full">
@@ -162,10 +264,10 @@ export function PageHeader({
 export function IconBox({
   icon: Icon,
   size = "md",
-}: {
+}: Readonly<{
   icon: LucideIcon;
   size?: "sm" | "md" | "lg";
-}) {
+}>) {
   const sizes = {
     sm: "w-8 h-8 rounded-lg",
     md: "w-9 h-9 rounded-xl",
@@ -186,11 +288,11 @@ export function SectionCard({
   icon,
   title,
   description,
-}: {
+}: Readonly<{
   icon: LucideIcon;
   title: string;
   description: string;
-}) {
+}>) {
   return (
     <div className="glass glass-hover p-5 sm:p-7 transition-all duration-300">
       <div className="flex items-start gap-4">
@@ -208,100 +310,63 @@ export function SectionCard({
 
 // ─── Glass select (dropdown with search) ───
 
+/** Radix Select. Replaces a hand-rolled `aria-haspopup="listbox"` button that
+ *  had no arrow-key navigation, no typeahead and no `aria-activedescendant`.
+ *  Radix's built-in typeahead supersedes the old search box. Values are keyed
+ *  as strings because Radix Select speaks strings; the numeric option value is
+ *  handed back to `onChange` untouched. */
 export function GlassSelect({
   value,
   onChange,
   options,
   label,
   icon: Icon,
-  searchable = false,
-  searchPlaceholder = "Search...",
-  noResultsText = "No results",
-}: {
+}: Readonly<{
   value: string | number;
   onChange: (v: string | number) => void;
   options: { label: string; value: string | number }[];
-  label?: string;
+  label: string;
   icon?: LucideIcon;
-  searchable?: boolean;
-  searchPlaceholder?: string;
-  noResultsText?: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  useEffect(() => {
-    if (open && searchable && inputRef.current) inputRef.current.focus();
-  }, [open, searchable]);
-
-  const current = options.find((o) => o.value === value);
-  const filtered = searchable
-    ? options.filter((o) => o.label.toLowerCase().includes(search.toLowerCase()))
-    : options;
+}>) {
+  const id = useId();
 
   return (
-    <div ref={ref} className="relative">
-      {label && (
-        <label className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
-          {Icon && <Icon className="w-3 h-3" />}{label}
-        </label>
-      )}
-      <button
-        type="button"
-        onClick={() => { setOpen(!open); setSearch(""); }}
-        className="w-full flex items-center justify-between text-sm py-[0.6875rem] px-3 rounded-xl border border-[var(--input-border)] cursor-pointer hover:border-[var(--input-border-focus)] transition-colors"
-        style={{ background: "var(--input-bg)" }}
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        {...(label ? { "aria-label": label } : {})}
+    <div>
+      <label htmlFor={id} className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2 cursor-pointer">
+        {Icon && <Icon className="w-3 h-3" />}{label}
+      </label>
+      <Select.Root
+        value={String(value)}
+        onValueChange={(v) => {
+          // Radix speaks strings; hand the option's own (possibly numeric)
+          // value back to the caller untouched.
+          for (const o of options) {
+            if (String(o.value) === v) onChange(o.value);
+          }
+        }}
       >
-        <span className="theme-text">{current?.label ?? ""}</span>
-        <ChevronDown className={`w-3.5 h-3.5 theme-faint transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 shadow-2xl z-50 !rounded-xl overflow-hidden animate-in border border-[var(--glass-border)]" style={{ background: "var(--glass-solid)" }}>
-          {searchable && (
-            <div className="p-2 border-b border-[var(--glass-border)]">
-              <input
-                ref={inputRef}
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={searchPlaceholder}
-                aria-label={searchPlaceholder}
-                className="w-full text-xs px-2.5 py-1.5 bg-transparent theme-text placeholder:theme-faint outline-none"
-              />
-            </div>
-          )}
-          <div className="max-h-48 overflow-y-auto">
-            {filtered.map((o) => (
-              <button
-                key={String(o.value)}
-                type="button"
-                onClick={() => { onChange(o.value); setOpen(false); }}
-                className={`w-full text-left text-xs px-3 py-2.5 transition-colors cursor-pointer ${
-                  o.value === value ? "text-primary bg-[var(--glass-bg-hover)]" : "theme-muted hover:theme-text hover:bg-[var(--glass-bg)]"
-                }`}
-              >
-                {o.label}
-              </button>
-            ))}
-            {filtered.length === 0 && (
-              <p className="text-xs theme-faint px-3 py-2.5">{noResultsText}</p>
-            )}
-          </div>
-        </div>
-      )}
+        <Select.Trigger
+          id={id}
+          className="group w-full flex items-center justify-between text-sm py-[0.6875rem] px-3 rounded-xl border border-[var(--input-border)] cursor-pointer hover:border-[var(--input-border-focus)] transition-colors theme-text"
+          style={{ background: "var(--input-bg)" }}
+        >
+          <Select.Value />
+          <Select.Icon asChild>
+            <ChevronDown className="w-3.5 h-3.5 theme-faint transition-transform group-data-[state=open]:rotate-180" />
+          </Select.Icon>
+        </Select.Trigger>
+        <Select.Portal>
+          <Select.Content position="popper" sideOffset={6} collisionPadding={12} className="glass-select-content">
+            <Select.Viewport>
+              {options.map((o) => (
+                <Select.Item key={String(o.value)} value={String(o.value)} className="glass-select-item">
+                  <Select.ItemText>{o.label}</Select.ItemText>
+                </Select.Item>
+              ))}
+            </Select.Viewport>
+          </Select.Content>
+        </Select.Portal>
+      </Select.Root>
     </div>
   );
 }
@@ -312,11 +377,11 @@ export function GlassCard({
   children,
   glow = false,
   className = "",
-}: {
+}: Readonly<{
   children: ReactNode;
   glow?: boolean;
   className?: string;
-}) {
+}>) {
   return (
     <div className={`glass p-6 sm:p-8 ${glow ? "glow-green" : ""} ${className}`}>
       {children}

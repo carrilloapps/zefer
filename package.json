@@ -1,6 +1,6 @@
 {
   "name": "zefer",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Client-side encryption tool that converts text and files into password-protected .zefer files using AES-256-GCM. 100% browser-based, zero-knowledge, open source.",
   "keywords": [
     "encryption",
@@ -53,22 +53,27 @@
   },
   "dependencies": {
     "lucide-react": "~1.8.0",
-    "next": "^16.2.7",
+    "next": "^16.3.5",
+    "radix-ui": "1.6.7",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "sonner": "~2.0.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "~4.2.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
     "@types/node": "~25.6.0",
     "@types/react": "^19.2.16",
     "@types/react-dom": "~19.2.3",
-    "@vitest/coverage-v8": "~4.1.4",
+    "@vitest/coverage-v8": "~4.1.11",
     "eslint": "~10.2.0",
-    "eslint-config-next": "^16.2.7",
+    "eslint-config-next": "^16.3.5",
+    "jsdom": "^30.1.0",
     "tailwindcss": "~4.2.2",
     "typescript": "~6.0.2",
-    "vitest": "~4.1.4"
+    "vitest": "~4.1.11"
   },
   "engines": {
     "node": ">=20.0.0",

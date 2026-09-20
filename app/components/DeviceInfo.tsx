@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Cpu, ChevronDown, ChevronUp, Monitor, Smartphone, ExternalLink } from "lucide-react";
+import { Cpu, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import { formatBytes, type DeviceLimits } from "@/app/lib/device";
 import { useLanguage } from "@/app/components/LanguageProvider";
 
@@ -10,13 +10,14 @@ interface Props {
   limits: DeviceLimits;
 }
 
-export default function DeviceInfo({ limits }: Props) {
+export default function DeviceInfo({ limits }: Readonly<Props>) {
   const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
   const { profile } = limits;
 
+  const cpuArch = profile.cpuArch ? ` (${profile.cpuArch})` : "";
   const rows: { label: string; value: string | null }[] = [
-    { label: "CPU", value: `${profile.cores} cores${profile.cpuArch ? ` (${profile.cpuArch})` : ""}` },
+    { label: "CPU", value: `${profile.cores} cores${cpuArch}` },
     { label: "RAM", value: profile.ram > 0 ? `${profile.ram} GB` : null },
     { label: "GPU", value: profile.gpu },
     { label: "GPU Vendor", value: profile.gpuVendor },

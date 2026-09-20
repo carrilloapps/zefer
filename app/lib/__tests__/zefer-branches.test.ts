@@ -396,17 +396,6 @@ describe("maxAttempts cleared on success (binary format)", () => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// Branch 55 (line 425): else if (parsed.encryptedLines) false
-// This branch is unreachable through normal parseFile (text format
-// always sets encryptedLines). We mock parseFile to return a
-// ParsedFile with binary=false and no encryptedLines.
-// ═══════════════════════════════════════════════════════════
-
-// Branch 55 (else if parsed.encryptedLines false) is unreachable:
-// parseFile always sets encryptedLines for text format and binaryData for binary.
-// Internal module calls can't be mocked with vi.spyOn. Accepted as V8 artifact.
-
-// ═══════════════════════════════════════════════════════════
 // Branch 453: wrong answer with maxAttempts=0 (attemptKey null)
 // ═══════════════════════════════════════════════════════════
 
@@ -437,7 +426,7 @@ describe("wrong answer without maxAttempts", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toBe("wrong_answer");
     // No localStorage interaction (maxAttempts=0 → attemptKey=null)
-    expect(Object.keys(storage).length).toBe(0);
+    expect(Object.keys(storage)).toHaveLength(0);
   });
 });
 
@@ -459,7 +448,6 @@ describe("wrong passphrase elapsed time branch via mock", () => {
 
     // Mock performance.now to make elapsed appear as 200ms
     let callCount = 0;
-    const origNow = performance.now;
     vi.spyOn(performance, "now").mockImplementation(() => {
       callCount++;
       // First call (startTime) returns 0, subsequent calls return 200
@@ -483,11 +471,11 @@ describe("wrong passphrase elapsed time branch via mock", () => {
 describe("multi-chunk branches via chunkedCrypto mock", () => {
   it("exercises chunkIndex > 1 in encrypt callback", async () => {
     const chunkedCrypto = await import("../chunked-crypto");
-    const origEncrypt = chunkedCrypto.chunkedEncrypt;
+    const origEncrypt = chunkedCrypto.chunkedEncryptBlob;
 
-    vi.spyOn(chunkedCrypto, "chunkedEncrypt").mockImplementation(
-      async (data, pass, iter, onProgress) => {
-        const result = await origEncrypt(data, pass, iter);
+    vi.spyOn(chunkedCrypto, "chunkedEncryptBlob").mockImplementation(
+      async (source, pass, iter, onProgress) => {
+        const result = await origEncrypt(source, pass, iter);
         onProgress?.(1, 3);
         onProgress?.(2, 3);
         onProgress?.(3, 3);
@@ -495,7 +483,10 @@ describe("multi-chunk branches via chunkedCrypto mock", () => {
       }
     );
 
-    await encodeZefer({
+    const encrypting: [number, number][] = [];
+    let derivingDoneCalls = 0;
+
+    const blob = await encodeZefer({
       content: "multi-chunk test",
       passphrase: "mainpass",
       fileName: null,
@@ -505,11 +496,17 @@ describe("multi-chunk branches via chunkedCrypto mock", () => {
         compressing: () => {},
         compressingDone: () => {},
         deriving: () => {},
-        derivingDone: () => {},
-        encrypting: () => {},
+        derivingDone: () => { derivingDoneCalls++; },
+        encrypting: (chunkIndex, totalChunks) => { encrypting.push([chunkIndex, totalChunks]); },
         packaging: () => {},
       },
     });
+
+    // Every chunk index is forwarded against the caller-facing grand total
+    // (1 block, no reveal key), but derivingDone only fires on the first chunk.
+    expect(encrypting).toEqual([[1, 1], [2, 1], [3, 1]]);
+    expect(derivingDoneCalls).toBe(1);
+    expect(blob.size).toBeGreaterThan(0);
 
     vi.restoreAllMocks();
   });

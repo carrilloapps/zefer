@@ -8,11 +8,13 @@ import {
 import { PageLayout, PageHeader, GlassCard } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
 
+type FeatureStatus = "yes" | "no" | "partial";
+
 const FEATURES: {
   key: string;
   icon: typeof Shield;
-  zefer: "yes" | "no" | "partial";
-  hatsh: "yes" | "no" | "partial";
+  zefer: FeatureStatus;
+  hatsh: FeatureStatus;
 }[] = [
   { key: "vs.feat.encryption", icon: Lock, zefer: "yes", hatsh: "yes" },
   { key: "vs.feat.browseronly", icon: Globe, zefer: "yes", hatsh: "yes" },
@@ -32,7 +34,7 @@ const FEATURES: {
   { key: "vs.feat.i18n", icon: Globe, zefer: "partial", hatsh: "yes" },
 ];
 
-function StatusIcon({ status }: { status: "yes" | "no" | "partial" }) {
+function StatusIcon({ status }: Readonly<{ status: FeatureStatus }>) {
   if (status === "yes") return <CheckCircle2 className="w-4 h-4 text-primary" />;
   if (status === "no") return <XCircle className="w-4 h-4 theme-faint" />;
   return <CheckCircle2 className="w-4 h-4 text-[var(--warning-text)]" />;

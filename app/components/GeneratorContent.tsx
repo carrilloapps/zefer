@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import {
   KeyRound, Copy, Check, RefreshCw, Download, Hash, Eye, EyeOff,
   ShieldCheck, AlertTriangle, Gauge, Layers, ScanSearch, Shield,
   ChevronUp, ChevronDown, Ban, SquareAsterisk, X, Atom, User, Crosshair,
   Share2,
 } from "lucide-react";
-import { PageLayout, PageHeader, InfoTip } from "@/app/components/ui";
+import { Tabs } from "radix-ui";
+import { PageLayout, PageHeader, InfoTip, Toggle } from "@/app/components/ui";
 import { useLanguage } from "@/app/components/LanguageProvider";
 import { notifySuccess } from "@/app/lib/notify";
 import { usePreferences } from "@/app/lib/preferences";
@@ -34,13 +35,13 @@ const clampCount = (n: number) => Math.min(MAX_COUNT, Math.max(1, Math.floor(n))
  *  each marker is absolutely positioned on that exact path. */
 function StopSlider({
   id, stops, value, onPick, ariaLabel,
-}: {
+}: Readonly<{
   id: string;
   stops: number[];
   value: number;
   onPick: (stop: number) => void;
   ariaLabel: string;
-}) {
+}>) {
   let nearest = 0;
   for (let i = 1; i < stops.length; i++) {
     if (Math.abs(stops[i] - value) < Math.abs(stops[nearest] - value)) nearest = i;
@@ -68,7 +69,7 @@ function StopSlider({
             aria-pressed={value === s}
             aria-label={`${ariaLabel}: ${s}`}
             className="absolute top-0 -translate-x-1/2 flex flex-col items-center gap-1 cursor-pointer group py-0.5"
-            style={{ left: `calc(10px + (100% - 20px) * ${stops.length > 1 ? i / (stops.length - 1) : 0})` }}
+            style={{ left: `calc(10px + (100% - 20px) * ${i / (stops.length - 1)})` }}
           >
             <span
               className={`w-1.5 h-1.5 rounded-full transition-colors ${
@@ -112,7 +113,8 @@ function formatCrack(bits: number, gps: number, t: TFn): string {
   const { bucket, value } = crackBucketFor(bits, gps);
   if (bucket === "instant") return t("time.instant");
   if (bucket === "yearsExp") return `≈10${toSuperscript(value)} ${t("time.years")}`;
-  return `${value.toLocaleString()} ${t(`time.${bucket}` as TranslationKey)}`;
+  const unit = t(`time.${bucket}` as TranslationKey);
+  return `${value.toLocaleString()} ${unit}`;
 }
 
 const FRAME_TIPS: Record<string, TranslationKey> = {
@@ -140,7 +142,7 @@ const SCENARIO_LABELS: Record<string, TranslationKey> = {
 
 /** Full security report: attack scenarios, framework compliance,
  *  post-quantum entropy, keyspace and average-password comparison. */
-function SecurityInsights({ bits, length, subjectKey }: { bits: number; length: number; subjectKey: TranslationKey }) {
+function SecurityInsights({ bits, length, subjectKey }: Readonly<{ bits: number; length: number; subjectKey: TranslationKey }>) {
   const { t } = useLanguage();
   const checks = complianceOf(bits, length);
   const quantumBits = Math.floor(bits / 2);
@@ -256,6 +258,22 @@ interface GeneratedKey {
   analysis: PasswordAnalysis;
 }
 
+/** Share a single key on its own — deliberately a different channel from any
+ *  file it protects. Stateless, so it lives outside the component. */
+async function shareOne(value: string) {
+  try {
+    await navigator.share({ text: value });
+  } catch {
+    // User dismissed the native sheet or sharing failed — copy stays available
+  }
+}
+
+// Native Web Share API support — client-only, but read as an external store so
+// the server render and the first client render agree without an effect.
+const subscribeShare = () => () => {};
+const getCanShare = () => typeof navigator !== "undefined" && typeof navigator.share === "function";
+const getServerCanShare = () => false;
+
 export default function GeneratorContent() {
   const { t } = useLanguage();
   const [tab, setTab] = useState<"generate" | "analyze">("generate");
@@ -270,18 +288,15 @@ export default function GeneratorContent() {
   const [keys, setKeys] = useState<GeneratedKey[]>([]);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [genTick, setGenTick] = useState(0);
-  // Native Web Share API support — detected on the client (SSR-safe). Copy
-  // stays as the baseline; sharing is offered as an extra option when available.
-  const [canShare, setCanShare] = useState(false);
-  useEffect(() => {
-    setCanShare(typeof navigator !== "undefined" && typeof navigator.share === "function");
-  }, []);
+  const canShare = useSyncExternalStore(subscribeShare, getCanShare, getServerCanShare);
 
-  // Free-typing buffers for the custom inputs, synced from persisted values
-  const [lengthInput, setLengthInput] = useState(String(length));
-  const [countInput, setCountInput] = useState(String(count));
-  useEffect(() => setLengthInput(String(length)), [length]);
-  useEffect(() => setCountInput(String(count)), [count]);
+  // Free-typing buffers for the custom number inputs. `null` means "not being
+  // edited", in which case the persisted value is shown directly — so no effect
+  // is needed to keep the two in sync.
+  const [lengthDraft, setLengthDraft] = useState<string | null>(null);
+  const [countDraft, setCountDraft] = useState<string | null>(null);
+  const lengthInput = lengthDraft ?? String(length);
+  const countInput = countDraft ?? String(count);
 
   // Migrate previously-persisted quantities above the new 50 cap
   useEffect(() => { if (count > MAX_COUNT) setCount(MAX_COUNT); }, [count, setCount]);
@@ -298,13 +313,13 @@ export default function GeneratorContent() {
   const supportsClasses = ["secure", "unicode", "alpha", "base58"].includes(mode);
 
   function commitLength(raw: string) {
-    const n = parseInt(raw, 10);
-    if (!isNaN(n)) setLength(clampLength(n));
+    const n = Number.parseInt(raw, 10);
+    if (!Number.isNaN(n)) setLength(clampLength(n));
   }
 
   function commitCount(raw: string) {
-    const n = parseInt(raw, 10);
-    if (!isNaN(n)) setCount(clampCount(n));
+    const n = Number.parseInt(raw, 10);
+    if (!Number.isNaN(n)) setCount(clampCount(n));
   }
 
   function generate() {
@@ -333,15 +348,6 @@ export default function GeneratorContent() {
     notifySuccess(t("toast.gen.copiedall"));
   }
 
-  async function shareOne(value: string) {
-    try {
-      // The password travels on its own — keep it on a different channel
-      // from any file it protects.
-      await navigator.share({ text: value });
-    } catch {
-      // User dismissed the native sheet or sharing failed — copy stays available
-    }
-  }
 
   function downloadTxt() {
     const stamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, "-");
@@ -367,40 +373,32 @@ export default function GeneratorContent() {
       />
 
       {/* ─── Tabs ─── */}
-      <div className="flex gap-1 mb-6 glass !rounded-lg p-0.5" role="tablist" aria-label={t("gen.title")}>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === "generate"}
-          onClick={() => setTab("generate")}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-medium chip-select cursor-pointer ${
-            tab === "generate" ? "bg-[var(--primary)] text-[var(--btn-text)]" : "theme-muted hover:theme-text"
-          }`}
+      <Tabs.Root value={tab} onValueChange={(v) => setTab(v as "generate" | "analyze")}>
+      <Tabs.List className="flex gap-1 mb-6 glass !rounded-lg p-0.5" aria-label={t("gen.title")}>
+        <Tabs.Trigger
+          value="generate"
+          className="tab-trigger flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-medium chip-select cursor-pointer"
         >
           <KeyRound className="w-3.5 h-3.5" />{t("gen.tab.generate")}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === "analyze"}
-          onClick={() => setTab("analyze")}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-medium chip-select cursor-pointer ${
-            tab === "analyze" ? "bg-[var(--primary)] text-[var(--btn-text)]" : "theme-muted hover:theme-text"
-          }`}
+        </Tabs.Trigger>
+        <Tabs.Trigger
+          value="analyze"
+          className="tab-trigger flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-md text-xs font-medium chip-select cursor-pointer"
         >
           <ScanSearch className="w-3.5 h-3.5" />{t("gen.tab.analyze")}
-        </button>
-      </div>
+        </Tabs.Trigger>
+      </Tabs.List>
 
       {/* ─── Generator tab ─── */}
-      {tab === "generate" && (
+      <Tabs.Content value="generate">
         <div className="glass glow-green-sm p-6 sm:p-8 animate-in">
           {/* Mode: all types on a single horizontal row */}
           <div className="mb-4">
             <p className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
               <ShieldCheck className="w-3 h-3" />{t("gen.mode")}
             </p>
-            <div className="flex gap-0.5 glass !rounded-lg p-0.5" role="group" aria-label={t("gen.mode")}>
+            <fieldset className="flex gap-0.5 glass !rounded-lg p-0.5 min-w-0">
+              <legend className="sr-only">{t("gen.mode")}</legend>
               {MODES.map((m) => (
                 <button
                   key={m.key}
@@ -414,7 +412,7 @@ export default function GeneratorContent() {
                   {t(m.labelKey as Parameters<typeof t>[0])}
                 </button>
               ))}
-            </div>
+            </fieldset>
           </div>
 
           {/* Length: slider over the preset stops + manual input (max 2048) */}
@@ -428,7 +426,7 @@ export default function GeneratorContent() {
                   id="gen-length-slider"
                   stops={LENGTHS}
                   value={length}
-                  onPick={setLength}
+                  onPick={(v) => { setLengthDraft(null); setLength(v); }}
                   ariaLabel={t("keygen.length")}
                 />
                 <input
@@ -439,8 +437,8 @@ export default function GeneratorContent() {
                   min={1}
                   max={MAX_LENGTH}
                   value={lengthInput}
-                  onChange={(e) => { setLengthInput(e.target.value); commitLength(e.target.value); }}
-                  onBlur={() => setLengthInput(String(length))}
+                  onChange={(e) => { setLengthDraft(e.target.value); commitLength(e.target.value); }}
+                  onBlur={() => setLengthDraft(null)}
                   aria-label={t("gen.custom.length")}
                   title={t("gen.custom.length")}
                   className={`w-[4.5rem] shrink-0 !py-2 !px-2 text-center !rounded-md text-[11px] font-mono font-medium ${
@@ -479,7 +477,7 @@ export default function GeneratorContent() {
                       id="gen-count-slider"
                       stops={COUNTS}
                       value={count}
-                      onPick={setCount}
+                      onPick={(v) => { setCountDraft(null); setCount(v); }}
                       ariaLabel={t("gen.count")}
                     />
                     <input
@@ -490,8 +488,8 @@ export default function GeneratorContent() {
                       min={1}
                       max={MAX_COUNT}
                       value={countInput}
-                      onChange={(e) => { setCountInput(e.target.value); commitCount(e.target.value); }}
-                      onBlur={() => setCountInput(String(count))}
+                      onChange={(e) => { setCountDraft(e.target.value); commitCount(e.target.value); }}
+                      onBlur={() => setCountDraft(null)}
                       aria-label={t("gen.custom.count")}
                       title={t("gen.custom.count")}
                       className={`w-[4.5rem] shrink-0 !py-2 !px-2 text-center !rounded-md text-[11px] font-mono font-medium ${
@@ -505,48 +503,36 @@ export default function GeneratorContent() {
                   <>
                     {/* Exclude ambiguous */}
                     <div>
-                      <label className="flex items-center gap-3 cursor-pointer group w-fit">
-                        <div className="relative">
-                          <input type="checkbox" checked={!!adv.excludeAmbiguous} onChange={(e) => setAdv({ excludeAmbiguous: e.target.checked })} className="sr-only peer" />
-                          <div className="w-9 h-5 toggle-track rounded-full peer-checked:toggle-track-checked transition-colors duration-200" />
-                          <div className="absolute top-0.5 left-0.5 w-4 h-4 toggle-knob rounded-full peer-checked:translate-x-4 peer-checked:toggle-knob-checked transition-all duration-200" />
-                        </div>
-                        <span className="flex items-center gap-1.5 text-xs theme-muted group-hover:theme-text transition-colors">
-                          <Ban className="w-3.5 h-3.5" />{t("gen.adv.ambiguous")}
-                        </span>
-                      </label>
+                      <Toggle
+                        checked={!!adv.excludeAmbiguous}
+                        onCheckedChange={(v) => setAdv({ excludeAmbiguous: v })}
+                        icon={Ban}
+                        label={t("gen.adv.ambiguous")}
+                      />
                       <p className="text-[10px] theme-faint mt-1 ml-12">{t("gen.adv.ambiguous.help")}</p>
                     </div>
 
                     {/* Require all classes */}
                     {supportsClasses && (
                       <div>
-                        <label className="flex items-center gap-3 cursor-pointer group w-fit">
-                          <div className="relative">
-                            <input type="checkbox" checked={!!adv.requireAllClasses} onChange={(e) => setAdv({ requireAllClasses: e.target.checked })} className="sr-only peer" />
-                            <div className="w-9 h-5 toggle-track rounded-full peer-checked:toggle-track-checked transition-colors duration-200" />
-                            <div className="absolute top-0.5 left-0.5 w-4 h-4 toggle-knob rounded-full peer-checked:translate-x-4 peer-checked:toggle-knob-checked transition-all duration-200" />
-                          </div>
-                          <span className="flex items-center gap-1.5 text-xs theme-muted group-hover:theme-text transition-colors">
-                            <ShieldCheck className="w-3.5 h-3.5" />{t("gen.adv.requireall")}
-                          </span>
-                        </label>
+                        <Toggle
+                          checked={!!adv.requireAllClasses}
+                          onCheckedChange={(v) => setAdv({ requireAllClasses: v })}
+                          icon={ShieldCheck}
+                          label={t("gen.adv.requireall")}
+                        />
                         <p className="text-[10px] theme-faint mt-1 ml-12">{t("gen.adv.requireall.help")}</p>
                       </div>
                     )}
 
                     {/* No consecutive repeats */}
                     <div>
-                      <label className="flex items-center gap-3 cursor-pointer group w-fit">
-                        <div className="relative">
-                          <input type="checkbox" checked={!!adv.noRepeats} onChange={(e) => setAdv({ noRepeats: e.target.checked })} className="sr-only peer" />
-                          <div className="w-9 h-5 toggle-track rounded-full peer-checked:toggle-track-checked transition-colors duration-200" />
-                          <div className="absolute top-0.5 left-0.5 w-4 h-4 toggle-knob rounded-full peer-checked:translate-x-4 peer-checked:toggle-knob-checked transition-all duration-200" />
-                        </div>
-                        <span className="flex items-center gap-1.5 text-xs theme-muted group-hover:theme-text transition-colors">
-                          <RefreshCw className="w-3.5 h-3.5" />{t("gen.adv.norepeats")}
-                        </span>
-                      </label>
+                      <Toggle
+                        checked={!!adv.noRepeats}
+                        onCheckedChange={(v) => setAdv({ noRepeats: v })}
+                        icon={RefreshCw}
+                        label={t("gen.adv.norepeats")}
+                      />
                       <p className="text-[10px] theme-faint mt-1 ml-12">{t("gen.adv.norepeats.help")}</p>
                     </div>
 
@@ -572,7 +558,8 @@ export default function GeneratorContent() {
                       <p className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
                         <Hash className="w-3 h-3" />{t("gen.adv.group")}
                       </p>
-                      <div className="flex gap-1" role="group" aria-label={t("gen.adv.group")}>
+                      <fieldset className="flex gap-1 min-w-0">
+                        <legend className="sr-only">{t("gen.adv.group")}</legend>
                         {[0, 4, 6, 8].map((g) => (
                           <button
                             key={g}
@@ -586,7 +573,7 @@ export default function GeneratorContent() {
                             {g === 0 ? t("gen.adv.group.off") : g}
                           </button>
                         ))}
-                      </div>
+                      </fieldset>
                       <p className="text-[10px] theme-faint mt-1">{t("gen.adv.group.help")}</p>
                     </div>
                   </>
@@ -707,10 +694,10 @@ export default function GeneratorContent() {
 
           <p className="text-[10px] theme-faint mt-4 leading-relaxed">{t("gen.privacy")}</p>
         </div>
-      )}
+      </Tabs.Content>
 
       {/* ─── Analyzer tab ─── */}
-      {tab === "analyze" && (
+      <Tabs.Content value="analyze">
         <div className="glass glow-green-sm p-6 sm:p-8 animate-in">
           <h2 className="text-sm font-semibold theme-heading mb-1">{t("gen.analyze.title")}</h2>
           <p className="text-xs theme-muted mb-4">{t("gen.analyze.subtitle")}</p>
@@ -806,7 +793,8 @@ export default function GeneratorContent() {
             </div>
           )}
         </div>
-      )}
+      </Tabs.Content>
+      </Tabs.Root>
     </PageLayout>
   );
 }

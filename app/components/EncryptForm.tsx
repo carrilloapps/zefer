@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useSyncExternalStore } from "react";
 import { useUrlParams } from "@/app/lib/useUrlParams";
 import {
   Lock,
@@ -11,7 +11,6 @@ import {
   FileText,
   X,
   AlertTriangle,
-  Loader2,
   Download,
   Check,
   ChevronDown,
@@ -34,31 +33,39 @@ import { createEncryptTracker, type ProgressState } from "@/app/lib/progress";
 import CryptoProgress from "@/app/components/CryptoProgress";
 import KeyGenerator from "@/app/components/KeyGenerator";
 import DeviceInfo from "@/app/components/DeviceInfo";
-import { GlassSelect } from "@/app/components/ui";
+import { Tooltip } from "radix-ui";
+import { GlassSelect, TipBubble, Toggle } from "@/app/components/ui";
 import type { CompressionMethod } from "@/app/lib/compression";
 import { useLanguage } from "@/app/components/LanguageProvider";
 import { usePreferences } from "@/app/lib/preferences";
 import { notifySuccess, notifyError, notifyWarning } from "@/app/lib/notify";
+import type { TranslationKey } from "@/app/lib/i18n";
 
-const TTL_OPTIONS = [
-  { labelKey: "ttl.5min" as const, value: 5 },
-  { labelKey: "ttl.15min" as const, value: 15 },
-  { labelKey: "ttl.30min" as const, value: 30 },
-  { labelKey: "ttl.1hour" as const, value: 60 },
-  { labelKey: "ttl.24hours" as const, value: 1440 },
-  { labelKey: "ttl.7days" as const, value: 10080 },
-  { labelKey: "ttl.2weeks" as const, value: 20160 },
-  { labelKey: "ttl.1month" as const, value: 43200 },
-  { labelKey: "ttl.never" as const, value: 0 },
+const TTL_OPTIONS: { labelKey: TranslationKey; value: number }[] = [
+  { labelKey: "ttl.5min", value: 5 },
+  { labelKey: "ttl.15min", value: 15 },
+  { labelKey: "ttl.30min", value: 30 },
+  { labelKey: "ttl.1hour", value: 60 },
+  { labelKey: "ttl.24hours", value: 1440 },
+  { labelKey: "ttl.7days", value: 10080 },
+  { labelKey: "ttl.2weeks", value: 20160 },
+  { labelKey: "ttl.1month", value: 43200 },
+  { labelKey: "ttl.never", value: 0 },
 ];
 
-const SECURITY_LEVELS = [
-  { labelKey: "security.standard" as const, value: 300_000 },
-  { labelKey: "security.high" as const, value: 600_000 },
-  { labelKey: "security.maximum" as const, value: 1_000_000 },
+const SECURITY_LEVELS: { labelKey: TranslationKey; value: number }[] = [
+  { labelKey: "security.standard", value: 300_000 },
+  { labelKey: "security.high", value: 600_000 },
+  { labelKey: "security.maximum", value: 1_000_000 },
 ];
 
-const COMPRESSION_OPTIONS: { labelKey: string; value: CompressionMethod }[] = [
+const SECURITY_BY_NAME: Record<string, number> = {
+  standard: 300_000,
+  high: 600_000,
+  maximum: 1_000_000,
+};
+
+const COMPRESSION_OPTIONS: { labelKey: TranslationKey; value: CompressionMethod }[] = [
   { labelKey: "compression.none", value: "none" },
   { labelKey: "compression.gzip", value: "gzip" },
   { labelKey: "compression.deflate", value: "deflate" },
@@ -66,8 +73,603 @@ const COMPRESSION_OPTIONS: { labelKey: string; value: CompressionMethod }[] = [
 
 type InputMode = "text" | "file";
 
-const TEXT_EXTENSIONS = [".txt", ".env"];
+const TEXT_EXTENSIONS = new Set([".txt", ".env"]);
 const TEXT_MAX = 256 * 1024;
+
+const FALLBACK_LIMITS: DeviceLimits = {
+  maxFileSize: 40 * 1024 * 1024,
+  maxFileSizeLabel: "40 MB",
+  profile: {
+    ram: 0, cores: 0, gpu: null, gpuVendor: null, cpuArch: null,
+    platform: "unknown", platformVersion: null, userAgent: "", mobile: false,
+    heapLimit: null, heapUsed: null, heapTotal: null,
+  },
+};
+
+// ─── External store: device limits ───
+//
+// The hardware profile comes from `navigator`, an external system that cannot
+// change while the page is open. Reading it through an external store keeps the
+// server render and the hydration render on FALLBACK_LIMITS — which is what the
+// static markup ships — without a setState-in-effect.
+let deviceSnapshot: DeviceLimits | null = null;
+
+function getDeviceSnapshot(): DeviceLimits {
+  deviceSnapshot ??= analyzeDevice();
+  return deviceSnapshot;
+}
+
+function getServerDeviceSnapshot(): DeviceLimits {
+  return FALLBACK_LIMITS;
+}
+
+function subscribeDevice(): () => void {
+  return () => {};
+}
+
+/** Parse a non-negative integer URL param; `null` when it is absent or junk. */
+function parseCount(raw: string | null): number | null {
+  if (raw === null) return null;
+  const value = Number.parseInt(raw, 10);
+  return Number.isNaN(value) || value < 0 ? null : value;
+}
+
+/** Null bytes or a heavy concentration of control characters mean binary. */
+function hasBinaryContent(text: string): boolean {
+  const sample = text.substring(0, 4096);
+  let controlCount = 0;
+  for (const char of sample) {
+    const code = char.codePointAt(0)!;
+    if (code === 0) return true; // null byte = definitely binary
+    if (code < 32 && code !== 9 && code !== 10 && code !== 13) controlCount++;
+  }
+  return controlCount > sample.length * 0.1; // >10% control chars = binary
+}
+
+function extensionOf(fileName: string): string {
+  return fileName.substring(fileName.lastIndexOf(".")).toLowerCase();
+}
+
+/** Open the OS file picker for a hidden input. The ref is null while the
+ *  input for that mode is not mounted yet (double-clicking the mode tab). */
+function openPicker(ref: React.RefObject<HTMLInputElement | null>) {
+  ref.current?.click();
+}
+
+/** Reset a file input so picking the same file again still fires `change`.
+ *  The ref is null whenever the form itself is unmounted (success panel). */
+function clearFileInput(ref: React.RefObject<HTMLInputElement | null>) {
+  if (ref.current) ref.current.value = "";
+}
+
+/** Trigger a browser download for an already-built blob. */
+function downloadBlob(blob: Blob, name: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+type UrlGetter = (long: string, short: string) => string | null;
+
+interface CoreParams {
+  inputMode?: InputMode;
+  ttl?: number;
+  compression?: CompressionMethod;
+  iterations?: number;
+}
+
+/** Mode, expiry, compression and KDF strength, read straight off the URL. */
+function readCoreParams(g: UrlGetter): CoreParams {
+  const core: CoreParams = {};
+
+  const mode = g("mode", "m");
+  if (mode === "text" || mode === "file") core.inputMode = mode;
+
+  const ttl = parseCount(g("ttl", "ttl"));
+  if (ttl !== null) core.ttl = ttl;
+
+  const comp = g("compression", "c");
+  if (comp === "gzip" || comp === "deflate" || comp === "none") core.compression = comp;
+
+  // A named security level wins over a raw iteration count.
+  const sec = g("security", "s");
+  if (sec && SECURITY_BY_NAME[sec]) {
+    core.iterations = SECURITY_BY_NAME[sec];
+    return core;
+  }
+  const iter = parseCount(g("iterations", "i"));
+  if (iter !== null && iter > 0) core.iterations = iter;
+
+  return core;
+}
+
+/** Advanced-panel params from the URL; `null` when none were supplied. */
+function readAdvancedParams(g: UrlGetter): Partial<AdvancedState> | null {
+  const patch: Partial<AdvancedState> = {};
+
+  const pass2 = g("passphrase2", "p2");
+  if (pass2) { patch.secondPassphrase = pass2; patch.dualKey = true; }
+  const dual = g("dual", "d");
+  if (dual === "1" || dual === "true") patch.dualKey = true;
+  const rev = g("reveal", "r");
+  if (rev) patch.revealKey = rev;
+  const hintVal = g("hint", "h");
+  if (hintVal) patch.hint = hintVal;
+  const noteVal = g("note", "n");
+  if (noteVal) patch.note = noteVal;
+  const quest = g("question", "q");
+  if (quest) patch.question = quest;
+  const ans = g("answer", "a");
+  if (ans) patch.questionAnswer = ans;
+  const att = parseCount(g("attempts", "att"));
+  if (att !== null) patch.maxAttempts = att;
+  const ipsVal = g("ips", "ips");
+  if (ipsVal) patch.allowedIpsInput = ipsVal;
+
+  return Object.keys(patch).length > 0 ? patch : null;
+}
+
+// ─── Passphrase strength ───
+
+const STRENGTH_LEVELS = [
+  { min: 16, fill: "strength-strong", text: "text-primary", labelKey: "strength.strong" as TranslationKey },
+  { min: 10, fill: "strength-good", text: "text-primary", labelKey: "strength.good" as TranslationKey },
+  { min: 6, fill: "strength-fair", text: "theme-warning", labelKey: "strength.fair" as TranslationKey },
+  { min: 0, fill: "strength-weak", text: "theme-danger", labelKey: "strength.weak" as TranslationKey },
+];
+
+function PassphraseStrength({ length }: Readonly<{ length: number }>) {
+  const { t } = useLanguage();
+  const level = STRENGTH_LEVELS.find((l) => length >= l.min)!;
+
+  return (
+    <div className="mt-2">
+      <div className="strength-meter">
+        <div className={`strength-meter-fill ${level.fill}`} />
+      </div>
+      <p className={`text-[10px] mt-1 ${level.text}`}>{t(level.labelKey)}</p>
+    </div>
+  );
+}
+
+// ─── Advanced options ───
+
+/** Everything behind the "Advanced" disclosure. Kept in one object so the whole
+ *  panel travels as a single prop instead of a dozen. */
+interface AdvancedState {
+  dualKey: boolean;
+  secondPassphrase: string;
+  revealKey: string;
+  hint: string;
+  note: string;
+  question: string;
+  questionAnswer: string;
+  maxAttempts: number;
+  allowedIpsInput: string;
+}
+
+const ADVANCED_DEFAULTS: AdvancedState = {
+  dualKey: false,
+  secondPassphrase: "",
+  revealKey: "",
+  hint: "",
+  note: "",
+  question: "",
+  questionAnswer: "",
+  maxAttempts: 0,
+  allowedIpsInput: "",
+};
+
+interface AdvancedOptionsProps {
+  open: boolean;
+  advanced: AdvancedState;
+  onChange: (patch: Partial<AdvancedState>) => void;
+  iterations: number;
+  onIterations: (v: number) => void;
+  compression: CompressionMethod;
+  onCompression: (v: CompressionMethod) => void;
+  isZefer: boolean;
+  keygenMode: Parameters<typeof KeyGenerator>[0]["savedMode"];
+  keygenLength: number;
+  onKeygenMode: (v: NonNullable<Parameters<typeof KeyGenerator>[0]["savedMode"]>) => void;
+  onKeygenLength: (v: number) => void;
+}
+
+/** Warning about the detected IP, or the neutral disclaimer when none was run. */
+function IpNotice({ result }: Readonly<{ result: IpDetectionResult | null }>) {
+  const { t } = useLanguage();
+
+  if (!result) return <p className="text-[10px] theme-faint mt-1">{t("advanced.ip.disclaimer")}</p>;
+
+  if (result.vpnDetected) {
+    return (
+      <div className="flex items-start gap-1.5 mt-2 glass !rounded-lg px-3 py-2">
+        <Shield className="w-3 h-3 theme-warning shrink-0 mt-0.5" />
+        <p className="text-[10px] theme-warning">{t("advanced.ip.vpn")}</p>
+      </div>
+    );
+  }
+
+  if (result.inconsistent) {
+    return (
+      <div className="flex items-start gap-1.5 mt-2 glass !rounded-lg px-3 py-2">
+        <AlertTriangle className="w-3 h-3 theme-warning shrink-0 mt-0.5" />
+        <p className="text-[10px] theme-warning">{t("advanced.ip.inconsistent")} ({result.allIps.join(", ")})</p>
+      </div>
+    );
+  }
+
+  return <p className="text-[10px] text-primary mt-1">{t("advanced.ip.clean")}</p>;
+}
+
+function AdvancedOptions({
+  open, advanced, onChange,
+  iterations, onIterations,
+  compression, onCompression,
+  isZefer,
+  keygenMode, keygenLength, onKeygenMode, onKeygenLength,
+}: Readonly<AdvancedOptionsProps>) {
+  const { t } = useLanguage();
+  const [showSecondPass, setShowSecondPass] = useState(false);
+  const [showRevealKey, setShowRevealKey] = useState(false);
+  const [ipLoading, setIpLoading] = useState(false);
+  const [ipResult, setIpResult] = useState<IpDetectionResult | null>(null);
+
+  async function addMyIp() {
+    setIpLoading(true);
+    const result = await detectIp();
+    setIpLoading(false);
+    setIpResult(result);
+    if (!result.ip) return;
+    const current = advanced.allowedIpsInput;
+    onChange({ allowedIpsInput: current ? `${current}, ${result.ip}` : result.ip });
+  }
+
+  return (
+    <div id="advanced-options" className={`advanced-panel ${open ? "advanced-open" : ""} mb-4`}>
+      <div>
+      <div className="border-t border-[var(--border-subtle)] pt-4 space-y-4">
+        {/* Security level */}
+        <fieldset className="min-w-0">
+          <legend className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+            <Gauge className="w-3 h-3" />{t("advanced.security")}
+          </legend>
+          <div className="grid grid-cols-1 min-[400px]:grid-cols-3 gap-2">
+            {SECURITY_LEVELS.map((level) => (
+              <button
+                key={level.value}
+                type="button"
+                onClick={() => onIterations(level.value)}
+                aria-pressed={iterations === level.value}
+                className={`py-2 px-3 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer border ${
+                  iterations === level.value
+                    ? "bg-[var(--primary)] text-[var(--btn-text)] border-transparent"
+                    : "glass theme-muted hover:theme-text"
+                }`}
+              >
+                {t(level.labelKey)}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+
+        {/* Compression */}
+        <fieldset className="min-w-0">
+          <legend className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+            <Hash className="w-3 h-3" />{t("advanced.compression")}
+            {isZefer && <span className="text-[9px] theme-warning ml-1">({t("form.zefer.compression.disabled")})</span>}
+          </legend>
+          <div className="grid grid-cols-1 min-[400px]:grid-cols-3 gap-2">
+            {COMPRESSION_OPTIONS.map((opt) => (
+              <CompressionButton
+                key={opt.value}
+                labelKey={opt.labelKey}
+                value={opt.value}
+                active={compression === opt.value}
+                locked={isZefer && opt.value !== "none"}
+                onPick={onCompression}
+              />
+            ))}
+          </div>
+        </fieldset>
+
+        {/* Dual key */}
+        <div>
+          <div className="mb-2">
+            <Toggle
+              checked={advanced.dualKey}
+              onCheckedChange={(v) => onChange({ dualKey: v })}
+              icon={KeyRound}
+              label={t("advanced.dualkey")}
+            />
+          </div>
+          {advanced.dualKey && (
+            <div className="relative mt-2 has-toggle-wrap">
+              <input id="encrypt-pass2" name="second-passphrase" autoComplete="new-password" type={showSecondPass ? "text" : "password"} value={advanced.secondPassphrase} onChange={(e) => onChange({ secondPassphrase: e.target.value })} placeholder={t("advanced.dualkey.placeholder")} className="w-full has-toggle font-mono text-sm" aria-label={t("advanced.dualkey")} />
+              <button type="button" onClick={() => setShowSecondPass(!showSecondPass)} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center theme-faint hover:theme-text transition-colors cursor-pointer" aria-label={showSecondPass ? t("aria.hidesecond") : t("aria.showsecond")}>
+                {showSecondPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Reveal key */}
+        <div>
+          <label htmlFor="encrypt-reveal" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+            <KeyRound className="w-3 h-3" />{t("advanced.revealkey")}
+          </label>
+          <div className="flex gap-2">
+            <div className="relative flex-1 has-toggle-wrap">
+              <input id="encrypt-reveal" name="reveal-key" autoComplete="new-password" type={showRevealKey ? "text" : "password"} value={advanced.revealKey} onChange={(e) => onChange({ revealKey: e.target.value })} placeholder={t("advanced.revealkey.placeholder")} className="w-full has-toggle font-mono text-sm" />
+              <button type="button" onClick={() => setShowRevealKey(!showRevealKey)} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center theme-faint hover:theme-text transition-colors cursor-pointer" aria-label={showRevealKey ? t("aria.hidereveal") : t("aria.showreveal")}>
+                {showRevealKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <KeyGenerator onSelect={(v) => onChange({ revealKey: v })} savedMode={keygenMode} savedLength={keygenLength} onModeChange={onKeygenMode} onLengthChange={onKeygenLength} />
+          </div>
+          <p className="text-[10px] theme-faint mt-1">{t("advanced.revealkey.help")}</p>
+        </div>
+
+        {/* Max attempts */}
+        <div>
+          <GlassSelect
+            value={advanced.maxAttempts}
+            onChange={(v) => onChange({ maxAttempts: v as number })}
+            label={t("advanced.attempts")}
+            icon={Shield}
+            options={[
+              { label: t("advanced.attempts.unlimited"), value: 0 },
+              { label: "3", value: 3 },
+              { label: "5", value: 5 },
+              { label: "10", value: 10 },
+            ]}
+          />
+        </div>
+
+        {/* Hint */}
+        <div>
+          <label htmlFor="encrypt-hint" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+            <MessageSquare className="w-3 h-3" />{t("advanced.hint")}
+          </label>
+          <input id="encrypt-hint" name="hint" type="text" value={advanced.hint} onChange={(e) => onChange({ hint: e.target.value })} placeholder={t("advanced.hint.placeholder")} className="w-full text-sm" />
+        </div>
+
+        {/* Public note */}
+        <div>
+          <label htmlFor="encrypt-note" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+            <MessageSquare className="w-3 h-3" />{t("advanced.note")}
+          </label>
+          <input id="encrypt-note" name="note" type="text" value={advanced.note} onChange={(e) => onChange({ note: e.target.value })} placeholder={t("advanced.note.placeholder")} className="w-full text-sm" />
+        </div>
+
+        {/* Secret question */}
+        <div>
+          <label htmlFor="encrypt-question" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+            <HelpCircle className="w-3 h-3" />{t("advanced.question")}
+          </label>
+          <input id="encrypt-question" name="question" type="text" value={advanced.question} onChange={(e) => onChange({ question: e.target.value })} placeholder={t("advanced.question.placeholder")} className="w-full text-sm mb-2" />
+          {advanced.question && (
+            <input id="encrypt-answer" name="answer" type="text" value={advanced.questionAnswer} onChange={(e) => onChange({ questionAnswer: e.target.value })} placeholder={t("advanced.question.answer")} aria-label={t("advanced.question.answer")} className="w-full text-sm" />
+          )}
+        </div>
+
+        {/* IP allowlist */}
+        <div>
+          <label htmlFor="allowed-ips" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
+            <Globe className="w-3 h-3" />{t("advanced.ip")}
+          </label>
+          <div className="flex flex-col min-[400px]:flex-row gap-2 mb-1">
+            <input id="allowed-ips" name="allowed-ips" type="text" value={advanced.allowedIpsInput} onChange={(e) => onChange({ allowedIpsInput: e.target.value })} placeholder={t("advanced.ip.placeholder")} className="flex-1 text-sm font-mono" />
+            <button
+              type="button"
+              disabled={ipLoading}
+              onClick={addMyIp}
+              className="px-3 py-2 rounded-lg text-[11px] font-medium theme-primary-faint theme-primary-border border text-primary hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap"
+            >
+              {ipLoading ? "..." : t("advanced.ip.addmine")}
+            </button>
+          </div>
+          <p className="text-[10px] theme-faint mt-1">{t("advanced.ip.help")}</p>
+          <IpNotice result={ipResult} />
+        </div>
+      </div>
+      </div>
+    </div>
+  );
+}
+
+/** One compression choice. Locked (and visibly disabled) when the input is
+ *  already a .zefer file, since re-compressing ciphertext gains nothing. */
+function CompressionButton({
+  labelKey, value, active, locked, onPick,
+}: Readonly<{
+  labelKey: TranslationKey;
+  value: CompressionMethod;
+  active: boolean;
+  locked: boolean;
+  onPick: (v: CompressionMethod) => void;
+}>) {
+  const { t } = useLanguage();
+  let tone = "glass theme-muted hover:theme-text cursor-pointer";
+  if (locked) tone = "glass theme-faint cursor-not-allowed opacity-50";
+  else if (active) tone = "bg-[var(--primary)] text-[var(--btn-text)] border-transparent cursor-pointer";
+
+  return (
+    <button
+      type="button"
+      disabled={locked}
+      aria-pressed={active}
+      onClick={() => onPick(value)}
+      className={`py-2 px-3 rounded-lg text-xs font-medium transition-all duration-200 border ${tone}`}
+    >
+      {t(labelKey)}
+    </button>
+  );
+}
+
+// ─── Success panel ───
+
+/** Post-encryption panel: download, native share and (for short-lived files)
+ *  the decrypt link. It only ever renders after a user action, so the Web Share
+ *  capability checks can be read straight from `navigator`. */
+function EncryptSuccess({
+  zeferFile,
+  shareLink,
+  onReset,
+}: Readonly<{ zeferFile: File; shareLink: string | null; onReset: () => void }>) {
+  const { t } = useLanguage();
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [shareTipOpen, setShareTipOpen] = useState(false);
+
+  const canShareLink = typeof navigator.share === "function";
+  const canShareFiles = typeof navigator.canShare === "function"
+    && navigator.canShare({ files: [zeferFile] });
+
+  // Bring the panel fully into view — the form is taller, so the viewport would
+  // otherwise rest with the panel under the fixed navbar.
+  useEffect(() => {
+    document.getElementById("encrypt-success")!.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  async function shareFile() {
+    // Only the file travels here — never the passphrase (different channel by design).
+    // Several platforms accept files OR text, but reject files + title/text together,
+    // so add the text only when canShare() confirms the exact payload is supported.
+    const fileOnly: ShareData = { files: [zeferFile] };
+    const withText: ShareData = {
+      ...fileOnly,
+      title: t("encrypt.success.file.share.title"),
+      text: t("encrypt.success.file.share.text"),
+    };
+    try {
+      await navigator.share(navigator.canShare(withText) ? withText : fileOnly);
+    } catch {
+      // User dismissed the native sheet or sharing failed — Download stays available
+    }
+  }
+
+  async function shareTheLink(url: string) {
+    try {
+      await navigator.share({
+        title: t("encrypt.success.link.share.title"),
+        text: t("encrypt.success.link.share.text"),
+        url,
+      });
+    } catch {
+      // User dismissed the native sheet or sharing failed — copy stays available
+    }
+  }
+
+  return (
+    <div id="encrypt-success" className="glass glow-green p-6 sm:p-8 animate-in stagger-children scroll-mt-28">
+      <div className="flex items-center gap-3 mb-5">
+        <div className="w-9 h-9 rounded-xl theme-primary-faint theme-primary-border border flex items-center justify-center success-icon">
+          <Check className="w-4 h-4 text-primary" />
+        </div>
+        <div>
+          <h2 className="text-sm font-semibold theme-heading">{t("encrypt.success.title")}</h2>
+          <p className="text-xs theme-muted">{t("encrypt.success.subtitle")}</p>
+        </div>
+      </div>
+
+      <div className="glass !rounded-xl p-4 mb-5">
+        <div className="flex items-start gap-3">
+          <Download className="w-4 h-4 theme-faint shrink-0 mt-0.5" />
+          <p className="text-[13px] theme-muted leading-relaxed">{t("encrypt.success.desc")}</p>
+        </div>
+        <div className="flex gap-2 mt-3">
+          <button
+            type="button"
+            onClick={() => downloadBlob(zeferFile, zeferFile.name)}
+            className="flex-1 flex items-center justify-center gap-2 glass px-3 py-2.5 rounded-lg cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors text-xs font-medium theme-heading"
+            aria-label={t("aria.downloadfile")}
+          >
+            <Download className="w-3.5 h-3.5 text-primary" />
+            {t("encrypt.success.file.download")}
+          </button>
+          {canShareFiles ? (
+            <button
+              type="button"
+              onClick={shareFile}
+              className="flex-1 flex items-center justify-center gap-2 glass px-3 py-2.5 rounded-lg cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors text-xs font-medium theme-heading"
+              aria-label={t("aria.sharefile")}
+            >
+              <Share2 className="w-3.5 h-3.5 text-primary" />
+              {t("encrypt.success.file.send")}
+            </button>
+          ) : (
+            <Tooltip.Provider delayDuration={150}>
+              <Tooltip.Root open={shareTipOpen} onOpenChange={setShareTipOpen}>
+                <Tooltip.Trigger asChild>
+                  <button
+                    type="button"
+                    aria-disabled="true"
+                    onPointerDown={(e) => { e.preventDefault(); setShareTipOpen((o) => !o); }}
+                    className="flex-1 flex items-center justify-center gap-2 glass px-3 py-2.5 rounded-lg cursor-help opacity-50 transition-colors text-xs font-medium theme-heading"
+                    aria-label={t("encrypt.success.file.unsupported")}
+                  >
+                    <Share2 className="w-3.5 h-3.5 theme-faint" />
+                    {t("encrypt.success.file.send")}
+                  </button>
+                </Tooltip.Trigger>
+                <TipBubble align="end">{t("encrypt.success.file.unsupported")}</TipBubble>
+              </Tooltip.Root>
+            </Tooltip.Provider>
+          )}
+        </div>
+      </div>
+
+      {(canShareFiles || shareLink) && (
+        <div className="glass !rounded-xl p-4 mb-5 theme-warning-faint">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-4 h-4 theme-warning shrink-0 mt-0.5" />
+            <p className="text-[12px] theme-muted leading-relaxed">{t("encrypt.success.separate")}</p>
+          </div>
+        </div>
+      )}
+
+      {shareLink && (
+        <div className="glass !rounded-xl p-4 mb-5 animate-in">
+          <div className="flex items-center gap-2 mb-2">
+            <Link2 className="w-4 h-4 text-primary shrink-0" />
+            <p className="text-xs font-medium theme-heading">{t("encrypt.success.link.title")}</p>
+          </div>
+          <p className="text-[11px] theme-muted mb-3">{t("encrypt.success.link.desc")}</p>
+          <div className="flex gap-2">
+            <code className="flex-1 text-[11px] font-mono text-primary theme-primary-faint rounded-lg px-3 py-2 overflow-x-auto whitespace-nowrap">{shareLink}</code>
+            {canShareLink && (
+              <button
+                type="button"
+                onClick={() => shareTheLink(shareLink)}
+                className="shrink-0 glass px-3 py-2 rounded-lg cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors"
+                aria-label={t("aria.sharelink")}
+              >
+                <Share2 className="w-3.5 h-3.5 theme-muted" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => { navigator.clipboard.writeText(shareLink); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000); }}
+              className="shrink-0 glass px-3 py-2 rounded-lg cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors"
+              aria-label={t("aria.copylink")}
+            >
+              {linkCopied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5 theme-muted" />}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <button onClick={onReset} className="btn-primary">{t("encrypt.another")}</button>
+    </div>
+  );
+}
+
+// ─── Form ───
 
 export default function EncryptForm() {
   const { t } = useLanguage();
@@ -91,246 +693,120 @@ export default function EncryptForm() {
   // instead of reading the whole thing into an ArrayBuffer up front.
   const [fileData, setFileData] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
-  const [fileType, setFileType] = useState<string | null>(null);
-  const [fileSize, setFileSize] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Shared
   const [passphrase, setPassphrase] = useState("");
   const [showPass, setShowPass] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isZefer, setIsZefer] = useState(false);
 
-  // Device limits
-  const [limits, setLimits] = useState<DeviceLimits>({
-    maxFileSize: 40 * 1024 * 1024, maxFileSizeLabel: "40 MB",
-    profile: { ram: 0, cores: 0, gpu: null, gpuVendor: null, cpuArch: null, platform: "unknown", platformVersion: null, userAgent: "", mobile: false, heapLimit: null, heapUsed: null, heapTotal: null },
-  });
-  useEffect(() => { setLimits(analyzeDevice()); }, []);
+  const limits = useSyncExternalStore(subscribeDevice, getDeviceSnapshot, getServerDeviceSnapshot);
 
-  // URL params (long and short aliases)
+  // Advanced
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [advanced, setAdvanced] = useState<AdvancedState>(ADVANCED_DEFAULTS);
+  const patchAdvanced = (patch: Partial<AdvancedState>) =>
+    setAdvanced((prev) => ({ ...prev, ...patch }));
+
+  // State — a non-null `progress` IS the in-flight state, so there is no
+  // separate `loading` flag: the form is swapped for the progress panel.
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<ProgressState | null>(null);
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  // The encrypted .zefer kept in memory so it can be shared as a file after
+  // the automatic download. It is ciphertext, never a secret, so holding it
+  // is safe — and it is deliberately separate from the passphrase channel.
+  const [zeferFile, setZeferFile] = useState<File | null>(null);
+
+  // URL params (long and short aliases). Applied EXACTLY ONCE: the setters from
+  // usePreferences() are fresh on every render, so a re-run would keep
+  // re-asserting the URL values over any later user change.
   const searchParams = useUrlParams();
   const paramsApplied = useRef(false);
-  const securityMap: Record<string, number> = { standard: 300_000, high: 600_000, maximum: 1_000_000 };
   useEffect(() => {
     if (!searchParams || paramsApplied.current) return;
     paramsApplied.current = true;
     const urlTab = searchParams.get("tab") || searchParams.get("t");
     if (urlTab === "decrypt") return;
     const g = (long: string, short: string) => searchParams.get(long) ?? searchParams.get(short) ?? null;
-    let adv = false;
-    let hasSensitive = false;
 
-    // Core
-    const mode = g("mode", "m");
-    if (mode === "text" || mode === "file") setInputMode(mode);
-    const ttlVal = g("ttl", "ttl");
-    if (ttlVal) { const v = parseInt(ttlVal, 10); if (!isNaN(v) && v >= 0) setTtl(v); }
-    const comp = g("compression", "c");
-    if (comp === "gzip" || comp === "deflate" || comp === "none") setCompression(comp as CompressionMethod);
-    const sec = g("security", "s");
-    if (sec && securityMap[sec]) setIterations(securityMap[sec]);
-    else { const iter = g("iterations", "i"); if (iter) { const v = parseInt(iter, 10); if (!isNaN(v) && v > 0) setIterations(v); } }
+    const core = readCoreParams(g);
+    if (core.inputMode) setInputMode(core.inputMode);
+    if (core.ttl !== undefined) setTtl(core.ttl);
+    if (core.compression) setCompression(core.compression);
+    if (core.iterations !== undefined) setIterations(core.iterations);
 
-    // Auth
     const pass = g("passphrase", "p");
-    if (pass) { setPassphrase(pass); hasSensitive = true; }
-    const pass2 = g("passphrase2", "p2");
-    if (pass2) { setSecondPassphrase(pass2); setDualKey(true); adv = true; hasSensitive = true; }
-    const dual = g("dual", "d");
-    if (dual === "1" || dual === "true") { setDualKey(true); adv = true; }
-    const rev = g("reveal", "r");
-    if (rev) { setRevealKey(rev); adv = true; hasSensitive = true; }
+    if (pass) setPassphrase(pass);
 
-    // Metadata
-    const hintVal = g("hint", "h");
-    if (hintVal) { setHint(hintVal); adv = true; }
-    const noteVal = g("note", "n");
-    if (noteVal) { setNote(noteVal); adv = true; }
+    const advancedPatch = readAdvancedParams(g);
+    if (advancedPatch) {
+      setAdvanced((prev) => ({ ...prev, ...advancedPatch }));
+      setShowAdvanced(true);
+    }
 
-    // Security
-    const quest = g("question", "q");
-    if (quest) { setQuestion(quest); adv = true; }
-    const ans = g("answer", "a");
-    if (ans) { setQuestionAnswer(ans); adv = true; hasSensitive = true; }
-    const att = g("attempts", "att");
-    if (att) { const v = parseInt(att, 10); if (!isNaN(v) && v >= 0) { setMaxAttempts(v); adv = true; } }
-    const ipsVal = g("ips", "ips");
-    if (ipsVal) { setAllowedIpsInput(ipsVal); adv = true; }
-
-    if (adv) setShowAdvanced(true);
-    if (hasSensitive) window.history.replaceState({}, "", window.location.pathname);
+    const sensitive = [pass, g("passphrase2", "p2"), g("reveal", "r"), g("answer", "a")];
+    if (sensitive.some(Boolean)) window.history.replaceState({}, "", window.location.pathname);
   }, [searchParams, setInputMode, setTtl, setIterations, setCompression]);
 
-  // Advanced
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [dualKey, setDualKey] = useState(false);
-  const [secondPassphrase, setSecondPassphrase] = useState("");
-  const [showSecondPass, setShowSecondPass] = useState(false);
-  const [revealKey, setRevealKey] = useState("");
-  const [showRevealKey, setShowRevealKey] = useState(false);
-  const [hint, setHint] = useState("");
-  const [note, setNote] = useState("");
-  const [question, setQuestion] = useState("");
-  const [questionAnswer, setQuestionAnswer] = useState("");
-  const [maxAttempts, setMaxAttempts] = useState(0);
-  const [allowedIpsInput, setAllowedIpsInput] = useState("");
-  const [ipLoading, setIpLoading] = useState(false);
-  const [ipResult, setIpResult] = useState<IpDetectionResult | null>(null);
-  const [isZefer, setIsZefer] = useState(false);
-
-  // State
-  const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [progress, setProgress] = useState<ProgressState | null>(null);
-  const [shareLink, setShareLink] = useState<string | null>(null);
-  const [linkCopied, setLinkCopied] = useState(false);
-  // The encrypted .zefer kept in memory so it can be shared as a file after
-  // the automatic download. It is ciphertext, never a secret, so holding it
-  // is safe — and it is deliberately separate from the passphrase channel.
-  const [zeferFile, setZeferFile] = useState<File | null>(null);
-  const [canShareFiles, setCanShareFiles] = useState(false);
-  // Tooltip shown when tapping the disabled "send file" button (no browser support)
-  const [shareTipOpen, setShareTipOpen] = useState(false);
-  // Native Web Share API support for text/URL — detected on the client (SSR-safe)
-  const [canShare, setCanShare] = useState(false);
-  useEffect(() => {
-    setCanShare(typeof navigator !== "undefined" && typeof navigator.share === "function");
-  }, []);
-
-  async function handleShareLink() {
-    if (!shareLink) return;
-    try {
-      await navigator.share({
-        title: t("encrypt.success.link.share.title"),
-        text: t("encrypt.success.link.share.text"),
-        url: shareLink,
-      });
-    } catch {
-      // User dismissed the native sheet or sharing failed — copy stays available as fallback
-    }
-  }
-
-  async function handleShareFile() {
-    if (!zeferFile) return;
-    // Only the file travels here — never the passphrase (different channel by design).
-    // Several platforms accept files OR text, but reject files + title/text together,
-    // so add the text only when canShare() confirms the exact payload is supported.
-    const fileOnly: ShareData = { files: [zeferFile] };
-    const withText: ShareData = {
-      ...fileOnly,
-      title: t("encrypt.success.file.share.title"),
-      text: t("encrypt.success.file.share.text"),
-    };
-    const payload = navigator.canShare?.(withText) ? withText : fileOnly;
-    try {
-      await navigator.share(payload);
-    } catch {
-      // User dismissed the native sheet or sharing failed — Download stays available
-    }
-  }
-
-  // Re-download the encrypted file on demand. The file already auto-downloads
-  // after encryption; this keeps download available as the baseline option
-  // alongside (or instead of) native sharing.
-  function downloadZefer() {
-    if (!zeferFile) return;
-    const url = URL.createObjectURL(zeferFile);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = zeferFile.name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
   // Text mode: STRICTLY .txt / .env only
-  function handleTextFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleTextFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Strict extension check
-    const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
-    if (!TEXT_EXTENSIONS.includes(ext)) {
-      setError(t("form.error.file.type"));
+    const reject = (key: TranslationKey) => {
+      setError(t(key));
       // Reset the input so the same file can't be re-selected
-      if (textFileRef.current) textFileRef.current.value = "";
-      return;
-    }
+      clearFileInput(textFileRef);
+    };
+
+    // Strict extension check
+    if (!TEXT_EXTENSIONS.has(extensionOf(file.name))) return reject("form.error.file.type");
 
     // Strict MIME type check (browsers report these for text files)
     const validMimes = ["text/plain", "application/x-env", "application/octet-stream", ""];
-    if (file.type && !validMimes.includes(file.type)) {
-      setError(t("form.error.file.type"));
-      if (textFileRef.current) textFileRef.current.value = "";
-      return;
-    }
+    if (file.type && !validMimes.includes(file.type)) return reject("form.error.file.type");
 
-    if (file.size > TEXT_MAX) {
-      setError(t("form.error.file.size"));
-      if (textFileRef.current) textFileRef.current.value = "";
-      return;
-    }
+    if (file.size > TEXT_MAX) return reject("form.error.file.size");
 
     setError(null);
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const text = ev.target?.result;
-      if (typeof text !== "string") return;
+    const text = await file.text();
 
-      // Final check: reject binary content
-      if (hasBinaryContent(text)) {
-        setError(t("form.error.binary"));
-        if (textFileRef.current) textFileRef.current.value = "";
-        return;
-      }
+    // Final check: reject binary content
+    if (hasBinaryContent(text)) return reject("form.error.binary");
 
-      setContent(text);
-      setTextFileName(file.name);
-    };
-    reader.readAsText(file);
+    setContent(text);
+    setTextFileName(file.name);
   }
 
   function clearTextFile() {
     setTextFileName(null); setContent("");
-    if (textFileRef.current) textFileRef.current.value = "";
-  }
-
-  // Detect binary content in text
-  function hasBinaryContent(text: string): boolean {
-    // Check for null bytes or high concentration of control characters
-    let controlCount = 0;
-    const sample = text.substring(0, 4096);
-    for (let i = 0; i < sample.length; i++) {
-      const code = sample.charCodeAt(i);
-      if (code === 0) return true; // null byte = definitely binary
-      if (code < 32 && code !== 9 && code !== 10 && code !== 13) controlCount++;
-    }
-    return controlCount > sample.length * 0.1; // >10% control chars = binary
+    clearFileInput(textFileRef);
   }
 
   // File mode: any file EXCEPT .txt and .env (those must use text mode)
   function processFile(file: File) {
-    const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
-    if (TEXT_EXTENSIONS.includes(ext)) {
+    const ext = extensionOf(file.name);
+    if (TEXT_EXTENSIONS.has(ext)) {
       setError(t("form.error.file.usetext"));
-      if (fileRef.current) fileRef.current.value = "";
+      clearFileInput(fileRef);
       return;
     }
 
     if (file.size > limits.maxFileSize) {
       setError(`${t("form.error.file.max")} ${limits.maxFileSizeLabel}`);
-      if (fileRef.current) fileRef.current.value = "";
+      clearFileInput(fileRef);
       return;
     }
 
     // Detect .zefer files — disable compression, warn user
-    if (ext === ".zefer") {
-      setIsZefer(true);
+    const nested = ext === ".zefer";
+    setIsZefer(nested);
+    if (nested) {
       setCompression("none");
       notifyWarning(t("toast.zefer.detected"), t("toast.zefer.detected.desc"));
-    } else {
-      setIsZefer(false);
     }
 
     setError(null);
@@ -338,16 +814,12 @@ export default function EncryptForm() {
     // so large files are never loaded into a single buffer up front.
     setFileData(file);
     setFileName(file.name);
-    setFileType(file.type || "application/octet-stream");
-    setFileSize(file.size);
   }
 
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) processFile(file);
   }
-
-  const [isDragging, setIsDragging] = useState(false);
 
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
@@ -357,94 +829,88 @@ export default function EncryptForm() {
   }
 
   function clearFile() {
-    setFileData(null); setFileName(null); setFileType(null); setFileSize(0);
+    setFileData(null); setFileName(null);
     setIsZefer(false);
-    if (fileRef.current) fileRef.current.value = "";
+    clearFileInput(fileRef);
+  }
+
+  /** All the client-side guards before a single byte is derived. Returns the
+   *  message to show, or null when the form is good to submit. */
+  function validationError(): TranslationKey | null {
+    if (inputMode === "text" && !content.trim()) return "form.error.empty";
+    if (inputMode === "text" && hasBinaryContent(content)) return "form.error.binary";
+    if (inputMode === "file" && !fileData) return "form.error.nofile";
+    if (!passphrase || passphrase.length < 6) return "form.error.passphrase";
+    if (advanced.dualKey && advanced.secondPassphrase.length < 6) return "form.error.passphrase2";
+    if (advanced.revealKey && advanced.revealKey.length < 6) return "form.error.revealkey";
+    if (advanced.revealKey && advanced.revealKey === passphrase) return "form.error.revealkey.same";
+    if (advanced.question && !advanced.questionAnswer) return "form.error.noanswer";
+    return null;
+  }
+
+  /** Decrypt link carrying the key, only for files that expire within a week. */
+  function buildShareLink(): string | null {
+    if (ttl <= 0 || ttl > 10080) return null;
+    const linkPass = advanced.revealKey || passphrase;
+    const params = new URLSearchParams({ t: "decrypt", p: linkPass });
+    if (!advanced.revealKey && advanced.dualKey && advanced.secondPassphrase) {
+      params.set("p2", advanced.secondPassphrase);
+    }
+    return `${window.location.origin}/?${params.toString()}`;
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    if (inputMode === "text" && !content.trim()) { setError(t("form.error.empty")); return; }
-    if (inputMode === "text" && hasBinaryContent(content)) { setError(t("form.error.binary")); return; }
-    if (inputMode === "file" && !fileData) { setError(t("form.error.nofile")); return; }
-    if (!passphrase || passphrase.length < 6) { setError(t("form.error.passphrase")); return; }
-    if (dualKey && (!secondPassphrase || secondPassphrase.length < 6)) { setError(t("form.error.passphrase2")); return; }
-    if (revealKey && revealKey.length < 6) { setError(t("form.error.revealkey")); return; }
-    if (revealKey && revealKey === passphrase) { setError(t("form.error.revealkey.same")); return; }
-    if (question && !questionAnswer) { setError(t("form.error.noanswer")); return; }
+    const invalid = validationError();
+    if (invalid) { setError(t(invalid)); return; }
 
-    setLoading(true);
     const tracker = createEncryptTracker(setProgress);
 
     try {
       tracker.compressing(0);
       await new Promise((r) => requestAnimationFrame(r));
 
-      const expiresAt = ttl > 0 ? Date.now() + ttl * 60 * 1000 : 0;
-
       const zefer = await encodeZefer({
         content: inputMode === "text" ? content : undefined,
         fileBlob: inputMode === "file" ? fileData! : undefined,
         passphrase,
-        secondPassphrase: dualKey ? secondPassphrase : undefined,
+        secondPassphrase: advanced.dualKey ? advanced.secondPassphrase : undefined,
         fileName: inputMode === "file" ? fileName : textFileName,
-        fileType: inputMode === "file" ? fileType || undefined : undefined,
-        expiresAt,
-        hint: hint || undefined,
-        note: note || undefined,
-        question: question || undefined,
-        questionAnswer: questionAnswer || undefined,
-        maxAttempts,
+        fileType: inputMode === "file" ? fileData!.type || "application/octet-stream" : undefined,
+        expiresAt: ttl > 0 ? Date.now() + ttl * 60 * 1000 : 0,
+        hint: advanced.hint || undefined,
+        note: advanced.note || undefined,
+        question: advanced.question || undefined,
+        questionAnswer: advanced.questionAnswer || undefined,
+        maxAttempts: advanced.maxAttempts,
         iterations,
-        dualKey,
+        dualKey: advanced.dualKey,
         compression,
-        allowedIps: parseIpList(allowedIpsInput),
-        revealKey: revealKey.trim() || undefined,
+        allowedIps: parseIpList(advanced.allowedIpsInput),
+        revealKey: advanced.revealKey.trim() || undefined,
         onProgress: tracker,
       });
 
       tracker.packaging();
 
-      // zefer is already a Blob
       const baseName = (inputMode === "file" ? fileName : textFileName)?.replace(/\.[^.]+$/, "") || "secret";
-      const zeferName = baseName + ".zefer";
-      const url = URL.createObjectURL(zefer);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = zeferName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const zeferName = `${baseName}.zefer`;
+      downloadBlob(zefer, zeferName);
 
       // Keep the encrypted file so it can be shared natively (e.g. WhatsApp,
       // Telegram, Slack, email) through the OS share sheet — separate from the key.
-      const file = new File([zefer], zeferName, { type: "application/octet-stream" });
-      setZeferFile(file);
-      setCanShareFiles(
-        typeof navigator !== "undefined" &&
-        typeof navigator.canShare === "function" &&
-        navigator.canShare({ files: [file] })
-      );
+      setZeferFile(new File([zefer], zeferName, { type: "application/octet-stream" }));
 
       tracker.done();
       await new Promise((r) => setTimeout(r, 500));
 
-      // Generate share link with passphrase for short-lived files (TTL <= 7 days)
-      if (ttl > 0 && ttl <= 10080) {
-        const linkPass = revealKey || passphrase;
-        const params = new URLSearchParams({ t: "decrypt", p: linkPass });
-        if (!revealKey && dualKey && secondPassphrase) params.set("p2", secondPassphrase);
-        setShareLink(`${window.location.origin}/?${params.toString()}`);
-      } else {
-        setShareLink(null);
-      }
+      setShareLink(buildShareLink());
 
       // Clear secrets from memory immediately after successful encryption
-      setPassphrase(""); setSecondPassphrase(""); setRevealKey("");
-      setQuestionAnswer("");
+      setPassphrase("");
+      patchAdvanced({ secondPassphrase: "", revealKey: "", questionAnswer: "" });
 
       setDone(true);
       notifySuccess(t("toast.encrypt.success"), t("toast.encrypt.success.desc"));
@@ -452,140 +918,28 @@ export default function EncryptForm() {
       setError(t("form.error.generic"));
       notifyError(t("toast.error.generic"));
     } finally {
-      setLoading(false);
       setProgress(null);
     }
   }
 
   function reset() {
-    setContent(""); setPassphrase(""); setSecondPassphrase("");
+    setContent(""); setPassphrase("");
     setTextFileName(null); setFileName(null); setFileData(null);
-    setFileType(null); setFileSize(0);
-    setError(null); setDone(false); setShareLink(null); setLinkCopied(false);
-    setZeferFile(null); setCanShareFiles(false); setShareTipOpen(false);
-    setHint(""); setNote(""); setQuestion("");
-    setQuestionAnswer(""); setMaxAttempts(0);
-    setDualKey(false);
-    setAllowedIpsInput(""); setRevealKey("");
-    if (textFileRef.current) textFileRef.current.value = "";
-    if (fileRef.current) fileRef.current.value = "";
+    setIsZefer(false);
+    setError(null); setDone(false); setShareLink(null); setZeferFile(null);
+    setAdvanced(ADVANCED_DEFAULTS);
+    clearFileInput(textFileRef);
+    clearFileInput(fileRef);
   }
 
-  // Bring the success panel fully into view (the form is taller, so the
-  // viewport would otherwise rest with the panel under the fixed navbar)
-  useEffect(() => {
-    if (done) {
-      document.getElementById("encrypt-success")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [done]);
-
   // ─── Progress ───
-  if (progress && loading) {
+  if (progress) {
     return <CryptoProgress state={progress} mode="encrypt" />;
   }
 
   // ─── Success ───
   if (done) {
-    return (
-      <div id="encrypt-success" className="glass glow-green p-6 sm:p-8 animate-in stagger-children scroll-mt-28">
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-9 h-9 rounded-xl theme-primary-faint theme-primary-border border flex items-center justify-center success-icon">
-            <Check className="w-4 h-4 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold theme-heading">{t("encrypt.success.title")}</h2>
-            <p className="text-xs theme-muted">{t("encrypt.success.subtitle")}</p>
-          </div>
-        </div>
-        <div className="glass !rounded-xl p-4 mb-5">
-          <div className="flex items-start gap-3">
-            <Download className="w-4 h-4 theme-faint shrink-0 mt-0.5" />
-            <p className="text-[13px] theme-muted leading-relaxed">{t("encrypt.success.desc")}</p>
-          </div>
-          <div className="flex gap-2 mt-3">
-            <button
-              type="button"
-              onClick={downloadZefer}
-              className="flex-1 flex items-center justify-center gap-2 glass px-3 py-2.5 rounded-lg cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors text-xs font-medium theme-heading"
-              aria-label={t("aria.downloadfile")}
-            >
-              <Download className="w-3.5 h-3.5 text-primary" />
-              {t("encrypt.success.file.download")}
-            </button>
-            {canShareFiles ? (
-              <button
-                type="button"
-                onClick={handleShareFile}
-                className="flex-1 flex items-center justify-center gap-2 glass px-3 py-2.5 rounded-lg cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors text-xs font-medium theme-heading"
-                aria-label={t("aria.sharefile")}
-              >
-                <Share2 className="w-3.5 h-3.5 text-primary" />
-                {t("encrypt.success.file.send")}
-              </button>
-            ) : (
-              <span
-                className={`info-tip flex-1 ${shareTipOpen ? "info-tip-open" : ""}`}
-                onMouseLeave={() => setShareTipOpen(false)}
-              >
-                <button
-                  type="button"
-                  aria-disabled="true"
-                  onClick={() => setShareTipOpen((o) => !o)}
-                  onBlur={() => setShareTipOpen(false)}
-                  className="w-full flex items-center justify-center gap-2 glass px-3 py-2.5 rounded-lg cursor-help opacity-50 transition-colors text-xs font-medium theme-heading"
-                  aria-label={t("encrypt.success.file.unsupported")}
-                >
-                  <Share2 className="w-3.5 h-3.5 theme-faint" />
-                  {t("encrypt.success.file.send")}
-                </button>
-                <span role="tooltip" className="info-tip-bubble tip-right">
-                  {t("encrypt.success.file.unsupported")}
-                </span>
-              </span>
-            )}
-          </div>
-        </div>
-        {(canShareFiles || shareLink) && (
-          <div className="glass !rounded-xl p-4 mb-5 theme-warning-faint">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="w-4 h-4 theme-warning shrink-0 mt-0.5" />
-              <p className="text-[12px] theme-muted leading-relaxed">{t("encrypt.success.separate")}</p>
-            </div>
-          </div>
-        )}
-        {shareLink && (
-          <div className="glass !rounded-xl p-4 mb-5 animate-in">
-            <div className="flex items-center gap-2 mb-2">
-              <Link2 className="w-4 h-4 text-primary shrink-0" />
-              <p className="text-xs font-medium theme-heading">{t("encrypt.success.link.title")}</p>
-            </div>
-            <p className="text-[11px] theme-muted mb-3">{t("encrypt.success.link.desc")}</p>
-            <div className="flex gap-2">
-              <code className="flex-1 text-[11px] font-mono text-primary theme-primary-faint rounded-lg px-3 py-2 overflow-x-auto whitespace-nowrap">{shareLink}</code>
-              {canShare && (
-                <button
-                  type="button"
-                  onClick={handleShareLink}
-                  className="shrink-0 glass px-3 py-2 rounded-lg cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors"
-                  aria-label={t("aria.sharelink")}
-                >
-                  <Share2 className="w-3.5 h-3.5 theme-muted" />
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => { navigator.clipboard.writeText(shareLink); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000); }}
-                className="shrink-0 glass px-3 py-2 rounded-lg cursor-pointer hover:bg-[var(--glass-bg-hover)] transition-colors"
-                aria-label={t("aria.copylink")}
-              >
-                {linkCopied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5 theme-muted" />}
-              </button>
-            </div>
-          </div>
-        )}
-        <button onClick={reset} className="btn-primary">{t("encrypt.another")}</button>
-      </div>
-    );
+    return <EncryptSuccess zeferFile={zeferFile!} shareLink={shareLink} onReset={reset} />;
   }
 
   // ─── Form ───
@@ -605,10 +959,10 @@ export default function EncryptForm() {
 
         {/* Input mode tabs */}
         <div className="flex gap-1 mb-4 glass !rounded-lg p-0.5">
-          <button type="button" onClick={() => setInputMode("text")} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-medium chip-select cursor-pointer ${inputMode === "text" ? "bg-[var(--primary)] text-[var(--btn-text)]" : "theme-muted hover:theme-text"}`}>
+          <button type="button" onClick={() => setInputMode("text")} aria-pressed={inputMode === "text"} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-medium chip-select cursor-pointer ${inputMode === "text" ? "bg-[var(--primary)] text-[var(--btn-text)]" : "theme-muted hover:theme-text"}`}>
             <FileText className="w-3 h-3" />{t("mode.text")}
           </button>
-          <button type="button" onClick={() => setInputMode("file")} onDoubleClick={() => { setInputMode("file"); fileRef.current?.click(); }} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-medium chip-select cursor-pointer ${inputMode === "file" ? "bg-[var(--primary)] text-[var(--btn-text)]" : "theme-muted hover:theme-text"}`}>
+          <button type="button" onClick={() => setInputMode("file")} onDoubleClick={() => { setInputMode("file"); openPicker(fileRef); }} aria-pressed={inputMode === "file"} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-medium chip-select cursor-pointer ${inputMode === "file" ? "bg-[var(--primary)] text-[var(--btn-text)]" : "theme-muted hover:theme-text"}`}>
             <Upload className="w-3 h-3" />{t("mode.file")}
           </button>
         </div>
@@ -625,7 +979,7 @@ export default function EncryptForm() {
                     <button type="button" onClick={clearTextFile} className="w-6 h-6 flex items-center justify-center hover:theme-heading cursor-pointer rounded" aria-label={t("aria.removefile")}><X className="w-3 h-3" /></button>
                   </span>
                 )}
-                <button type="button" onClick={() => textFileRef.current?.click()} className="flex items-center gap-1 text-[11px] theme-faint hover:text-primary transition-colors duration-200 cursor-pointer px-2 py-1 rounded-md hover:bg-[var(--glass-bg)]">
+                <button type="button" onClick={() => openPicker(textFileRef)} className="flex items-center gap-1 text-[11px] theme-faint hover:text-primary transition-colors duration-200 cursor-pointer px-2 py-1 rounded-md hover:bg-[var(--glass-bg)]">
                   <Upload className="w-3 h-3" />.txt / .env
                 </button>
                 <input ref={textFileRef} type="file" accept=".txt,.env" onChange={handleTextFileUpload} className="hidden" />
@@ -638,19 +992,33 @@ export default function EncryptForm() {
         {/* File mode content */}
         {inputMode === "file" && (
           <div className="mb-4 animate-in">
-            <label className="text-xs font-medium theme-text mb-2 block">{t("mode.file.label")}</label>
-            <div role="button" tabIndex={0} onClick={() => fileRef.current?.click()} onKeyDown={(e) => { if (e.key === "Enter") fileRef.current?.click(); }} onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }} onDragEnter={(e) => { e.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)} onDrop={handleDrop} className={`w-full !rounded-xl p-8 sm:p-10 flex flex-col items-center gap-3 cursor-pointer transition-all duration-300 dropzone-pulse ${isDragging ? "dropzone-active" : ""}`}>
-              {fileName ? (
-                <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-medium theme-text block">{t("mode.file.label")}</label>
+              {fileData && (
+                <button type="button" onClick={clearFile} className="w-9 h-9 flex items-center justify-center rounded-lg theme-faint hover:theme-danger transition-colors cursor-pointer" aria-label={t("aria.removefile")}>
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            {/* Dropzone — a real <button>, so Enter and Space both activate it */}
+            <button
+              type="button"
+              onClick={() => openPicker(fileRef)}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragEnter={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              aria-label={t("mode.file.placeholder")}
+              className={`w-full !rounded-xl p-8 sm:p-10 flex flex-col items-center gap-3 cursor-pointer transition-all duration-300 dropzone-pulse ${isDragging ? "dropzone-active" : ""}`}
+            >
+              {fileData ? (
+                <span className="flex items-center gap-3">
                   <FileText className="w-5 h-5 text-primary" />
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-primary">{fileName}</p>
-                    <p className="text-[10px] theme-muted">{fileType} &middot; {formatBytes(fileSize)}</p>
-                  </div>
-                  <button type="button" onClick={(e) => { e.stopPropagation(); clearFile(); }} className="w-9 h-9 flex items-center justify-center rounded-lg theme-faint hover:theme-danger transition-colors cursor-pointer ml-2" aria-label={t("aria.removefile")}>
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
+                  <span className="text-left">
+                    <span className="block text-sm font-medium text-primary">{fileName}</span>
+                    <span className="block text-[10px] theme-muted">{fileData.type || "application/octet-stream"} &middot; {formatBytes(fileData.size)}</span>
+                  </span>
+                </span>
               ) : (
                 <>
                   <Upload className="w-5 h-5 theme-faint" />
@@ -658,7 +1026,7 @@ export default function EncryptForm() {
                   <span className="text-[10px] theme-faint">{t("mode.file.limit")} {limits.maxFileSizeLabel}</span>
                 </>
               )}
-            </div>
+            </button>
             <input ref={fileRef} type="file" onChange={handleFileUpload} className="hidden" />
 
             {/* .zefer double-encryption warning */}
@@ -691,26 +1059,14 @@ export default function EncryptForm() {
               </div>
               <KeyGenerator onSelect={setPassphrase} savedMode={keygenMode} savedLength={keygenLength} onModeChange={setKeygenMode} onLengthChange={setKeygenLength} />
             </div>
-            {passphrase.length > 0 && (
-              <div className="mt-2">
-                <div className="strength-meter">
-                  <div className={`strength-meter-fill ${passphrase.length < 6 ? "strength-weak" : passphrase.length < 10 ? "strength-fair" : passphrase.length < 16 ? "strength-good" : "strength-strong"}`} />
-                </div>
-                <p className={`text-[10px] mt-1 ${passphrase.length < 6 ? "theme-danger" : passphrase.length < 10 ? "theme-warning" : "text-primary"}`}>
-                  {passphrase.length < 6 ? t("strength.weak") : passphrase.length < 10 ? t("strength.fair") : passphrase.length < 16 ? t("strength.good") : t("strength.strong")}
-                </p>
-              </div>
-            )}
+            {passphrase.length > 0 && <PassphraseStrength length={passphrase.length} />}
           </div>
           <GlassSelect
             value={ttl}
             onChange={(v) => setTtl(v as number)}
-            options={TTL_OPTIONS.map((o) => ({ label: t(o.labelKey as Parameters<typeof t>[0]), value: o.value }))}
+            options={TTL_OPTIONS.map((o) => ({ label: t(o.labelKey), value: o.value }))}
             label={t("form.expires")}
             icon={Clock}
-            searchable
-            searchPlaceholder={t("form.search")}
-            noResultsText={t("form.noresults")}
           />
         </div>
 
@@ -736,192 +1092,20 @@ export default function EncryptForm() {
           {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         </button>
 
-        {/* Advanced options */}
-        <div id="advanced-options" className={`advanced-panel ${showAdvanced ? "advanced-open" : ""} mb-4`}>
-          <div>
-          <div className="border-t border-[var(--border-subtle)] pt-4 space-y-4">
-            {/* Security level */}
-            <div>
-              <label className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
-                <Gauge className="w-3 h-3" />{t("advanced.security")}
-              </label>
-              <div className="grid grid-cols-1 min-[400px]:grid-cols-3 gap-2">
-                {SECURITY_LEVELS.map((level) => (
-                  <button
-                    key={level.value}
-                    type="button"
-                    onClick={() => setIterations(level.value)}
-                    className={`py-2 px-3 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer border ${
-                      iterations === level.value
-                        ? "bg-[var(--primary)] text-[var(--btn-text)] border-transparent"
-                        : "glass theme-muted hover:theme-text"
-                    }`}
-                  >
-                    {t(level.labelKey as Parameters<typeof t>[0])}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Compression */}
-            <div>
-              <label className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
-                <Hash className="w-3 h-3" />{t("advanced.compression")}
-                {isZefer && <span className="text-[9px] theme-warning ml-1">({t("form.zefer.compression.disabled")})</span>}
-              </label>
-              <div className="grid grid-cols-1 min-[400px]:grid-cols-3 gap-2">
-                {COMPRESSION_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    disabled={isZefer && opt.value !== "none"}
-                    onClick={() => !isZefer && setCompression(opt.value)}
-                    className={`py-2 px-3 rounded-lg text-xs font-medium transition-all duration-200 border ${
-                      isZefer && opt.value !== "none"
-                        ? "glass theme-faint cursor-not-allowed opacity-50"
-                        : compression === opt.value
-                          ? "bg-[var(--primary)] text-[var(--btn-text)] border-transparent cursor-pointer"
-                          : "glass theme-muted hover:theme-text cursor-pointer"
-                    }`}
-                  >
-                    {t(opt.labelKey as Parameters<typeof t>[0])}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Dual key */}
-            <div>
-              <label className="flex items-center gap-3 cursor-pointer group w-fit mb-2">
-                <div className="relative">
-                  <input type="checkbox" checked={dualKey} onChange={(e) => setDualKey(e.target.checked)} className="sr-only peer" />
-                  <div className="w-9 h-5 toggle-track rounded-full peer-checked:toggle-track-checked transition-colors duration-200" />
-                  <div className="absolute top-0.5 left-0.5 w-4 h-4 toggle-knob rounded-full peer-checked:translate-x-4 peer-checked:toggle-knob-checked transition-all duration-200" />
-                </div>
-                <span className="flex items-center gap-1.5 text-xs theme-muted group-hover:theme-text transition-colors">
-                  <KeyRound className="w-3.5 h-3.5" />{t("advanced.dualkey")}
-                </span>
-              </label>
-              {dualKey && (
-                <div className="relative mt-2 has-toggle-wrap">
-                  <input id="encrypt-pass2" name="second-passphrase" autoComplete="new-password" type={showSecondPass ? "text" : "password"} value={secondPassphrase} onChange={(e) => setSecondPassphrase(e.target.value)} placeholder={t("advanced.dualkey.placeholder")} className="w-full has-toggle font-mono text-sm" aria-label={t("advanced.dualkey")} />
-                  <button type="button" onClick={() => setShowSecondPass(!showSecondPass)} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center theme-faint hover:theme-text transition-colors cursor-pointer" aria-label={showSecondPass ? t("aria.hidesecond") : t("aria.showsecond")}>
-                    {showSecondPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Reveal key */}
-            <div>
-              <label htmlFor="encrypt-reveal" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
-                <KeyRound className="w-3 h-3" />{t("advanced.revealkey")}
-              </label>
-              <div className="flex gap-2">
-                <div className="relative flex-1 has-toggle-wrap">
-                  <input id="encrypt-reveal" name="reveal-key" autoComplete="new-password" type={showRevealKey ? "text" : "password"} value={revealKey} onChange={(e) => setRevealKey(e.target.value)} placeholder={t("advanced.revealkey.placeholder")} className="w-full has-toggle font-mono text-sm" />
-                  <button type="button" onClick={() => setShowRevealKey(!showRevealKey)} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center theme-faint hover:theme-text transition-colors cursor-pointer" aria-label={showRevealKey ? t("aria.hidereveal") : t("aria.showreveal")}>
-                    {showRevealKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                <KeyGenerator onSelect={setRevealKey} savedMode={keygenMode} savedLength={keygenLength} onModeChange={setKeygenMode} onLengthChange={setKeygenLength} />
-              </div>
-              <p className="text-[10px] theme-faint mt-1">{t("advanced.revealkey.help")}</p>
-            </div>
-
-            {/* Max attempts */}
-            <div>
-              <label className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
-                <Shield className="w-3 h-3" />{t("advanced.attempts")}
-              </label>
-              <GlassSelect
-                value={maxAttempts}
-                onChange={(v) => setMaxAttempts(v as number)}
-                options={[
-                  { label: t("advanced.attempts.unlimited"), value: 0 },
-                  { label: "3", value: 3 },
-                  { label: "5", value: 5 },
-                  { label: "10", value: 10 },
-                ]}
-              />
-            </div>
-
-            {/* Hint */}
-            <div>
-              <label htmlFor="encrypt-hint" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
-                <MessageSquare className="w-3 h-3" />{t("advanced.hint")}
-              </label>
-              <input id="encrypt-hint" name="hint" type="text" value={hint} onChange={(e) => setHint(e.target.value)} placeholder={t("advanced.hint.placeholder")} className="w-full text-sm" />
-            </div>
-
-            {/* Public note */}
-            <div>
-              <label htmlFor="encrypt-note" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
-                <MessageSquare className="w-3 h-3" />{t("advanced.note")}
-              </label>
-              <input id="encrypt-note" name="note" type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("advanced.note.placeholder")} className="w-full text-sm" />
-            </div>
-
-            {/* Secret question */}
-            <div>
-              <label htmlFor="encrypt-question" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
-                <HelpCircle className="w-3 h-3" />{t("advanced.question")}
-              </label>
-              <input id="encrypt-question" name="question" type="text" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={t("advanced.question.placeholder")} className="w-full text-sm mb-2" />
-              {question && (
-                <input id="encrypt-answer" name="answer" type="text" value={questionAnswer} onChange={(e) => setQuestionAnswer(e.target.value)} placeholder={t("advanced.question.answer")} aria-label={t("advanced.question.answer")} className="w-full text-sm" />
-              )}
-            </div>
-
-            {/* IP allowlist */}
-            <div>
-              <label htmlFor="allowed-ips" className="flex items-center gap-1.5 text-xs font-medium theme-text mb-2">
-                <Globe className="w-3 h-3" />{t("advanced.ip")}
-              </label>
-              <div className="flex flex-col min-[400px]:flex-row gap-2 mb-1">
-                <input id="allowed-ips" name="allowed-ips" type="text" value={allowedIpsInput} onChange={(e) => setAllowedIpsInput(e.target.value)} placeholder={t("advanced.ip.placeholder")} className="flex-1 text-sm font-mono" />
-                <button
-                  type="button"
-                  disabled={ipLoading}
-                  onClick={async () => {
-                    setIpLoading(true);
-                    const result = await detectIp();
-                    setIpLoading(false);
-                    setIpResult(result);
-                    if (result.ip) {
-                      setAllowedIpsInput((prev) => prev ? `${prev}, ${result.ip}` : result.ip);
-                    }
-                  }}
-                  className="px-3 py-2 rounded-lg text-[11px] font-medium theme-primary-faint theme-primary-border border text-primary hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap"
-                >
-                  {ipLoading ? "..." : t("advanced.ip.addmine")}
-                </button>
-              </div>
-              <p className="text-[10px] theme-faint mt-1">{t("advanced.ip.help")}</p>
-
-              {/* VPN / Proxy / Inconsistency warnings */}
-              {ipResult && ipResult.vpnDetected && (
-                <div className="flex items-start gap-1.5 mt-2 glass !rounded-lg px-3 py-2">
-                  <Shield className="w-3 h-3 theme-warning shrink-0 mt-0.5" />
-                  <p className="text-[10px] theme-warning">{t("advanced.ip.vpn")}</p>
-                </div>
-              )}
-              {ipResult && ipResult.inconsistent && !ipResult.vpnDetected && (
-                <div className="flex items-start gap-1.5 mt-2 glass !rounded-lg px-3 py-2">
-                  <AlertTriangle className="w-3 h-3 theme-warning shrink-0 mt-0.5" />
-                  <p className="text-[10px] theme-warning">{t("advanced.ip.inconsistent")} ({ipResult.allIps.join(", ")})</p>
-                </div>
-              )}
-              {ipResult && !ipResult.vpnDetected && !ipResult.inconsistent && (
-                <p className="text-[10px] text-primary mt-1">{t("advanced.ip.clean")}</p>
-              )}
-              {!ipResult && (
-                <p className="text-[10px] theme-faint mt-1">{t("advanced.ip.disclaimer")}</p>
-              )}
-            </div>
-          </div>
-          </div>
-        </div>
+        <AdvancedOptions
+          open={showAdvanced}
+          advanced={advanced}
+          onChange={patchAdvanced}
+          iterations={iterations}
+          onIterations={setIterations}
+          compression={compression}
+          onCompression={setCompression}
+          isZefer={isZefer}
+          keygenMode={keygenMode}
+          keygenLength={keygenLength}
+          onKeygenMode={setKeygenMode}
+          onKeygenLength={setKeygenLength}
+        />
 
         {/* Error */}
         {error && (
@@ -931,8 +1115,8 @@ export default function EncryptForm() {
         )}
 
         {/* Submit */}
-        <button type="submit" disabled={loading} className="btn-primary">
-          {loading ? (<><Loader2 className="w-4 h-4 animate-spin" /> {t("form.encrypting")}</>) : (<><Lock className="w-4 h-4" /> {t("encrypt.submit")}</>)}
+        <button type="submit" className="btn-primary">
+          <Lock className="w-4 h-4" /> {t("encrypt.submit")}
         </button>
 
         <p className="text-[10px] theme-faint text-center mt-4 leading-relaxed max-w-sm mx-auto">{t("form.security.note")}</p>

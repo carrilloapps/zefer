@@ -1,7 +1,5 @@
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
-
 const SIZE = 512;
 const ICON = 240; // smaller icon for maskable safe zone (20% padding)
 

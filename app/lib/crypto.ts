@@ -20,29 +20,15 @@ export function toBase64(buffer: ArrayBuffer): string {
 
   for (let i = 0; i < len; i += BASE64_CHUNK) {
     const slice = bytes.subarray(i, Math.min(i + BASE64_CHUNK, len));
-    chunks.push(String.fromCharCode(...slice));
+    chunks.push(String.fromCodePoint(...slice));
   }
 
   return btoa(chunks.join(""));
 }
 
 export function fromBase64(base64: string): Uint8Array {
-  const binary = atob(base64);
-  const len = binary.length;
-  const bytes = new Uint8Array(len);
-
-  const aligned = len & ~3;
-  for (let i = 0; i < aligned; i += 4) {
-    bytes[i] = binary.charCodeAt(i);
-    bytes[i + 1] = binary.charCodeAt(i + 1);
-    bytes[i + 2] = binary.charCodeAt(i + 2);
-    bytes[i + 3] = binary.charCodeAt(i + 3);
-  }
-  for (let i = aligned; i < len; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-
-  return bytes;
+  // atob() yields a latin1 string, so every character is a single code point < 256.
+  return Uint8Array.from(atob(base64), (ch) => ch.codePointAt(0)!);
 }
 
 // ─── Key derivation ───

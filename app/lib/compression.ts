@@ -40,8 +40,8 @@ export async function compress(
   const encoded = new TextEncoder().encode(data);
   const compressed = await compressBytes(encoded, method);
   let binary = "";
-  for (let i = 0; i < compressed.length; i++) {
-    binary += String.fromCharCode(compressed[i]);
+  for (const byte of compressed) {
+    binary += String.fromCodePoint(byte);
   }
   return btoa(binary);
 }
@@ -51,11 +51,8 @@ export async function decompress(
   method: CompressionMethod
 ): Promise<string> {
   if (method === "none") return base64Data;
-  const binary = atob(base64Data);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
+  // atob() yields a latin1 string, so every character is a single code point < 256.
+  const bytes = Uint8Array.from(atob(base64Data), (ch) => ch.codePointAt(0)!);
   const decompressed = await decompressBytes(bytes, method);
   return new TextDecoder().decode(decompressed);
 }

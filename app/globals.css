@@ -206,6 +206,15 @@
   /* Key generator popover */
   --keygen-bg: rgba(255, 255, 255, 0.96);
   --keygen-inner: rgba(15, 23, 42, 0.04);
+
+  /* Code block syntax tokens */
+  --code-key: #075985;
+  --code-str: #15803d;
+  --code-num: #92400e;
+  --code-bool: #86198f;
+  --code-cmt: #64748b;
+  --code-cmd: #0f172a;
+  --code-flag: #5b21b6;
 }
 
 @theme inline {
@@ -221,6 +230,14 @@
 
 html {
   overflow-x: hidden;
+}
+
+/* `overflow-x: hidden` above makes <html> the scroll container, so the scroll
+   lock's `overflow: hidden` on <body> alone never removes the page scrollbar —
+   while its scrollbar-gap compensation still applies, shifting the layout.
+   Hiding the real scroll container closes the gap and keeps CLS at zero. */
+html:has(body[data-scroll-locked]) {
+  overflow: hidden;
 }
 
 body {
@@ -305,11 +322,13 @@ body {
   transform: translate(-50%, calc(-50% + 3.5px));
 }
 
-.nav-burger[aria-expanded="true"] .nav-burger-line:nth-child(1) {
+.nav-burger[aria-expanded="true"] .nav-burger-line:nth-child(1),
+.nav-burger-x .nav-burger-line:nth-child(1) {
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
-.nav-burger[aria-expanded="true"] .nav-burger-line:nth-child(2) {
+.nav-burger[aria-expanded="true"] .nav-burger-line:nth-child(2),
+.nav-burger-x .nav-burger-line:nth-child(2) {
   transform: translate(-50%, -50%) rotate(-45deg);
 }
 
@@ -319,6 +338,31 @@ body {
   opacity: 0;
   transform: translateY(16px);
 }
+
+.drawer-overlay {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.drawer-overlay[data-state="open"] {
+  animation: drawerFadeIn 0.3s ease both;
+}
+
+.drawer-overlay[data-state="closed"] {
+  animation: drawerFadeOut 0.3s ease both;
+}
+
+.drawer-panel[data-state="open"] {
+  animation: drawerSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.drawer-panel[data-state="closed"] {
+  animation: drawerSlideOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes drawerFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes drawerFadeOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes drawerSlideIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes drawerSlideOut { from { transform: translateY(0); } to { transform: translateY(100%); } }
 
 .drawer-open .drawer-stagger {
   animation: drawerItemIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -345,6 +389,13 @@ body {
 
   .nav-mobile-header {
     transition: none;
+  }
+
+  .drawer-overlay[data-state="open"],
+  .drawer-overlay[data-state="closed"],
+  .drawer-panel[data-state="open"],
+  .drawer-panel[data-state="closed"] {
+    animation: none;
   }
 }
 
@@ -540,15 +591,7 @@ select:focus {
   --code-flag: #c4b5fd;
 }
 
-[data-theme="light"] {
-  --code-key: #075985;
-  --code-str: #15803d;
-  --code-num: #92400e;
-  --code-bool: #86198f;
-  --code-cmt: #64748b;
-  --code-cmd: #0f172a;
-  --code-flag: #5b21b6;
-}
+/* Light-mode token colours live with the rest of the light palette above. */
 
 .code-block pre {
   background: var(--input-bg);
@@ -622,18 +665,10 @@ select:focus {
   }
 }
 
-/* ── Info tooltip (hover / focus / tap) ── */
+/* ── Info tooltip (Radix Tooltip content) ── */
 
-.info-tip {
-  position: relative;
-  display: inline-flex;
-}
-
+/* Radix positions, flips and shifts the bubble; this rule is only its skin. */
 .info-tip-bubble {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
   width: 230px;
   max-width: 72vw;
   padding: 0.5rem 0.625rem;
@@ -648,37 +683,18 @@ select:focus {
   text-transform: none;
   letter-spacing: normal;
   font-family: var(--font-geist-sans), sans-serif;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.15s ease, visibility 0s 0.15s;
   z-index: 60;
-  pointer-events: none;
-  white-space: normal;
+  animation: tipIn 0.15s ease both;
 }
 
-.info-tip:hover .info-tip-bubble,
-.info-tip:focus-within .info-tip-bubble,
-.info-tip.info-tip-open .info-tip-bubble {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 0.15s ease;
-}
-
-/* Keep the bubble on screen when the trigger sits near the viewport edges */
-.info-tip-bubble.tip-left {
-  left: 0;
-  transform: none;
-}
-
-.info-tip-bubble.tip-right {
-  left: auto;
-  right: 0;
-  transform: none;
+@keyframes tipIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .info-tip-bubble {
-    transition: none;
+    animation: none;
   }
 }
 
@@ -871,7 +887,7 @@ select option {
   font-weight: 600;
   padding: 0.75rem 1rem;
   border-radius: 0.75rem;
-  transition: all 0.25s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
   border: none;
   position: relative;
@@ -919,8 +935,10 @@ select option {
   text-shadow: 0 0 40px rgba(34, 197, 94, 0.3), 0 0 80px rgba(6, 182, 212, 0.15);
 }
 
+/* Light mode keeps a softer static glow — no sweep animation. */
 [data-theme="light"] .hero-brand-text {
   text-shadow: 0 0 30px rgba(21, 128, 61, 0.2), 0 0 60px rgba(14, 116, 144, 0.1);
+  animation: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -932,10 +950,6 @@ select option {
 @keyframes heroBrandGlow {
   from { text-shadow: 0 0 40px rgba(34, 197, 94, 0.3), 0 0 80px rgba(6, 182, 212, 0.15); }
   to   { text-shadow: 0 0 60px rgba(34, 197, 94, 0.4), 0 0 100px rgba(6, 182, 212, 0.2); }
-}
-
-[data-theme="light"] .hero-brand-text {
-  animation: none;
 }
 
 /* Hero radial glow (dark mode) */
@@ -978,27 +992,168 @@ select option {
   background-clip: text;
 }
 
-/* Toggle */
+/* Toggle — Radix Switch: the track is the button, the knob its thumb, and the
+   checked state arrives as data-state instead of a sibling :checked input. */
 .toggle-track {
   background: var(--toggle-bg);
   border: 1px solid var(--toggle-border);
+  transition: background 0.25s ease, border-color 0.25s ease;
 }
-.toggle-track-checked {
-  background: var(--toggle-checked-bg);
-  border-color: var(--toggle-checked-border);
-}
-.toggle-knob { background: var(--toggle-knob); }
-.toggle-knob-checked { background: var(--primary); }
 
-/* Tailwind cannot variant plain CSS classes (peer-checked:toggle-*-checked
-   generates nothing) — apply the checked styles with native sibling selectors */
-.peer:checked ~ .toggle-track {
+.toggle-track[data-state="checked"] {
   background: var(--toggle-checked-bg);
   border-color: var(--toggle-checked-border);
 }
 
-.peer:checked ~ .toggle-knob {
+.toggle-knob {
+  background: var(--toggle-knob);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease;
+}
+
+.toggle-track[data-state="checked"] .toggle-knob {
   background: var(--primary);
+}
+
+/* The sr-only checkbox this replaced had no visible focus indicator at all. */
+.toggle-track:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   RADIX SURFACES (portal-rendered)
+   ============================================
+   These render at the end of <body>, so they inherit [data-theme] from <html>
+   and every colour still resolves through the same CSS variables. */
+
+/* ── Dropdown menu (project menu, language selector) ── */
+
+.glass-menu {
+  background: var(--glass-solid);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  z-index: 95;
+  animation: surfaceIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Colour states live here rather than in Tailwind variants: the .theme-* base
+   classes are unlayered, so a layered utility could never override them. */
+.glass-menu-item {
+  color: var(--text-muted);
+  outline: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.glass-menu-item[data-highlighted] {
+  color: var(--heading);
+  background: var(--glass-bg);
+}
+
+.glass-menu-item[data-state="checked"] {
+  color: var(--primary);
+  background: var(--glass-bg-hover);
+}
+
+/* ── Select (expiration, max attempts) ── */
+
+.glass-select-content {
+  width: var(--radix-select-trigger-width);
+  max-height: var(--radix-select-content-available-height);
+  background: var(--glass-solid);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  z-index: 50;
+  animation: surfaceIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.glass-select-content [data-radix-select-viewport] {
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+.glass-select-item {
+  display: flex;
+  align-items: center;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.glass-select-item[data-highlighted] {
+  color: var(--text);
+  background: var(--glass-bg);
+}
+
+.glass-select-item[data-state="checked"] {
+  color: var(--primary);
+  background: var(--glass-bg-hover);
+}
+
+/* ── Keyboard shortcuts dialog ── */
+
+.shortcuts-overlay {
+  background: rgba(0, 0, 0, 0.7);
+  animation: surfaceFadeIn 0.2s ease both;
+}
+
+.shortcuts-overlay[data-state="closed"] {
+  animation: surfaceFadeOut 0.2s ease both;
+}
+
+/* Centred here rather than with Tailwind translate utilities: in v4 those set
+   the `translate` property, which would stack with the keyframe `transform`. */
+.shortcuts-panel {
+  background: var(--glass-solid);
+  transform: translate(-50%, -50%);
+  animation: shortcutsIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.shortcuts-panel[data-state="closed"] {
+  animation: surfaceFadeOut 0.15s ease both;
+}
+
+@keyframes surfaceIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes surfaceFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes surfaceFadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+@keyframes shortcutsIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* ── Tabs (home encrypt/decrypt, generator generate/analyze) ── */
+
+.tab-trigger {
+  color: var(--text-muted);
+}
+
+.tab-trigger[data-state="active"] {
+  background: var(--primary);
+  color: var(--btn-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-menu,
+  .glass-select-content,
+  .shortcuts-overlay,
+  .shortcuts-overlay[data-state="closed"],
+  .shortcuts-panel,
+  .shortcuts-panel[data-state="closed"] {
+    animation: none;
+  }
 }
 
 /* ============================================
@@ -1011,6 +1166,17 @@ select option {
   -webkit-backdrop-filter: blur(24px) saturate(200%);
   border: 1px solid var(--glass-border);
   border-radius: 1rem;
+  z-index: 50;
+}
+
+.keygen-popover[data-state="open"] {
+  animation: surfaceIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .keygen-popover[data-state="open"] {
+    animation: none;
+  }
 }
 
 .keygen-popover-inner {
@@ -1080,7 +1246,29 @@ select option {
   50% { opacity: 0.7; transform: scale(0.95); }
 }
 
-.progress-bar-animated {
+/* Native <progress> styled as the app's pill bar. The vendor pseudo-elements
+   cannot be grouped in one rule — a selector a browser does not understand
+   invalidates the whole list — so each engine gets its own block. */
+.crypto-progress {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 0.625rem;
+  border: none;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: var(--glass-bg);
+  color: var(--primary);
+}
+
+.crypto-progress::-webkit-progress-bar {
+  background: var(--glass-bg);
+  border-radius: 9999px;
+}
+
+.crypto-progress::-webkit-progress-value {
+  border-radius: 9999px;
   background: linear-gradient(
     90deg,
     var(--primary) 0%,
@@ -1089,6 +1277,30 @@ select option {
   );
   background-size: 200% 100%;
   animation: progressSweep 1.5s ease-in-out infinite;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.crypto-progress::-moz-progress-bar {
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    var(--primary) 0%,
+    var(--gradient-to) 50%,
+    var(--primary) 100%
+  );
+  background-size: 200% 100%;
+  animation: progressSweep 1.5s ease-in-out infinite;
+}
+
+/* Finished: solid fill, no sweep */
+.crypto-progress-done::-webkit-progress-value {
+  background: var(--primary);
+  animation: none;
+}
+
+.crypto-progress-done::-moz-progress-bar {
+  background: var(--primary);
+  animation: none;
 }
 
 @keyframes progressSweep {
@@ -1133,20 +1345,7 @@ select:focus {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
-/* Toggle animation */
-.toggle-track {
-  transition: background 0.25s ease, border-color 0.25s ease;
-}
-
-.toggle-knob {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease;
-}
-
-/* Button press */
-.btn-primary {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
+/* Button press — the base .btn-primary rule carries the transition */
 .btn-primary:active:not(:disabled) {
   transform: scale(0.97);
 }

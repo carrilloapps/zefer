@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import {
-  Shield, Lock, Clock, Globe, Key, KeyRound, Eye, FileText, Zap, Cpu,
+  Shield, Lock, Clock, Globe, Key, KeyRound, Eye, FileText, Zap,
   CheckCircle2, XCircle, ArrowRight, ExternalLink, HelpCircle, Monitor,
   HardDrive, Cloud, Users,
 } from "lucide-react";
@@ -160,13 +160,13 @@ const COMPETITORS: Record<string, CompetitorData> = {
   },
 };
 
-function StatusIcon({ status }: { status: Status }) {
+function StatusIcon({ status }: Readonly<{ status: Status }>) {
   if (status === "yes") return <CheckCircle2 className="w-4 h-4 text-primary" />;
   if (status === "no") return <XCircle className="w-4 h-4 theme-faint" />;
   return <CheckCircle2 className="w-4 h-4 text-[var(--warning-text)]" />;
 }
 
-export default function VsContent({ competitor }: { competitor: keyof typeof COMPETITORS }) {
+export default function VsContent({ competitor }: Readonly<{ competitor: keyof typeof COMPETITORS }>) {
   const { t } = useLanguage();
   const data = COMPETITORS[competitor];
 

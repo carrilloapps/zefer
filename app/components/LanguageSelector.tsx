@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { DropdownMenu } from "radix-ui";
 import { LOCALES, type Locale } from "@/app/lib/i18n";
 import { useLanguage } from "@/app/components/LanguageProvider";
 
@@ -36,54 +36,36 @@ const FLAGS: Record<string, React.ReactNode> = {
   ),
 };
 
+/** Radix DropdownMenu with a radio group: the active locale is now announced
+ *  as `menuitemradio` + `aria-checked` instead of being colour-only, and the
+ *  list gains arrow keys, typeahead, Escape and focus return. */
 export default function LanguageSelector() {
   const { locale, setLocale, t } = useLanguage();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
 
   return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen(!open)}
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger
         className="flex items-center gap-1.5 w-9 h-9 justify-center rounded-lg text-xs font-medium theme-muted hover:theme-heading hover:bg-[var(--glass-bg-hover)] transition-colors duration-200 cursor-pointer"
         aria-label={t("aria.language")}
-        aria-expanded={open}
-        aria-haspopup="menu"
       >
         {FLAGS[locale]}
-      </button>
-
-      {open && (
-        <div className="absolute right-0 top-full mt-2 w-44 shadow-2xl overflow-hidden z-50 !rounded-xl animate-in border border-[var(--glass-border)]" style={{ background: "var(--glass-solid)" }}>
-          {LOCALES.map((l) => (
-            <button
-              key={l.code}
-              onClick={() => {
-                setLocale(l.code as Locale);
-                setOpen(false);
-              }}
-              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors duration-150 cursor-pointer ${
-                l.code === locale
-                  ? "text-primary bg-[var(--glass-bg-hover)]"
-                  : "theme-muted hover:theme-heading hover:bg-[var(--glass-bg)]"
-              }`}
-            >
-              <span className="shrink-0">{FLAGS[l.code]}</span>
-              <span>{l.label}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content align="end" sideOffset={8} collisionPadding={12} className="glass-menu w-44">
+          <DropdownMenu.RadioGroup value={locale} onValueChange={(v) => setLocale(v as Locale)}>
+            {LOCALES.map((l) => (
+              <DropdownMenu.RadioItem
+                key={l.code}
+                value={l.code}
+                className="glass-menu-item w-full flex items-center gap-2.5 px-3 py-2.5 text-sm cursor-pointer"
+              >
+                <span className="shrink-0">{FLAGS[l.code]}</span>
+                <span>{l.label}</span>
+              </DropdownMenu.RadioItem>
+            ))}
+          </DropdownMenu.RadioGroup>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   );
 }

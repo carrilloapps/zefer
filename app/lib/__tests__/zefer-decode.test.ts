@@ -11,9 +11,6 @@ const LOW_ITERATIONS = 1000;
 beforeAll(async () => {
   const compression = await import("../compression");
 
-  const origCompress = compression.compressBytes;
-  const origDecompress = compression.decompressBytes;
-
   // Wrap compressBytes: convert ArrayBuffer arg to Uint8Array for Node compat
   vi.spyOn(compression, "compressBytes").mockImplementation(
     async (data: Uint8Array, method: import("../compression").CompressionMethod) => {
