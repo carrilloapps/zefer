@@ -1,0 +1,57 @@
+name: CI
+
+# Runs on every push and pull request to main.
+# Verifies lint, typecheck, the Vitest suite behind the 100% coverage gate
+# (statements, branches, functions and lines) and the production build.
+#
+# Actions are pinned to a full commit SHA with the tag in a comment; a mutable
+# tag can be re-pointed by whoever controls the action repository.
+#
+# Dependencies are installed with `npm ci` only. `npm update` / `npm install`
+# must not be used here: npm 10.9.x hits an Arborist bug
+# ("Cannot read properties of null (reading 'edgesOut')") when it re-resolves
+# the tree, while `npm ci` installs the lockfile as-is and is unaffected.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (Node.js ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["20", "22"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.0.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Tests with coverage (100% enforced)
+        run: npm run test:coverage
+
+      - name: Build
+        run: npm run build

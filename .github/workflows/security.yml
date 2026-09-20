@@ -1,0 +1,163 @@
+name: Security
+
+# Monthly security sweep: Semgrep, Trivy, Gitleaks and SonarQube.
+#
+# Semgrep, Trivy and Gitleaks publish SARIF, so their findings land in the
+# repository's Security -> Code scanning tab instead of being buried in a log.
+# SonarQube reports to its own server and has no SARIF output; that job is
+# skipped cleanly when SONAR_TOKEN / SONAR_HOST_URL are not configured.
+#
+# Every action is pinned to a full commit SHA with the tag kept in a comment.
+# A mutable tag (@v4) can be re-pointed at any time by whoever controls the
+# action repository, which makes it an unreviewed code-execution channel inside
+# this workflow. Dependabot keeps the pins fresh (see .github/dependabot.yml).
+#
+# Scan steps use `continue-on-error` on purpose: this workflow is a reporting
+# channel, and findings must still reach Code scanning rather than aborting the
+# run before the upload step.
+
+on:
+  schedule:
+    - cron: "0 5 1 * *" # 05:00 UTC on the 1st of every month
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  semgrep:
+    name: Semgrep
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
+
+      - name: Install Semgrep
+        run: pipx install semgrep==1.177.0
+
+      - name: Scan
+        continue-on-error: true
+        run: semgrep scan --config=auto --sarif --output=semgrep.sarif --metrics=off
+
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@d8073367669608af8fbcc5f63dd0a0d52bb90cff # v4.32.2
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+
+  trivy:
+    name: Trivy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
+
+      - name: Scan filesystem (vulnerabilities, secrets, misconfiguration)
+        continue-on-error: true
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          format: sarif
+          output: trivy.sarif
+
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@d8073367669608af8fbcc5f63dd0a0d52bb90cff # v4.32.2
+        with:
+          sarif_file: trivy.sarif
+          category: trivy
+
+  gitleaks:
+    name: Gitleaks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    env:
+      GITLEAKS_VERSION: "8.30.1"
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Install Gitleaks
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz gitleaks
+          chmod +x gitleaks
+
+      # --config is explicit so the repository's own .gitleaks.toml is always
+      # the one in effect: it inherits every default rule and carries a single
+      # narrowly scoped, documented allowlist for the i18n keys in
+      # PrivacyContent.tsx. No rule is disabled.
+      - name: Scan working tree and history
+        continue-on-error: true
+        run: |
+          ./gitleaks git . \
+            --config .gitleaks.toml \
+            --report-format sarif \
+            --report-path gitleaks.sarif \
+            --exit-code 0 \
+            --redact
+
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@d8073367669608af8fbcc5f63dd0a0d52bb90cff # v4.32.2
+        with:
+          sarif_file: gitleaks.sarif
+          category: gitleaks
+
+  sonarqube:
+    name: SonarQube
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+    steps:
+      # `secrets` is not available in an `if:` expression, so the secrets are
+      # lifted into `env` at job level and the steps gate on that instead. When
+      # they are unset every step below is skipped and the job still succeeds.
+      - name: Report missing configuration
+        if: env.SONAR_TOKEN == '' || env.SONAR_HOST_URL == ''
+        run: |
+          echo "::notice title=SonarQube skipped::SONAR_TOKEN and/or SONAR_HOST_URL are not configured for this repository."
+
+      - name: Checkout (full history for blame and new-code detection)
+        if: env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != ''
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        if: env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != ''
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.0.0
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        if: env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != ''
+        run: npm ci
+
+      - name: Analyze
+        if: env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != ''
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6.0.0
+        with:
+          args: >
+            -Dsonar.projectKey=zefer
+            -Dsonar.sources=app,scripts
+            -Dsonar.tests=app
+            -Dsonar.test.inclusions=app/**/__tests__/**
+            -Dsonar.exclusions=**/node_modules/**,**/.next/**,**/coverage/**

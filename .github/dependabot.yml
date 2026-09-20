@@ -1,0 +1,80 @@
+version: 2
+
+# Monthly dependency review (~every 30 days) for npm packages and GitHub Actions.
+#
+# Why there is no `ignore:` block for major updates
+# -------------------------------------------------
+# Dependabot applies `ignore` rules to *security* updates as well as to regular
+# version updates. Ignoring majors in bulk would therefore silence a CVE whose
+# only available patch ships in a major release — the exact opposite of the
+# priority here, which is "critical CVEs first, major version jumps second".
+#
+# The priority is expressed by *isolating* majors in their own group, so they
+# arrive as a separate, reviewable pull request that can wait, while minor and
+# patch updates land together in a single low-risk PR. Nothing is ever blocked.
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    # Supply-chain guard: never adopt a version published less than a week ago.
+    # A compromised release is usually yanked within days, so waiting rides out
+    # the window in which a malicious publish is still live. Security updates
+    # for an already-disclosed CVE are what the monthly Semgrep/Trivy sweep and
+    # GitHub's own security alerts cover, so this delay costs no CVE exposure.
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+    groups:
+      minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    # Supply-chain guard: never adopt a version published less than a week ago.
+    # A compromised release is usually yanked within days, so waiting rides out
+    # the window in which a malicious publish is still live. Security updates
+    # for an already-disclosed CVE are what the monthly Semgrep/Trivy sweep and
+    # GitHub's own security alerts cover, so this delay costs no CVE exposure.
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "ci(deps)"
+      include: "scope"
+    groups:
+      minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "major"
